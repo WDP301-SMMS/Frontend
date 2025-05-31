@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "baseUrl": "./",
+        "paths": {
+            "@/*": ["src/*"],
+            "@pages/*":["src/pages/*"],
+            "@libs/*":["src/libs/*"],
+            "@assets/*":["src/assets/*"],
+            "@components/*":["src/libs/components/*"],
+            "@hooks/*":["src/libs/hooks/*"],
+            "@utils/*":["src/libs/utils/*"],
+            "@api/*":["src/libs/api/*"],
+            "@contexts/*":["src/libs/contexts/*"],
+        },
+    }
+}
