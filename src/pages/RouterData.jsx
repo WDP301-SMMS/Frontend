@@ -5,6 +5,8 @@ import {
   Home,
   Login,
   Register,
+  ResetPassword,
+  VerifyOTP,
 } from "./lazyRoutes";
 import NotFound from "./NotFound";
 
@@ -35,6 +37,14 @@ const authenticatedRoutes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/verify-otp",
+    element: <VerifyOTP />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
 ];
 
