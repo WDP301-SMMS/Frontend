@@ -8,8 +8,8 @@ import {
   NurseDashboard,
   ManagerDashboard,
 } from "./lazyRoutes";
-
 import ManagementLayout from "./management/Layout"
+import NotFound from "./NotFound";
 
 const basicRoutes = [
   {
@@ -41,14 +41,8 @@ const authenticatedRoutes = [
   },
 ];
 
-//management routes
-const managementRoutes = {
-  path: "/management",
-  element: <ManagementLayout />,
-  children: [
-    { path: "nurse", element: <NurseDashboard /> },
-    { path: "manager", element: <ManagerDashboard /> }
-  ],
-};
-
-export const mainRoutes = [...basicRoutes, ...authenticatedRoutes, managementRoutes];
+export const mainRoutes = [
+  ...basicRoutes,
+  ...authenticatedRoutes,
+  { path: "*", element: <NotFound /> },
+];
