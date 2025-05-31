@@ -5,7 +5,11 @@ import {
   Home,
   Login,
   Register,
+  NurseDashboard,
+  ManagerDashboard,
 } from "./lazyRoutes";
+
+import ManagementLayout from "./management/Layout"
 
 const basicRoutes = [
   {
@@ -37,4 +41,14 @@ const authenticatedRoutes = [
   },
 ];
 
-export const mainRoutes = [...basicRoutes, ...authenticatedRoutes];
+//management routes
+const managementRoutes = {
+  path: "/management",
+  element: <ManagementLayout />,
+  children: [
+    { path: "nurse", element: <NurseDashboard /> },
+    { path: "manager", element: <ManagerDashboard /> }
+  ],
+};
+
+export const mainRoutes = [...basicRoutes, ...authenticatedRoutes, managementRoutes];
