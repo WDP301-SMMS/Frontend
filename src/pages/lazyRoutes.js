@@ -11,6 +11,12 @@ const Register = React.lazy(() => import("./authentication/register/Register"));
 const ForgotPassword = React.lazy(() =>
   import("./authentication/forgot-password/ForgotPassword")
 );
+const VerifyOTP = React.lazy(() =>
+  import("./authentication/forgot-password/VerifyOTP")
+);
+const ResetPassword = React.lazy(() =>
+  import("./authentication/forgot-password/ResetPassword")
+);
 
 // Management Routes
 // Nurse Routes

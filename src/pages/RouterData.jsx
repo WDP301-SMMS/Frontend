@@ -5,8 +5,10 @@ import {
   Home,
   Login,
   Register,
-  NurseDashboard,
+   NurseDashboard,
   ManagerDashboard,
+  ResetPassword,
+  VerifyOTP,
 } from "./lazyRoutes";
 import ManagementLayout from "./management/Layout"
 import NotFound from "./NotFound";
@@ -38,6 +40,14 @@ const authenticatedRoutes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/verify-otp",
+    element: <VerifyOTP />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
 ];
 
