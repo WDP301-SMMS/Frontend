@@ -12,4 +12,22 @@ const ForgotPassword = React.lazy(() =>
   import("./authentication/forgot-password/ForgotPassword")
 );
 
-export { Home, About, Contact, Login, Register, ForgotPassword };
+// Management Routes
+// Nurse Routes
+const NurseDashboard = React.lazy(() => import("./management/nurse/Dashboard"));
+
+// Manager Routes
+const ManagerDashboard = React.lazy(() =>
+  import("./management/manager/Dashboard")
+);
+
+export {
+  Home,
+  About,
+  Contact,
+  Login,
+  Register,
+  ForgotPassword,
+  NurseDashboard,
+  ManagerDashboard,
+};
