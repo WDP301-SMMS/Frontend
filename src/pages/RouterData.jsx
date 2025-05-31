@@ -6,6 +6,7 @@ import {
   Login,
   Register,
 } from "./lazyRoutes";
+import NotFound from "./NotFound";
 
 const basicRoutes = [
   {
@@ -37,4 +38,8 @@ const authenticatedRoutes = [
   },
 ];
 
-export const mainRoutes = [...basicRoutes, ...authenticatedRoutes];
+export const mainRoutes = [
+  ...basicRoutes,
+  ...authenticatedRoutes,
+  { path: "*", element: <NotFound /> },
+];
