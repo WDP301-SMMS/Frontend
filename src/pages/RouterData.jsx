@@ -8,6 +8,7 @@ import {
   Register,
   ResetPassword,
   VerifyOTP,
+  Blogs,
 } from "./lazyRoutes";
 import NotFound from "./NotFound";
 
@@ -24,10 +25,15 @@ const basicRoutes = [
     path: "/contact",
     element: <Contact />,
   },
-   {
+  {
     path: "/settings",
     element: <Profile />,
   },
+  {
+    path: "/blogs",
+    element: <Blogs />,
+  },
+
 ];
 
 const authenticatedRoutes = [
