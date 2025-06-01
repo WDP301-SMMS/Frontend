@@ -17,6 +17,17 @@ module.exports = {
         "stanford-dark-red": "#820000",
         "stanford-light-gray": "#F4F4F4",
         "stanford-cool-gray": "#4D4F53",
+        // Extended Stanford color palette for the blog
+        "stanford-red-50": "#fef2f2",
+        "stanford-red-100": "#fee2e2",
+        "stanford-red-200": "#fecaca",
+        "stanford-red-300": "#fca5a5",
+        "stanford-red-400": "#f87171",
+        "stanford-red-500": "#ef4444",
+        "stanford-red-600": "#dc2626",
+        "stanford-red-700": "#b91c1c",
+        "stanford-red-800": "#8C1515", // Your existing stanford-red
+        "stanford-red-900": "#820000", // Your existing stanford-dark-red
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -82,6 +93,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Source Sans Pro", "system-ui", "sans-serif"],
+        serif: ["Source Serif Pro", "Georgia", "serif"],
       },
     },
   },

@@ -10,6 +10,7 @@ import {
   ManagerDashboard,
   ResetPassword,
   VerifyOTP,
+  Blogs,
 } from "./lazyRoutes";
 import ManagementLayout from "./management/Layout"
 import NotFound from "./NotFound";
@@ -27,10 +28,15 @@ const basicRoutes = [
     path: "/contact",
     element: <Contact />,
   },
-   {
+  {
     path: "/settings",
     element: <Profile />,
   },
+  {
+    path: "/blogs",
+    element: <Blogs />,
+  },
+
 ];
 
 const authenticatedRoutes = [
