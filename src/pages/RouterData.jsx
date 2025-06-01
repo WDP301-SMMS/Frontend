@@ -3,6 +3,7 @@ import {
   Contact,
   ForgotPassword,
   Home,
+  Profile,
   Login,
   Register,
   ResetPassword,
@@ -22,6 +23,10 @@ const basicRoutes = [
   {
     path: "/contact",
     element: <Contact />,
+  },
+   {
+    path: "/settings",
+    element: <Profile />,
   },
 ];
 
