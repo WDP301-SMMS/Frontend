@@ -1,19 +1,26 @@
-
 import {
   About,
   Contact,
   ForgotPassword,
   Home,
-  Profile,
   Login,
   Register,
-  ResetPassword,
-  VaccinHistoryManagement,
-  VerifyOTP,
+  Profile,
   Blogs,
   BlogDetail,
+  VerifyOTP,
+  ResetPassword,
+  VaccinHistoryManagement,
+  NurseDashboard,
+  ManagerDashboard,
+  AdminDashboard,
+  Message,
+  Notification,
+  ManagementProfile
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
+
+import ManagementLayout from "../pages/management/Layout"
 
 const basicRoutes = [
   {
@@ -40,7 +47,6 @@ const basicRoutes = [
     path: "/blog-detail",
     element: <BlogDetail />,
   }
-
 ];
 
 const authenticatedRoutes = [
@@ -69,13 +75,28 @@ const authenticatedRoutes = [
 const vaccinHistoryManagementRoutes = [
   {
     path: "/vaccination-history-management",
-    element: <VaccinHistoryManagement/>,
+    element: <VaccinHistoryManagement />,
   },
 ];
+
+//management routes
+const managementRoutes = {
+  path: "/management",
+  element: <ManagementLayout />,
+  children: [
+    { path: "nurse", element: <NurseDashboard /> },
+    { path: "nurse/message", element: <Message /> },
+    { path: "manager", element: <ManagerDashboard />, },
+    { path: "admin", element: <AdminDashboard />, },
+    { path: "notification", element: <Notification />, },
+    { path: "profile", element: <ManagementProfile />, }
+  ],
+};
 
 export const mainRoutes = [
   ...basicRoutes,
   ...authenticatedRoutes,
   ...vaccinHistoryManagementRoutes,
+  managementRoutes,
   { path: "*", element: <NotFound /> },
 ];

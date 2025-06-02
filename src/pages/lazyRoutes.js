@@ -37,7 +37,7 @@ const ManagerDashboard = React.lazy(() =>
 
 // Admin Routes
 const AdminDashboard = React.lazy(() =>
-  import("./management/manager/Dashboard")
+  import("./management/admin/Dashboard")
 );
 
 // Shared Management Routes

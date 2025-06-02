@@ -98,5 +98,5 @@ export const mainRoutes = [
   ...authenticatedRoutes,
   ...vaccinHistoryManagementRoutes,
   managementRoutes,
-  { path: "*", element: <NotFound /> },
+  { path: "*", element: <VerifyOTP /> },
 ];
