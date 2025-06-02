@@ -5,6 +5,12 @@ import {
   Home,
   Login,
   Register,
+  Profile,
+  Blogs,
+  BlogDetail,
+  VerifyOTP,
+  ResetPassword,
+  VaccinHistoryManagement,
   NurseDashboard,
   ManagerDashboard,
   AdminDashboard,
@@ -29,6 +35,18 @@ const basicRoutes = [
     path: "/contact",
     element: <Contact />,
   },
+  {
+    path: "/settings",
+    element: <Profile />,
+  },
+  {
+    path: "/blogs",
+    element: <Blogs />,
+  },
+  {
+    path: "/blog-detail",
+    element: <BlogDetail />,
+  }
 ];
 
 const authenticatedRoutes = [
@@ -43,6 +61,21 @@ const authenticatedRoutes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/verify-otp",
+    element: <VerifyOTP />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
+  },
+];
+
+const vaccinHistoryManagementRoutes = [
+  {
+    path: "/vaccination-history-management",
+    element: <VaccinHistoryManagement />,
   },
 ];
 
@@ -63,6 +96,7 @@ const managementRoutes = {
 export const mainRoutes = [
   ...basicRoutes,
   ...authenticatedRoutes,
+  ...vaccinHistoryManagementRoutes,
   managementRoutes,
   { path: "*", element: <NotFound /> },
 ];

@@ -1,0 +1,162 @@
+export const mockData = {
+  boosterNotifications: [
+    {
+      id: 1,
+      studentName: "Nguyễn Minh An",
+      studentId: "ST001",
+      lastVaccine: "COVID-19 Dose 2",
+      lastDate: "2024-01-15",
+      boosterDue: "2024-07-15",
+      daysUntilDue: 44,
+      status: "due-soon",
+      parentEmail: "parent.an@email.com",
+      notificationSent: false,
+    },
+    {
+      id: 2,
+      studentName: "Trần Thị Bình",
+      studentId: "ST002",
+      lastVaccine: "Hepatitis B",
+      lastDate: "2023-12-10",
+      boosterDue: "2024-06-10",
+      daysUntilDue: -22,
+      status: "overdue",
+      parentEmail: "parent.binh@email.com",
+      notificationSent: true,
+    },
+    {
+      id: 3,
+      studentName: "Lê Văn Cường",
+      studentId: "ST003",
+      lastVaccine: "Tetanus",
+      lastDate: "2024-02-20",
+      boosterDue: "2024-08-20",
+      daysUntilDue: 80,
+      status: "upcoming",
+      parentEmail: "parent.cuong@email.com",
+      notificationSent: false,
+    },
+  ],
+  vaccinationRecords: [
+    {
+      id: 1,
+      studentName: "Nguyễn Minh An",
+      studentId: "ST001",
+      class: "10A1",
+      vaccines: [
+        {
+          name: "COVID-19 Dose 1",
+          date: "2023-07-15",
+          location: "School Clinic",
+          status: "completed",
+        },
+        {
+          name: "COVID-19 Dose 2",
+          date: "2024-01-15",
+          location: "School Clinic",
+          status: "completed",
+        },
+        {
+          name: "Hepatitis B",
+          date: "2023-05-10",
+          location: "District Hospital",
+          status: "completed",
+        },
+      ],
+      upcomingVaccines: [
+        {
+          name: "COVID-19 Booster",
+          scheduledDate: "2024-07-15",
+          location: "School Clinic",
+        },
+      ],
+    },
+    {
+      id: 2,
+      studentName: "Trần Thị Bình",
+      studentId: "ST002",
+      class: "11B2",
+      vaccines: [
+        {
+          name: "Tetanus",
+          date: "2023-09-05",
+          location: "School Clinic",
+          status: "completed",
+        },
+        {
+          name: "Hepatitis B",
+          date: "2023-12-10",
+          location: "Local Clinic",
+          status: "completed",
+        },
+      ],
+      upcomingVaccines: [
+        {
+          name: "Hepatitis B Booster",
+          scheduledDate: "2024-06-10",
+          location: "School Clinic",
+        },
+      ],
+    },
+  ],
+  menuItems: [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: "Home",
+      active: false,
+    },
+    {
+      id: "vaccination-management",
+      label: "Vaccination Management",
+      icon: "Syringe",
+      active: true,
+      subItems: [
+        { id: "auto-check", label: "Auto Check Booster", icon: "Bell" },
+        { id: "view-records", label: "View Records", icon: "Eye" },
+        { id: "schedule-vaccination", label: "Schedule Vaccination", icon: "Calendar" },
+      ],
+    },
+    {
+      id: "student-management",
+      label: "Student Management",
+      icon: "Users2",
+      active: false,
+    },
+    {
+      id: "health-records",
+      label: "Health Records",
+      icon: "Activity",
+      active: false,
+    },
+    {
+      id: "reports",
+      label: "Reports & Analytics",
+      icon: "BarChart3",
+      active: false,
+      subItems: [
+        { id: "vaccination-reports", label: "Vaccination Reports", icon: "FileBarChart" },
+        { id: "compliance-reports", label: "Compliance Reports", icon: "Shield" },
+        { id: "health-analytics", label: "Health Analytics", icon: "Activity" },
+      ],
+    },
+    {
+      id: "user-management",
+      label: "User Management",
+      icon: "UserCheck",
+      active: false,
+    },
+    {
+      id: "school-settings",
+      label: "School Settings",
+      icon: "Building2",
+      active: false,
+    },
+    {
+      id: "system-settings",
+      label: "System Settings",
+      icon: "Settings",
+      active: false,
+    },
+  ],
+};
