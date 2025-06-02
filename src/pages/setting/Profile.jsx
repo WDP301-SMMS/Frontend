@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import "./Profile.css"
 
 // Custom SVG icons to avoid external dependencies
 const Icons = {
@@ -175,60 +176,40 @@ const navigationItems = [
   },
 ]
 
-// Custom Toggle Switch Component using Tailwind's peer modifier
+// Custom Toggle Switch Component
 function ToggleSwitch({ checked = false, onChange, disabled = false, id }) {
   return (
-    <div className="group/toggle">
+    <div className="toggle-container">
       <input
         type="checkbox"
         id={id}
         checked={checked}
         onChange={(e) => !disabled && onChange && onChange(e.target.checked)}
         disabled={disabled}
-        className="peer sr-only"
+        className="toggle-input"
       />
       <label
         htmlFor={id}
-        className={`
-          relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full border-2 border-transparent 
-          transition-colors duration-200 ease-in-out focus-within:outline-none focus-within:ring-2 
-          focus-within:ring-[#8C1515] focus-within:ring-offset-2
-          ${checked ? "bg-[#8C1515]" : "bg-gray-200"}
-          ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
-        `}
+        className={`toggle-label ${checked ? "toggle-active" : ""} ${disabled ? "toggle-disabled" : ""}`}
       >
         <span className="sr-only">{checked ? "Enabled" : "Disabled"}</span>
-        <span
-          className={`
-            inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-            ${checked ? "translate-x-5" : "translate-x-0"}
-          `}
-        />
+        <span className={`toggle-switch ${checked ? "toggle-switch-active" : ""}`} />
       </label>
     </div>
   )
 }
 
-// Custom Select Component using Tailwind
+// Custom Select Component
 function CustomSelect({ value, onChange, options, placeholder, id, label }) {
   return (
-    <div className="group/select space-y-2">
+    <div className="select-container">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id} className="form-label">
           {label}
         </label>
       )}
-      <div className="relative">
-        <select
-          id={id}
-          value={value}
-          onChange={(e) => onChange && onChange(e.target.value)}
-          className="
-            w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm 
-            focus:border-[#8C1515] focus:outline-none focus:ring-1 focus:ring-[#8C1515]
-            group-hover/select:border-gray-400
-          "
-        >
+      <div className="select-wrapper">
+        <select id={id} value={value} onChange={(e) => onChange && onChange(e.target.value)} className="select-input">
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -236,18 +217,18 @@ function CustomSelect({ value, onChange, options, placeholder, id, label }) {
             </option>
           ))}
         </select>
-        <Icons.ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 group-focus-within/select:text-[#8C1515]" />
+        <Icons.ChevronDown className="select-icon" />
       </div>
     </div>
   )
 }
 
-// Custom Input Component using Tailwind
+// Custom Input Component
 function CustomInput({ type = "text", id, value, onChange, placeholder, label }) {
   return (
-    <div className="group/input space-y-2">
+    <div className="input-container">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id} className="form-label">
           {label}
         </label>
       )}
@@ -257,22 +238,18 @@ function CustomInput({ type = "text", id, value, onChange, placeholder, label })
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
         placeholder={placeholder}
-        className="
-          w-full rounded-md border border-gray-300 px-3 py-2 text-sm 
-          focus:border-[#8C1515] focus:outline-none focus:ring-1 focus:ring-[#8C1515]
-          group-hover/input:border-gray-400
-        "
+        className="form-input"
       />
     </div>
   )
 }
 
-// Custom Textarea Component using Tailwind
+// Custom Textarea Component
 function CustomTextarea({ id, value, onChange, placeholder, label, rows = 3 }) {
   return (
-    <div className="group/textarea space-y-2">
+    <div className="textarea-container">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id} className="form-label">
           {label}
         </label>
       )}
@@ -282,57 +259,44 @@ function CustomTextarea({ id, value, onChange, placeholder, label, rows = 3 }) {
         onChange={(e) => onChange && onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="
-          w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm 
-          focus:border-[#8C1515] focus:outline-none focus:ring-1 focus:ring-[#8C1515]
-          group-hover/textarea:border-gray-400
-        "
+        className="form-textarea"
       />
     </div>
   )
 }
 
-// Card Component using Tailwind
+// Card Component
 function Card({ title, description, children, className = "" }) {
   return (
-    <div
-      className={`group/card mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm ${className}`}
-    >
+    <div className={`card ${className}`}>
       {(title || description) && (
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
-          {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+        <div className="card-header">
+          {title && <h3 className="card-title">{title}</h3>}
+          {description && <p className="card-description">{description}</p>}
         </div>
       )}
-      <div className="px-6 py-6">{children}</div>
+      <div className="card-body">{children}</div>
     </div>
   )
 }
 
-// Toggle Item Component using Tailwind
+// Toggle Item Component
 function ToggleItem({ title, description, checked, onChange, id }) {
   return (
-    <div className="group/toggle-item flex items-center justify-between py-2">
-      <div className="flex-1 pr-4">
-        <h4 className="text-sm font-medium text-gray-900">{title}</h4>
-        <p className="mt-1 text-sm text-gray-600">{description}</p>
+    <div className="toggle-item">
+      <div className="toggle-item-content">
+        <h4 className="toggle-item-title">{title}</h4>
+        <p className="toggle-item-description">{description}</p>
       </div>
       <ToggleSwitch id={id} checked={checked} onChange={onChange} />
     </div>
   )
 }
 
-// Button Component using Tailwind
+// Button Component
 function Button({ children, variant = "primary", onClick, className = "" }) {
-  const baseClasses =
-    "px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#8C1515] focus:ring-offset-2"
-  const variantClasses = {
-    primary: "bg-[#8C1515] text-white border border-transparent hover:bg-[#7A1010]",
-    secondary: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50",
-  }
-
   return (
-    <button onClick={onClick} className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
+    <button onClick={onClick} className={`button button-${variant} ${className}`}>
       {children}
     </button>
   )
@@ -364,15 +328,15 @@ function ProfileSection() {
   ]
 
   return (
-    <div className="group/profile-section">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-[#8C1515]">Profile Settings</h2>
-        <p className="mt-2 text-gray-600">Manage your personal information and preferences.</p>
+    <div className="profile-section">
+      <div className="section-header">
+        <h2 className="section-title">Profile Settings</h2>
+        <p className="section-description">Manage your personal information and preferences.</p>
       </div>
 
       <Card title="Personal Information" description="Update your basic profile details">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="form-grid">
+          <div className="form-row">
             <CustomInput
               id="firstName"
               label="First Name"
@@ -418,7 +382,7 @@ function ProfileSection() {
       </Card>
 
       <Card title="Profile Visibility" description="Control who can see your profile information">
-        <div className="space-y-6">
+        <div className="toggle-list">
           <ToggleItem
             id="publicProfile"
             title="Public Profile"
@@ -445,7 +409,7 @@ function ProfileSection() {
         </div>
       </Card>
 
-      <div className="flex justify-end space-x-3">
+      <div className="form-actions">
         <Button variant="secondary">Cancel</Button>
         <Button variant="primary">Save Changes</Button>
       </div>
@@ -491,14 +455,14 @@ function NotificationsSection() {
   ]
 
   return (
-    <div className="group/notifications-section">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-[#8C1515]">Notification Settings</h2>
-        <p className="mt-2 text-gray-600">Choose how you want to be notified about updates and activities.</p>
+    <div className="notifications-section">
+      <div className="section-header">
+        <h2 className="section-title">Notification Settings</h2>
+        <p className="section-description">Choose how you want to be notified about updates and activities.</p>
       </div>
 
       <Card title="Email Notifications" description="Manage your email notification preferences">
-        <div className="space-y-6">
+        <div className="toggle-list">
           <ToggleItem
             id="courseUpdates"
             title="Course Updates"
@@ -534,7 +498,7 @@ function NotificationsSection() {
       </Card>
 
       <Card title="Push Notifications" description="Control mobile and desktop push notifications">
-        <div className="space-y-6">
+        <div className="toggle-list">
           <ToggleItem
             id="urgentMessages"
             title="Urgent Messages"
@@ -562,8 +526,8 @@ function NotificationsSection() {
       </Card>
 
       <Card title="Notification Schedule" description="Set quiet hours and notification frequency">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="form-grid">
+          <div className="form-row">
             <CustomSelect
               id="quietHoursStart"
               label="Quiet Hours Start"
@@ -590,7 +554,7 @@ function NotificationsSection() {
         </div>
       </Card>
 
-      <div className="flex justify-end space-x-3">
+      <div className="form-actions">
         <Button variant="secondary">Cancel</Button>
         <Button variant="primary">Save Changes</Button>
       </div>
@@ -601,29 +565,27 @@ function NotificationsSection() {
 // Placeholder Section Component
 function PlaceholderSection({ title }) {
   return (
-    <div className="group/placeholder-section">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-[#8C1515]">{title}</h2>
-        <p className="mt-2 text-gray-600">This section is coming soon.</p>
+    <div className="placeholder-section">
+      <div className="section-header">
+        <h2 className="section-title">{title}</h2>
+        <p className="section-description">This section is coming soon.</p>
       </div>
 
       <Card>
-        <div className="flex h-64 items-center justify-center p-8">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
-              <div className="h-8 w-8 rounded-full bg-gray-400"></div>
-            </div>
-            <h3 className="mb-2 text-lg font-medium text-gray-900">{title} Settings</h3>
-            <p className="text-gray-600">We're working on bringing you more customization options.</p>
+        <div className="placeholder-content">
+          <div className="placeholder-icon">
+            <div className="placeholder-icon-inner"></div>
           </div>
+          <h3 className="placeholder-title">{title} Settings</h3>
+          <p className="placeholder-text">We're working on bringing you more customization options.</p>
         </div>
       </Card>
     </div>
   )
 }
 
-// Main Settings Page Component
-export default function SettingsPage() {
+// Main Profile Page Component
+export default function ProfilePage() {
   const [activeSection, setActiveSection] = useState("profile")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -647,97 +609,79 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="group/settings-page min-h-screen bg-gray-50 font-sans antialiased">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="group/overlay fixed inset-0 z-40 lg:hidden">
-          <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity"
-            onClick={() => setSidebarOpen(false)}
-          />
-        </div>
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`
-          group/sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white shadow-lg 
-          transform transition-transform duration-300 ease-in-out lg:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        {/* Sidebar Header */}
-        <div className="group/sidebar-header flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-200 bg-[#8C1515] px-4">
-          <div className="flex min-w-0 flex-1 items-center space-x-3">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white">
-              <span className="text-sm font-bold text-[#8C1515]">S</span>
+        <div className="profile-page">
+          {/* Mobile sidebar overlay */}
+          {sidebarOpen && (
+            <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}>
+              <div className="sidebar-backdrop"></div>
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="truncate text-sm font-semibold text-white">Settings</h1>
-              <p className="truncate text-xs text-red-100">Stanford Portal</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="ml-2 flex-shrink-0 text-white hover:text-red-100 lg:hidden"
-          >
-            <Icons.X className="h-6 w-6" />
-          </button>
-        </div>
+          )}
 
-        {/* Navigation Menu */}
-        <nav className="group/sidebar-nav flex-1 overflow-y-auto px-3 py-4">
-          <ul className="space-y-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activeSection === item.id
-
-              return (
-                <li key={item.id} className="group/nav-item">
-                  <button
-                    onClick={() => {
-                      setActiveSection(item.id)
-                      setSidebarOpen(false)
-                    }}
-                    className={`
-                      group/nav-button flex w-full items-center rounded-md px-3 py-3 text-sm font-medium 
-                      transition-colors duration-150
-                      ${isActive ? "bg-[#8C1515] text-white" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"}
-                    `}
-                  >
-                    <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                    {item.title}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="group/main-content flex min-h-screen flex-col lg:pl-64">
-        {/* Top Header */}
-        <header className="group/header flex-shrink-0 border-b border-gray-200 bg-white shadow-sm">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center">
-              <button onClick={() => setSidebarOpen(true)} className="text-gray-500 hover:text-gray-700 lg:hidden">
-                <Icons.Menu className="h-6 w-6" />
-              </button>
-              <div className="ml-4 lg:ml-0">
-                <h1 className="text-lg font-semibold text-gray-900">
-                  {navigationItems.find((item) => item.id === activeSection)?.title}
-                </h1>
+          {/* Sidebar */}
+          <div className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
+            {/* Sidebar Header */}
+            <div className="sidebar-header">
+              <div className="sidebar-header-content">
+                <div className="sidebar-logo">
+                  <span>S</span>
+                </div>
+                <div className="sidebar-title-container">
+                  <h1 className="sidebar-title">Settings</h1>
+                  <p className="sidebar-subtitle">Stanford Portal</p>
+                </div>
               </div>
+              <button onClick={() => setSidebarOpen(false)} className="sidebar-close">
+                <Icons.X className="icon-md" />
+              </button>
             </div>
-          </div>
-        </header>
 
-        {/* Page Content */}
-        <main className="group/page-content flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">{renderContent()}</div>
-        </main>
-      </div>
-    </div>
+            {/* Navigation Menu */}
+            <nav className="sidebar-nav">
+              <ul className="nav-list">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon
+                  const isActive = activeSection === item.id
+
+                  return (
+                    <li key={item.id} className="nav-item">
+                      <button
+                        onClick={() => {
+                          setActiveSection(item.id)
+                          setSidebarOpen(false)
+                        }}
+                        className={`nav-button ${isActive ? "nav-button-active" : ""}`}
+                      >
+                        <Icon className="nav-icon" />
+                        {item.title}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Main Content */}
+          <div className="main-content">
+            {/* Top Header */}
+            <header className="main-header">
+              <div className="header-container">
+                <div className="header-left">
+                  <button onClick={() => setSidebarOpen(true)} className="menu-button">
+                    <Icons.Menu className="icon-md" />
+                  </button>
+                  <div className="header-title">
+                    <h1>{navigationItems.find((item) => item.id === activeSection)?.title}</h1>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            {/* Page Content */}
+            <main className="page-content">
+              <div className="content-container">{renderContent()}</div>
+            </main>
+          </div>
+        </div>
   )
 }
