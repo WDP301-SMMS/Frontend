@@ -30,6 +30,19 @@ const ManagerDashboard = React.lazy(() =>
   import("./management/manager/Dashboard")
 );
 
+// Admin Routes
+const AdminDashboard = React.lazy(() =>
+  import("./management/admin/Dashboard")
+);
+
+// Shared Management Routes
+const Notification = React.lazy(() =>
+  import("./management/shared-page/Notification")
+);
+const ManagementProfile = React.lazy(() =>
+  import("./management/shared-page/Profile")
+);
+
 export {
   Home,
   About,

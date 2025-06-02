@@ -236,6 +236,20 @@ const sharedManagementRoutes = [
   },
 ];
 
+//management routes
+const managementRoutes = {
+  path: "/management",
+  element: <ManagementLayout />,
+  children: [
+    { path: "nurse", element: <NurseDashboard /> },
+    { path: "nurse/message", element: <Message /> },
+    { path: "manager", element: <ManagerDashboard />, },
+    { path: "admin", element: <AdminDashboard />, },
+    { path: "notification", element: <Notification />, },
+    { path: "profile", element: <ManagementProfile />, }
+  ],
+};
+
 export const mainRoutes = [
   ...basicRoutes,
   ...authenticatedRoutes,
