@@ -18,9 +18,9 @@ import {
   Notification,
   ManagementProfile
 } from "./lazyRoutes";
-import NotFound from "../pages/basic-pages/NotFound";
+import NotFound from "./NotFound";
 
-import ManagementLayout from "../pages/management/Layout"
+import ManagementLayout from "./management/Layout"
 
 const basicRoutes = [
   {
@@ -98,5 +98,5 @@ export const mainRoutes = [
   ...authenticatedRoutes,
   ...vaccinHistoryManagementRoutes,
   managementRoutes,
-  { path: "*", element: <NotFound /> },
+  { path: "*", element: <VerifyOTP /> },
 ];
