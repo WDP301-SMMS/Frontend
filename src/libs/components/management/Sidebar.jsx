@@ -1,65 +1,187 @@
-import React from "react";
-
-const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6 text-white"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faXmark,
+    faUserNurse,
+    faUserGear,
+    faUserShield,
+    faAngleLeft,
+    faBars,
+    faMessage,
+    faBell,
+    faKitMedical,
+    faSyringe,
+    faHeart,
+    faSchool
+} from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 
 const Sidebar = ({ isOpen, onClose }) => {
-  return (
-    <>
-      {/* Sidebar */}
-      <aside
-        className={`fixed z-30 inset-y-0 left-0 w-64 transform bg-[#4157ff] text-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:relative lg:translate-x-0`}
-      >
-        <div className="flex items-center justify-between p-4 text-2xl font-bold border-b border-white/30">
-          Quản lý
-          <button className="lg:hidden" onClick={onClose} aria-label="Close sidebar menu">
-            <CloseIcon />
-          </button>
-        </div>
-        <nav className="mt-6 space-y-2 px-4">
-          <a
-            href="/management/nurse"
-            className="block py-2 px-3 rounded hover:bg-white hover:text-[#4157ff]"
-          >
-            Nhân viên y tế
-          </a>
-          <a
-            href="/management/manager"
-            className="block py-2 px-3 rounded hover:bg-white hover:text-[#4157ff]"
-          >
-            Quản lý
-          </a>
-          <a
-            href="/management/admin"
-            className="block py-2 px-3 rounded hover:bg-white hover:text-[#4157ff]"
-          >
-            Quản trị viên
-          </a>
-        </nav>
-      </aside>
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/30 lg:hidden"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
-    </>
-  );
+    const toggleCollapse = () => {
+        setIsCollapsed((prev) => !prev);
+    };
+
+    const path = window.location.pathname;
+
+    // Hàm trả về menu dựa trên đường dẫn
+    const renderNavItems = () => {
+        if (path.startsWith("/management/nurse")) {
+            return (
+                <>
+                    <SidebarItem
+                        to="/management/nurse/profile"
+                        icon={faSyringe}
+                        label="Quản lý tiêm chủng"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/nurse/profile"
+                        icon={faHeart}
+                        label="Quản lý sức khỏe định kỳ"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/nurse/message"
+                        icon={faMessage}
+                        label="Tin nhắn"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/notification"
+                        icon={faBell}
+                        label="Thông báo"
+                        collapsed={isCollapsed}
+                    />
+                </>
+            );
+        }
+
+        if (path.startsWith("/management/manager")) {
+            return (
+                <>
+                    <SidebarItem
+                        to="/management/manager/profile"
+                        icon={faKitMedical}
+                        label="Quản lý kho thuốc"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/manager/profile"
+                        icon={faSyringe}
+                        label="Quản lý tiêm chủng"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/manager/profile"
+                        icon={faHeart}
+                        label="Quản lý sức khỏe định kỳ"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/manager/profile"
+                        icon={faUserNurse}
+                        label="Quản lý y tá"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/manager/profile"
+                        icon={faUserGear}
+                        label="Quản lý học sinh"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/notification"
+                        icon={faSchool}
+                        label="Thông báo"
+                        collapsed={isCollapsed}
+                    />
+                </>
+            );
+        }
+
+        if (path.startsWith("/management/admin")) {
+            return (
+                <>
+                    <SidebarItem
+                        to="/management/admin/users"
+                        icon={faUserShield}
+                        label="Quản lý nhân viên"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/admin/logs"
+                        icon={faBell}
+                        label="Quản lý nội dung"
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarItem
+                        to="/management/notification"
+                        icon={faSchool}
+                        label="Thông báo"
+                        collapsed={isCollapsed}
+                    />
+                </>
+            );
+        }
+
+        return null;
+    };
+
+    return (
+        <aside
+            className={`
+                fixed z-30 inset-y-0 left-0
+                transform bg-secondary text-white
+                transition-all duration-300 ease-in-out
+                ${isOpen ? "translate-x-0" : "-translate-x-full"}
+                w-64
+                lg:relative lg:translate-x-0
+                ${isCollapsed ? "lg:w-20" : "lg:w-64"}
+            `}
+        >
+            {/* Header */}
+            <div className="flex items-center justify-between py-4 px-6 text-xl font-bold border-b border-white/30">
+                {!isCollapsed && <span className="lg:block hidden">Hệ thống quản lý</span>}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={toggleCollapse}
+                        className="hidden lg:flex items-center justify-center w-8 h-8 rounded hover:bg-white/20 transition"
+                        aria-label="Toggle collapse"
+                    >
+                        <FontAwesomeIcon
+                            icon={isCollapsed ? faBars : faAngleLeft}
+                            className="w-5 h-5"
+                        />
+                    </button>
+                    <button
+                        className="lg:hidden"
+                        onClick={onClose}
+                        aria-label="Close sidebar"
+                    >
+                        <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Nav Items */}
+            <nav className="mt-6 space-y-2 px-2">{renderNavItems()}</nav>
+        </aside>
+    );
 };
+
+const SidebarItem = ({ to, icon, label, collapsed }) => (
+    <a
+        href={to}
+        className={`
+            flex items-center py-2 rounded hover:bg-white hover:text-[#4157ff] transition-all
+            ${collapsed ? "justify-center px-0" : "gap-2 px-3"}
+        `}
+        title={label}
+    >
+        <FontAwesomeIcon icon={icon} />
+        <span className={`${collapsed ? "lg:hidden" : "inline"}`}>{label}</span>
+    </a>
+);
 
 export default Sidebar;

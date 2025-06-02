@@ -15,10 +15,24 @@ const ForgotPassword = React.lazy(() =>
 // Management Routes
 // Nurse Routes
 const NurseDashboard = React.lazy(() => import("./management/nurse/Dashboard"));
+const Message = React.lazy(() => import("./management/nurse/Message"));
 
 // Manager Routes
 const ManagerDashboard = React.lazy(() =>
   import("./management/manager/Dashboard")
+);
+
+// Admin Routes
+const AdminDashboard = React.lazy(() =>
+  import("./management/manager/Dashboard")
+);
+
+// Shared Management Routes
+const Notification = React.lazy(() =>
+  import("./management/shared-page/Notification")
+);
+const ManagementProfile = React.lazy(() =>
+  import("./management/shared-page/Profile")
 );
 
 export {
@@ -30,4 +44,8 @@ export {
   ForgotPassword,
   NurseDashboard,
   ManagerDashboard,
+  AdminDashboard,
+  Message,
+  Notification,
+  ManagementProfile,
 };

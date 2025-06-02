@@ -7,7 +7,12 @@ import {
   Register,
   NurseDashboard,
   ManagerDashboard,
+  AdminDashboard,
+  Message,
+  Notification,
+  ManagementProfile
 } from "./lazyRoutes";
+import NotFound from "./NotFound";
 
 import ManagementLayout from "./management/Layout"
 
@@ -47,8 +52,17 @@ const managementRoutes = {
   element: <ManagementLayout />,
   children: [
     { path: "nurse", element: <NurseDashboard /> },
-    { path: "manager", element: <ManagerDashboard /> }
+    { path: "nurse/message", element: <Message /> },
+    { path: "manager", element: <ManagerDashboard />, },
+    { path: "admin", element: <AdminDashboard />, },
+    { path: "notification", element: <Notification />, },
+    { path: "profile", element: <ManagementProfile />, }
   ],
 };
 
-export const mainRoutes = [...basicRoutes, ...authenticatedRoutes, managementRoutes];
+export const mainRoutes = [
+  ...basicRoutes,
+  ...authenticatedRoutes,
+  managementRoutes,
+  { path: "*", element: <NotFound /> },
+];
