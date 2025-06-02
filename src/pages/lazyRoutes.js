@@ -6,6 +6,7 @@ const About = React.lazy(() => import("./basic-pages/About"));
 const Contact = React.lazy(() => import("./basic-pages/Contact"));
 const Profile = React.lazy(() => import("./setting/Profile"));
 const Blogs = React.lazy(() => import("./blogs/Blogs"));
+const BlogDetail = React.lazy(() => import("./blogs/BlogDetail"));
 
 // Authenticated Routes
 const Login = React.lazy(() => import("./authentication/login/Login"));
@@ -26,6 +27,7 @@ export {
   Contact,
   Profile,
   Blogs,
+  BlogDetail,
   Login,
   Register,
   ForgotPassword,
