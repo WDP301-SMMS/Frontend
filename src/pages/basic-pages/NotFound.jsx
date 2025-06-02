@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 const NotFound = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
@@ -43,7 +45,7 @@ const NotFound = () => {
 
         {/* Action Button */}
         <button 
-          onClick={() => window.history.back()}
+          onClick={() => navigate("/")}
           className="inline-flex items-center px-8 py-3 bg-white text-orange-500 font-semibold rounded-full border-2 border-orange-400 hover:bg-orange-400 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
         >
           <svg 
