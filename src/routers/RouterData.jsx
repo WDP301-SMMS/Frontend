@@ -8,11 +8,12 @@ import {
   Login,
   Register,
   ResetPassword,
+  VaccinHistoryManagement,
   VerifyOTP,
   Blogs,
   BlogDetail,
 } from "./lazyRoutes";
-import NotFound from "./NotFound";
+import NotFound from "../pages/basic-pages/NotFound";
 
 const basicRoutes = [
   {
@@ -65,8 +66,16 @@ const authenticatedRoutes = [
   },
 ];
 
+const vaccinHistoryManagementRoutes = [
+  {
+    path: "/vaccination-history-management",
+    element: <VaccinHistoryManagement/>,
+  },
+];
+
 export const mainRoutes = [
   ...basicRoutes,
   ...authenticatedRoutes,
+  ...vaccinHistoryManagementRoutes,
   { path: "*", element: <NotFound /> },
 ];
