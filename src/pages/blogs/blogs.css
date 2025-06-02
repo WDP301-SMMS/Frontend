@@ -1,22 +1,22 @@
 /* CSS Variables and Base Styles */
 :root {
-  /* Stanford Colors */
-  --stanford-red: #8c1515;
-  --stanford-dark-red: #820000;
+  /* Primary Colors */
+  --primary: #2260FF; /* Updated from --stanford-red */
+  --primary-dark: #1a4ccc; /* Updated from --stanford-dark-red */
   --stanford-light-gray: #f4f4f4;
   --stanford-cool-gray: #4d4f53;
 
   /* Extended Color Palette */
-  --stanford-red-50: #fef2f2;
-  --stanford-red-100: #fee2e2;
-  --stanford-red-200: #fecaca;
-  --stanford-red-300: #fca5a5;
-  --stanford-red-400: #f87171;
-  --stanford-red-500: #ef4444;
-  --stanford-red-600: #dc2626;
-  --stanford-red-700: #b91c1c;
-  --stanford-red-800: #8c1515;
-  --stanford-red-900: #820000;
+  --primary-50: #eff6ff; /* Updated from --stanford-red-50 */
+  --primary-100: #dbeafe; /* Updated from --stanford-red-100 */
+  --primary-200: #bfdbfe; /* Updated from --stanford-red-200 */
+  --primary-300: #93c5fd; /* Updated from --stanford-red-300 */
+  --primary-400: #60a5fa; /* Updated from --stanford-red-400 */
+  --primary-500: #3b82f6; /* Updated from --stanford-red-500 */
+  --primary-600: #2563eb; /* Updated from --stanford-red-600 */
+  --primary-700: #1d4ed8; /* Updated from --stanford-red-700 */
+  --primary-800: #2260FF; /* Updated from --stanford-red-800 */
+  --primary-900: #1a4ccc; /* Updated from --stanford-red-900 */
 
   /* Grayscale */
   --white: #ffffff;
@@ -109,7 +109,7 @@ img {
 
 /* Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, var(--stanford-red) 0%, var(--stanford-dark-red) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated */
   color: var(--white);
   position: relative;
 }
@@ -171,7 +171,7 @@ img {
 
 .hero-subtitle {
   font-size: 1.125rem;
-  color: var(--stanford-red-100);
+  color: var(--primary-100); /* Updated from --stanford-red-100 */
   max-width: 48rem;
   margin: 0 auto;
   line-height: 1.6;
@@ -356,8 +356,8 @@ img {
 }
 
 .category-research {
-  background-color: var(--stanford-red-100);
-  color: var(--stanford-red-800);
+  background-color: var(--primary-100); /* Updated from --stanford-red-100 */
+  color: var(--primary-800); /* Updated from --stanford-red-800 */
 }
 
 .category-engineering {
@@ -403,7 +403,7 @@ img {
 
 .featured-post:hover .post-title,
 .grid-post:hover .post-title {
-  color: var(--stanford-red);
+  color: var(--primary); /* Updated from --stanford-red */
 }
 
 .grid-post-title {
@@ -467,13 +467,13 @@ img {
 .read-more {
   display: inline-flex;
   align-items: center;
-  color: var(--stanford-red);
+  color: var(--primary); /* Updated from --stanford-red */
   font-weight: 500;
   transition: color var(--transition-normal);
 }
 
 .featured-post:hover .read-more {
-  color: var(--stanford-dark-red);
+  color: var(--primary-dark); /* Updated from --stanford-dark-red */
 }
 
 .read-more-icon {
@@ -489,7 +489,7 @@ img {
 }
 
 .load-more-button {
-  background-color: var(--stanford-red);
+  background-color: var(--primary); /* Updated from --stanford-red */
   color: var(--white);
   font-weight: 600;
   padding: var(--spacing-3) var(--spacing-8);
@@ -499,12 +499,12 @@ img {
 }
 
 .load-more-button:hover {
-  background-color: var(--stanford-dark-red);
+  background-color: var(--primary-dark); /* Updated from --stanford-dark-red */
 }
 
 .load-more-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--stanford-red);
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary); /* Updated from --stanford-red */
 }
 
 /* Newsletter Section */
@@ -579,12 +579,12 @@ img {
 }
 
 .newsletter-input:focus {
-  border-color: var(--stanford-red);
-  box-shadow: 0 0 0 1px var(--stanford-red);
+  border-color: var(--primary); /* Updated from --stanford-red */
+  box-shadow: 0 0 0 1px var(--primary); /* Updated from --stanford-red */
 }
 
 .newsletter-button {
-  background-color: var(--stanford-red);
+  background-color: var(--primary); /* Updated from --stanford-red */
   color: var(--white);
   font-weight: 600;
   padding: var(--spacing-3) var(--spacing-6);
@@ -594,12 +594,12 @@ img {
 }
 
 .newsletter-button:hover {
-  background-color: var(--stanford-dark-red);
+  background-color: var(--primary-dark); /* Updated from --stanford-dark-red */
 }
 
 .newsletter-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--stanford-red);
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary); /* Updated from --stanford-red */
 }
 
 /* Blog Detail Page Styles */
@@ -618,13 +618,13 @@ img {
 .back-button {
   display: inline-flex;
   align-items: center;
-  color: var(--stanford-red);
+  color: var(--primary); /* Updated from --stanford-red */
   font-weight: 500;
   transition: color var(--transition-normal);
 }
 
 .back-button:hover {
-  color: var(--stanford-dark-red);
+  color: var(--primary-dark); /* Updated from --stanford-dark-red */
   text-decoration: underline;
 }
 
@@ -702,7 +702,7 @@ img {
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--stanford-red) 0%, var(--stanford-dark-red) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -817,7 +817,7 @@ img {
 .author-bio {
   margin-top: var(--spacing-12);
   padding: var(--spacing-6);
-  background: linear-gradient(90deg, var(--gray-50) 0%, var(--stanford-red-50) 100%);
+  background: linear-gradient(90deg, var(--gray-50) 0%, var(--primary-50) 100%); /* Updated from --stanford-red-50 */
   border-radius: var(--radius-xl);
   border: 1px solid var(--gray-200);
 }
@@ -841,7 +841,7 @@ img {
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--stanford-red) 0%, var(--stanford-dark-red) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -882,7 +882,7 @@ img {
 .load-more-button:focus,
 .newsletter-input:focus,
 .newsletter-button:focus {
-  outline: 2px solid var(--stanford-red);
+  outline: 2px solid var(--primary); /* Updated from --stanford-red */
   outline-offset: 2px;
 }
 
