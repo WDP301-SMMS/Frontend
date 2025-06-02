@@ -1,7 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}", "*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "*.{js,ts,jsx,tsx,mdx}",
+    "./*.{js,jsx}",
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -13,6 +20,7 @@ module.exports = {
     },
     extend: {
       colors: {
+        // Your existing Stanford colors
         "stanford-red": "#8C1515",
         "stanford-dark-red": "#820000",
         "stanford-light-gray": "#F4F4F4",
@@ -28,6 +36,14 @@ module.exports = {
         "stanford-red-700": "#b91c1c",
         "stanford-red-800": "#8C1515", // Your existing stanford-red
         "stanford-red-900": "#820000", // Your existing stanford-dark-red
+        // Blog component specific colors
+        stanford: {
+          cardinal: "#8C1515",
+          red: "#B83A4B",
+          "cool-grey": "#4D4F53",
+          "palo-alto": "#175E54",
+        },
+        // Shadcn/ui colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -76,6 +92,8 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0.75rem",
+        "2xl": "1rem",
       },
       keyframes: {
         "accordion-down": {
@@ -92,8 +110,50 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        sans: ["Source Sans Pro", "system-ui", "sans-serif"],
+        sans: [
+          "Source Sans Pro",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "system-ui",
+          "sans-serif",
+        ],
         serif: ["Source Serif Pro", "Georgia", "serif"],
+      },
+      spacing: {
+        18: "4.5rem",
+        88: "22rem",
+      },
+      boxShadow: {
+        sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        lg: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: "none",
+            color: "#374151",
+            a: {
+              color: "#8C1515",
+              "&:hover": {
+                color: "#6e1010",
+              },
+            },
+            h1: {
+              color: "#1f2937",
+            },
+            h2: {
+              color: "#1f2937",
+            },
+            blockquote: {
+              borderLeftColor: "#8C1515",
+            },
+          },
+        },
       },
     },
   },

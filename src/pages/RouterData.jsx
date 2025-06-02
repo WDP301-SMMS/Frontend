@@ -1,3 +1,4 @@
+
 import {
   About,
   Contact,
@@ -11,6 +12,7 @@ import {
   ResetPassword,
   VerifyOTP,
   Blogs,
+  BlogDetail,
 } from "./lazyRoutes";
 import ManagementLayout from "./management/Layout"
 import NotFound from "./NotFound";
@@ -36,6 +38,10 @@ const basicRoutes = [
     path: "/blogs",
     element: <Blogs />,
   },
+  {
+    path: "/blog-detail",
+    element: <BlogDetail />,
+  }
 
 ];
 
