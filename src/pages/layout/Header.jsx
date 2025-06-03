@@ -16,7 +16,7 @@ export const Header = ({ exportReport }) => {
         <div className="flex items-center space-x-3">
           <button 
             onClick={exportReport}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            className="flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
             <Download size={16} />
             <span>Export Report</span>

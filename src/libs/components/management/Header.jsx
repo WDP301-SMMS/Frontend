@@ -21,7 +21,7 @@ const Header = ({ onMenuClick }) => {
         <header className="flex items-center justify-between p-4 border-b shadow-sm bg-white">
             <div className="flex items-center gap-3 flex-1 mr-3">
                 <button
-                    className="lg:hidden text-secondary"
+                    className="lg:hidden text-primary"
                     onClick={onMenuClick}
                     aria-label="Open sidebar menu"
                 >
@@ -33,7 +33,7 @@ const Header = ({ onMenuClick }) => {
                         value={searchQuery}
                         onChange={handleSearch}
                         placeholder="Tìm kiếm"
-                        className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm text-gray-700 placeholder-gray-400 transition-all duration-200"
+                        className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-gray-700 placeholder-gray-400 transition-all duration-200"
                         aria-label="Search menu items"
                     />
                     <FontAwesomeIcon
@@ -46,7 +46,7 @@ const Header = ({ onMenuClick }) => {
             <div className="flex items-center gap-4">
                 <a
                     href="/management/notification"
-                    className="text-secondary hover:text-secondary/50 transition focus:outline-none focus:ring-2 focus:ring-secondary/50 rounded-md p-2"
+                    className="text-primary hover:text-primary/50 transition focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-md p-2"
                     title="Thông báo"
                     aria-label="Xem thông báo"
                 >
@@ -55,7 +55,7 @@ const Header = ({ onMenuClick }) => {
 
                 <Menu as="div" className="relative inline-block text-left">
                     <div>
-                        <MenuButton className="flex items-center gap-2 text-secondary hover:text-secondary/50 transition focus:outline-none">
+                        <MenuButton className="flex items-center gap-2 text-primary hover:text-primary/50 transition focus:outline-none">
                             <img
                                 src="https://i.pravatar.cc/40"
                                 alt="avatar"

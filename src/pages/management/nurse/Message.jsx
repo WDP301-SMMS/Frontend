@@ -83,11 +83,11 @@ const Message = () => {
       conversations.map((conv) =>
         conv.id === selectedConversationId
           ? {
-              ...conv,
-              messages: [...conv.messages, newMsg],
-              lastMessage: newMessage || 'Đã gửi một tệp',
-              timestamp: newMsg.timestamp,
-            }
+            ...conv,
+            messages: [...conv.messages, newMsg],
+            lastMessage: newMessage || 'Đã gửi một tệp',
+            timestamp: newMsg.timestamp,
+          }
           : conv
       )
     );
@@ -117,11 +117,10 @@ const Message = () => {
           <div
             key={conversation.id}
             onClick={() => setSelectedConversationId(conversation.id)}
-            className={`p-3 mb-2 rounded-md cursor-pointer ${
-              selectedConversationId === conversation.id
-                ? 'bg-secondary/20 text-secondary'
+            className={`p-3 mb-2 rounded-md cursor-pointer ${selectedConversationId === conversation.id
+                ? 'bg-primary/20 text-primary'
                 : 'hover:bg-gray-100'
-            }`}
+              }`}
             aria-label={`Chọn cuộc trò chuyện với ${conversation.name}`}
           >
             <p className="font-medium">{conversation.name}</p>
@@ -142,9 +141,8 @@ const Message = () => {
                 className={`mb-4 flex ${message.sender === 'John Smith' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs sm:max-w-md p-3 rounded-lg ${
-                    message.sender === 'John Smith' ? 'bg-secondary text-white' : 'bg-gray-100 text-gray-800'
-                  }`}
+                  className={`max-w-xs sm:max-w-md p-3 rounded-lg ${message.sender === 'John Smith' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+                    }`}
                 >
                   <p className="text-sm font-medium">{message.sender}</p>
                   <p className="text-sm">{message.content}</p>
@@ -152,7 +150,7 @@ const Message = () => {
                     <a
                       href={message.file.url}
                       download
-                      className="text-xs underline mt-1 block hover:text-secondary/80"
+                      className="text-xs underline mt-1 block hover:text-primary/80"
                       aria-label={`Tải xuống tệp ${message.file.name}`}
                     >
                       {message.file.name}
@@ -175,12 +173,12 @@ const Message = () => {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Nhập tin nhắn..."
-              className="w-full p-3 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm text-gray-700 placeholder-gray-400 resize-none h-12"
+              className="w-full p-3 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-gray-700 placeholder-gray-400 resize-none h-12"
               aria-label="Nhập tin nhắn"
             />
             <button
               onClick={() => fileInputRef.current.click()}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-secondary transition"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition"
               aria-label="Đính kèm tệp"
             >
               <FontAwesomeIcon icon={faPaperclip} className="w-5 h-5" />
@@ -195,7 +193,7 @@ const Message = () => {
           </div>
           <button
             onClick={handleSendMessage}
-            className="p-3 bg-secondary text-white rounded-md hover:bg-secondary/80 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="p-3 bg-primary text-white rounded-md hover:bg-primary/80 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
             disabled={!newMessage.trim() && !attachedFile}
             aria-label="Gửi tin nhắn"
           >

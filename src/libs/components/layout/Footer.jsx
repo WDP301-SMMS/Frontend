@@ -1,6 +1,6 @@
 
 const Footer = () => (
-  <footer className="bg-blue-600 text-white py-12">
+  <footer className="bg-primary text-white py-12">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
@@ -112,7 +112,7 @@ const Footer = () => (
           </div>
         </div>
       </div>
-      <div className="border-t border-blue-500 mt-8 pt-8 text-center opacity-75">
+      <div className="border-t border-primary mt-8 pt-8 text-center opacity-75">
         <p>&copy; 2024 Stanford University. All rights reserved.</p>
       </div>
     </div>

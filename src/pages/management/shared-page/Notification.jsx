@@ -61,11 +61,10 @@ const Notification = () => {
                 <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                        currentPage === 1
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${currentPage === 1
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-secondary text-white hover:bg-secondary/80'
-                    } transition duration-200`}
+                            : 'bg-primary text-white hover:bg-primary/80'
+                        } transition duration-200`}
                 >
                     Trước
                 </button>
@@ -74,11 +73,10 @@ const Notification = () => {
                         <button
                             key={index + 1}
                             onClick={() => handlePageChange(index + 1)}
-                            className={`px-3 py-1 text-sm rounded-md ${
-                                currentPage === index + 1
-                                    ? 'bg-secondary text-white'
+                            className={`px-3 py-1 text-sm rounded-md ${currentPage === index + 1
+                                    ? 'bg-primary text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            } transition duration-200`}
+                                } transition duration-200`}
                         >
                             {index + 1}
                         </button>
@@ -87,11 +85,10 @@ const Notification = () => {
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                        currentPage === totalPages
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${currentPage === totalPages
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-secondary text-white hover:bg-secondary/80'
-                    } transition duration-200`}
+                            : 'bg-primary text-white hover:bg-primary/80'
+                        } transition duration-200`}
                 >
                     Tiếp
                 </button>

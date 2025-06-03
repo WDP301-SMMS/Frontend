@@ -72,7 +72,7 @@ export const VaccinationRecordCard = ({ record }) => {
                   className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200"
                 >
                   <div className="flex items-center space-x-3">
-                    <Clock size={16} className="text-blue-600 flex-shrink-0" />
+                    <Clock size={16} className="text-primary flex-shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-gray-900 text-sm">
                         {vaccine.name}

@@ -102,10 +102,10 @@ export const BoosterNotificationsTable = ({ notifications, sendNotification }) =
                     {notification.status === "overdue"
                       ? "Overdue"
                       : notification.status === "due-soon"
-                      ? "Due Soon"
-                      : notification.status === "upcoming"
-                      ? "Upcoming"
-                      : notification.status}
+                        ? "Due Soon"
+                        : notification.status === "upcoming"
+                          ? "Upcoming"
+                          : notification.status}
                   </span>
                 </td>
                 <td className="py-3 px-4">
@@ -118,7 +118,7 @@ export const BoosterNotificationsTable = ({ notifications, sendNotification }) =
                     ) : (
                       <button
                         onClick={() => sendNotification(notification.id)}
-                        className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        className="flex items-center space-x-1 px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700 transition-colors"
                       >
                         <Send size={14} />
                         <span>Send</span>
