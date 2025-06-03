@@ -243,10 +243,17 @@ const managementRoutes = {
   children: [
     { path: "nurse", element: <NurseDashboard /> },
     { path: "nurse/message", element: <Message /> },
-    { path: "manager", element: <ManagerDashboard />, },
-    { path: "admin", element: <AdminDashboard />, },
-    { path: "notification", element: <Notification />, },
-    { path: "profile", element: <ManagementProfile />, }
+    { path: "manager", element: <ManagerDashboard /> },
+    { path: "manager/medicine", element: <MedicineInventory /> },
+    { path: "manager/nurse", element: <NurseManagement /> },
+    { path: "manager/student", element: <StudentManagement /> },
+    { path: "admin", element: <AdminDashboard /> },
+    { path: "admin/blogs", element: <BlogManagement /> },
+    { path: "admin/users", element: <UserManagement /> },
+    { path: "notification", element: <Notification /> },
+    { path: "profile", element: <ManagementProfile /> },
+    { path: "vaccination", element: <Vaccination /> },
+    { path: "health-check", element: <HealthCheck /> },
   ],
 };
 
