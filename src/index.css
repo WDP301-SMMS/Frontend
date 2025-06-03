@@ -4,8 +4,7 @@
 @tailwind utilities;
 
 @theme {
-  --color-primary: #ffffff;
-  --color-secondary: #4157ff;
+  --color-primary: #4157ff;
 }
 
 body {

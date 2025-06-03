@@ -9,10 +9,10 @@ const LoadingSpinner = () => {
       <div className="text-center">
         {/* Animated spinner */}
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-primary rounded-full animate-spin mb-4"></div>
           <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-blue-400 rounded-full animate-spin animation-delay-75"></div>
         </div>
-        
+
         {/* Loading text with pulse animation */}
         <div className="space-y-2">
           <h2 className="text-xl font-semibold text-gray-700 animate-pulse">
@@ -25,12 +25,12 @@ const LoadingSpinner = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Background decoration */}
       <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-200 rounded-full opacity-20 animate-pulse animation-delay-300"></div>
       <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-purple-200 rounded-full opacity-20 animate-pulse animation-delay-500"></div>
-      
+
       <style jsx>{`
         .animation-delay-75 {
           animation-delay: 0.075s;

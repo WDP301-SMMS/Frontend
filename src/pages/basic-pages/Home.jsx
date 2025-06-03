@@ -3,7 +3,7 @@ import Header from "~/libs/components/layout/Header";
 import Footer from "~/libs/components/layout/Footer";
 
 const HeroSection = () => (
-  <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+  <section className="relative bg-gradient-to-r from-primary to-blue-800 text-white">
     <img
       src="https://www.stanford.edu/wp-content/uploads/2023/10/Hero-3-2-scaled.jpg"
       alt="Stanford University Campus"
@@ -24,7 +24,7 @@ const HeroSection = () => (
       </p>
       <a
         href="/about"
-        className="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+        className="bg-white text-primary px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
       >
         Discover Stanford
       </a>
@@ -77,7 +77,7 @@ const CampusNewsSection = () => {
           ))}
         </div>
         <div className="text-center mt-8">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
+          <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
             More Campus News
           </button>
         </div>
@@ -96,7 +96,7 @@ const HealthCareServiceCard = ({ title, description, image, icon }) => (
       <p className="text-gray-600 leading-relaxed">{description}</p>
       <a
         href="#"
-        className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+        className="inline-block mt-4 text-primary hover:text-blue-800 font-medium transition-colors duration-200"
       >
         Learn More →
       </a>
@@ -156,17 +156,17 @@ const HealthCareSection = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="bg-blue-600 text-white rounded-lg p-8 text-center">
+        <div className="bg-primary text-white rounded-lg p-8 text-center">
           <h3 className="text-2xl font-bold mb-4">Need Medical Care?</h3>
           <p className="text-lg mb-6 opacity-90">
             Schedule an appointment or find the right specialist for your
             healthcare needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300">
+            <button className="bg-white text-primary px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300">
               Schedule Appointment
             </button>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-300">
+            <button className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-primary transition-colors duration-300">
               Find a Doctor
             </button>
           </div>
@@ -226,7 +226,7 @@ const AcademicsSection = () => {
           ))}
         </div>
         <div className="text-center mt-8">
-          <p className="text-blue-600 mb-4">
+          <p className="text-primary mb-4">
             <a href="#" className="hover:underline">
               Law
             </a>{" "}
@@ -247,7 +247,7 @@ const AcademicsSection = () => {
               Business
             </a>
           </p>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
+          <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
             Explore Academics
           </button>
         </div>
@@ -258,7 +258,7 @@ const AcademicsSection = () => {
 
 const StatCard = ({ number, label }) => (
   <div className="text-center p-6 bg-white rounded-lg shadow-md">
-    <div className="text-3xl font-bold text-blue-600 mb-2">{number}</div>
+    <div className="text-3xl font-bold text-primary mb-2">{number}</div>
     <div className="text-gray-600 font-medium">{label}</div>
   </div>
 );
@@ -287,7 +287,7 @@ const ResearchSection = () => {
           ))}
         </div>
         <div className="text-center">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
+          <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
             Explore Research
           </button>
         </div>
@@ -336,7 +336,7 @@ const EventsSection = () => {
           ))}
         </div>
         <div className="text-center mt-8">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
+          <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
             View All Events
           </button>
         </div>

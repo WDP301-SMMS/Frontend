@@ -11,7 +11,8 @@ import {
     faKitMedical,
     faSyringe,
     faHeart,
-    faSchool
+    faSchool,
+    faChartLine
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
@@ -30,28 +31,39 @@ const Sidebar = ({ isOpen, onClose }) => {
             return (
                 <>
                     <SidebarItem
-                        to="/management/nurse/profile"
+                        to="/management/nurse"
+                        icon={faChartLine}
+                        label="Báo cáo"
+                        collapsed={isCollapsed}
+                        active={path === "/management/nurse"}
+                    />
+                    <SidebarItem
+                        to="/management/vaccination"
                         icon={faSyringe}
                         label="Quản lý tiêm chủng"
                         collapsed={isCollapsed}
+                        active={path === "/management/vaccination"}
                     />
                     <SidebarItem
-                        to="/management/nurse/profile"
+                        to="/management/health-check"
                         icon={faHeart}
                         label="Quản lý sức khỏe định kỳ"
                         collapsed={isCollapsed}
+                        active={path === "/management/health-check"}
                     />
                     <SidebarItem
                         to="/management/nurse/message"
                         icon={faMessage}
                         label="Tin nhắn"
                         collapsed={isCollapsed}
+                        active={path === "/management/nurse/message"}
                     />
                     <SidebarItem
                         to="/management/notification"
                         icon={faBell}
                         label="Thông báo"
                         collapsed={isCollapsed}
+                        active={path === "/management/notification"}
                     />
                 </>
             );
@@ -61,40 +73,53 @@ const Sidebar = ({ isOpen, onClose }) => {
             return (
                 <>
                     <SidebarItem
-                        to="/management/manager/profile"
+                        to="/management/manager"
+                        icon={faChartLine}
+                        label="Báo cáo"
+                        collapsed={isCollapsed}
+                        active={path === "/management/manager"}
+                    />
+                    <SidebarItem
+                        to="/management/manager/medicine"
                         icon={faKitMedical}
                         label="Quản lý kho thuốc"
                         collapsed={isCollapsed}
+                        active={path === "/management/manager/medicine"}
                     />
                     <SidebarItem
-                        to="/management/manager/profile"
+                        to="/management/vaccination"
                         icon={faSyringe}
                         label="Quản lý tiêm chủng"
                         collapsed={isCollapsed}
+                        active={path === "/management/vaccination"}
                     />
                     <SidebarItem
-                        to="/management/manager/profile"
+                        to="/management/health-check"
                         icon={faHeart}
                         label="Quản lý sức khỏe định kỳ"
                         collapsed={isCollapsed}
+                        active={path === "/management/health-check"}
                     />
                     <SidebarItem
-                        to="/management/manager/profile"
+                        to="/management/manager/nurse"
                         icon={faUserNurse}
                         label="Quản lý y tá"
                         collapsed={isCollapsed}
+                        active={path === "/management/manager/nurse"}
                     />
                     <SidebarItem
-                        to="/management/manager/profile"
+                        to="/management/manager/student"
                         icon={faUserGear}
                         label="Quản lý học sinh"
                         collapsed={isCollapsed}
+                        active={path === "/management/manager/student"}
                     />
                     <SidebarItem
                         to="/management/notification"
                         icon={faSchool}
                         label="Thông báo"
                         collapsed={isCollapsed}
+                        active={path === "/management/notification"}
                     />
                 </>
             );
@@ -104,22 +129,32 @@ const Sidebar = ({ isOpen, onClose }) => {
             return (
                 <>
                     <SidebarItem
+                        to="/management/admin"
+                        icon={faChartLine}
+                        label="Báo cáo"
+                        collapsed={isCollapsed}
+                        active={path === "/management/admin"}
+                    />
+                    <SidebarItem
                         to="/management/admin/users"
                         icon={faUserShield}
                         label="Quản lý nhân viên"
                         collapsed={isCollapsed}
+                        active={path === "/management/admin/users"}
                     />
                     <SidebarItem
-                        to="/management/admin/logs"
+                        to="/management/admin/blogs"
                         icon={faBell}
                         label="Quản lý nội dung"
                         collapsed={isCollapsed}
+                        active={path === "/management/admin/blogs"}
                     />
                     <SidebarItem
                         to="/management/notification"
                         icon={faSchool}
                         label="Thông báo"
                         collapsed={isCollapsed}
+                        active={path === "/management/notification"}
                     />
                 </>
             );
@@ -132,7 +167,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <aside
             className={`
                 fixed z-30 inset-y-0 left-0
-                transform bg-secondary text-white
+                transform bg-primary text-white
                 transition-all duration-300 ease-in-out
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
                 w-64
@@ -170,12 +205,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     );
 };
 
-const SidebarItem = ({ to, icon, label, collapsed }) => (
+const SidebarItem = ({ to, icon, label, collapsed, active }) => (
     <a
         href={to}
         className={`
-            flex items-center py-2 rounded hover:bg-white hover:text-[#4157ff] transition-all
+            flex items-center py-2 rounded hover:bg-white hover:text-primary transition-all
             ${collapsed ? "justify-center px-0" : "gap-2 px-3"}
+            ${active ? "bg-white text-primary font-semibold" : "hover:bg-white hover:text-primary text-white"}
         `}
         title={label}
     >

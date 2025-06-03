@@ -41,13 +41,13 @@ const Notification = () => {
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+        <div className="p-6 mx-auto bg-white rounded-lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Thông báo</h2>
             <div className="space-y-4">
                 {currentNotifications.map((notification) => (
                     <div
                         key={notification.id}
-                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition duration-200"
+                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 shadow-md transition duration-200"
                     >
                         <h3 className="text-lg font-medium text-gray-800">{notification.title}</h3>
                         <p className="text-sm text-gray-600">{notification.message}</p>
@@ -61,11 +61,10 @@ const Notification = () => {
                 <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                        currentPage === 1
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${currentPage === 1
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-secondary text-white hover:bg-secondary/80'
-                    } transition duration-200`}
+                            : 'bg-primary text-white hover:bg-primary/80'
+                        } transition duration-200`}
                 >
                     Trước
                 </button>
@@ -74,11 +73,10 @@ const Notification = () => {
                         <button
                             key={index + 1}
                             onClick={() => handlePageChange(index + 1)}
-                            className={`px-3 py-1 text-sm rounded-md ${
-                                currentPage === index + 1
-                                    ? 'bg-secondary text-white'
+                            className={`px-3 py-1 text-sm rounded-md ${currentPage === index + 1
+                                    ? 'bg-primary text-white'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            } transition duration-200`}
+                                } transition duration-200`}
                         >
                             {index + 1}
                         </button>
@@ -87,11 +85,10 @@ const Notification = () => {
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                        currentPage === totalPages
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${currentPage === totalPages
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-secondary text-white hover:bg-secondary/80'
-                    } transition duration-200`}
+                            : 'bg-primary text-white hover:bg-primary/80'
+                        } transition duration-200`}
                 >
                     Tiếp
                 </button>

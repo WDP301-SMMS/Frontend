@@ -17,7 +17,7 @@ const Register = () => {
             <h1 className="text-4xl font-bold mb-2">Sign Up</h1>
             <p className="text-gray-500">
               Already Have An Account?{" "}
-              <a href="/login" className="text-blue-600 hover:underline">
+              <a href="/login" className="text-primary hover:underline">
                 Sign In
               </a>
             </p>

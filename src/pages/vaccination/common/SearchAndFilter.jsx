@@ -22,7 +22,7 @@ export const SearchAndFilter = () => {
           <option value="11B2">11B2</option>
           <option value="12C1">12C1</option>
         </select>
-        <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">
           <Search size={16} />
           <span>Search</span>
         </button>
