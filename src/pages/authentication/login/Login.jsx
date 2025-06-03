@@ -36,7 +36,7 @@ const Login = () => {
             </div>
             <a href="/forgot-password" className="block">
               <p
-                className="text-gray-500 text-end hover:text-blue-600 cursor-pointer"
+                className="text-gray-500 text-end hover:text-primary cursor-pointer"
                 style={{ fontSize: "14px", marginTop: "8px" }}
               >
                 Forgot Password?
@@ -46,7 +46,7 @@ const Login = () => {
           </form>
           <p className="text-gray-500 mt-4">
             Don't have an account?{" "}
-            <a href="/register" className="text-blue-600 hover:underline">
+            <a href="/register" className="text-primary hover:underline">
               Sign Up
             </a>
           </p>

@@ -238,7 +238,7 @@ const ValuesSection = () => {
               className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300"
             >
               <div className="text-4xl mb-4">{value.icon}</div>
-              <h3 className="text-xl font-semibold mb-3 text-blue-800">
+              <h3 className="text-xl font-semibold mb-3 text-primary">
                 {value.title}
               </h3>
               <p className="text-gray-600 leading-relaxed">

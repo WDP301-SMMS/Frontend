@@ -31,7 +31,7 @@ export const SummaryCards = ({ boosterNotifications }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Upcoming</p>
-            <p className="text-2xl font-semibold text-blue-600">{upcomingCount}</p>
+            <p className="text-2xl font-semibold text-primary">{upcomingCount}</p>
           </div>
           <Calendar className="text-blue-500 w-6 h-6" />
         </div>

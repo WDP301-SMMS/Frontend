@@ -6,7 +6,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-blue-600 text-white shadow-md sticky top-0 z-50">
+    <header className="bg-primary text-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
           <a href="/" className="text-white px-4 py-2 font-bold text-lg">
@@ -70,28 +70,25 @@ const Header = () => {
           )}
 
           <button
-            className="lg:hidden p-2 rounded-md hover:bg-blue-700"
+            className="lg:hidden p-2 rounded-md hover:bg-primary"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <div className="w-6 h-6 flex flex-col justify-center">
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
-                  isMobileMenuOpen
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${isMobileMenuOpen
                     ? "rotate-45 translate-y-1"
                     : "-translate-y-0.5"
-                }`}
+                  }`}
               ></span>
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
-                  isMobileMenuOpen ? "opacity-0" : "opacity-100"
-                }`}
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${isMobileMenuOpen ? "opacity-0" : "opacity-100"
+                  }`}
               ></span>
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
-                  isMobileMenuOpen
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${isMobileMenuOpen
                     ? "-rotate-45 -translate-y-1"
                     : "translate-y-0.5"
-                }`}
+                  }`}
               ></span>
             </div>
           </button>
@@ -112,7 +109,7 @@ const Header = () => {
                 <li key={item.name}>
                   <a
                     href={item.path}
-                    className="block py-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                    className="block py-2 text-gray-700 hover:text-primary transition-colors duration-200"
                   >
                     {item.name}
                   </a>

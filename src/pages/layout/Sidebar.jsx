@@ -3,7 +3,7 @@ import { Shield, User, Menu, X, ChevronDown, ChevronRight, Home, Syringe, Bell, 
 import { mockData } from '../../libs/utils/common';
 
 const iconMap = {
-  Home, Syringe, Bell, Eye, Calendar, Users2, Activity, BarChart3, 
+  Home, Syringe, Bell, Eye, Calendar, Users2, Activity, BarChart3,
   FileBarChart, Shield, UserCheck, Building2, Settings
 };
 
@@ -11,8 +11,8 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
   const [expandedMenus, setExpandedMenus] = useState(['vaccination-management']); // Default expanded menu
 
   const toggleMenuExpansion = (menuId) => {
-    setExpandedMenus(prev => 
-      prev.includes(menuId) 
+    setExpandedMenus(prev =>
+      prev.includes(menuId)
         ? prev.filter(id => id !== menuId)
         : [...prev, menuId]
     );
@@ -20,7 +20,7 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.id);
-    
+
     // If item has subItems, toggle expansion
     if (item.subItems) {
       toggleMenuExpansion(item.id);
@@ -29,7 +29,7 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
 
   const handleSubItemClick = (subItem) => {
     // Handle different sub-items appropriately
-    switch(subItem.id) {
+    switch (subItem.id) {
       case 'auto-check':
         setActiveTab('auto-check');
         break;
@@ -48,16 +48,15 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 transition-all duration-300 flex-shrink-0 ${
-        sidebarOpen ? "w-64" : "w-16"
-      }`}
+      className={`bg-white border-r border-gray-200 transition-all duration-300 flex-shrink-0 ${sidebarOpen ? "w-64" : "w-16"
+        }`}
     >
       {/* Sidebar Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           {sidebarOpen && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Shield size={20} className="text-white" />
               </div>
               <div>
@@ -81,16 +80,15 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
           const IconComponent = iconMap[item.icon];
           const isActive = activeMenuItem === item.id;
           const isExpanded = expandedMenus.includes(item.id);
-          
+
           return (
             <div key={item.id}>
               <button
                 onClick={() => handleMenuItemClick(item)}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  isActive
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${isActive
                     ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
                     : "text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <IconComponent size={20} />
                 {sidebarOpen && (
@@ -121,8 +119,8 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
                           onClick={() => handleSubItemClick(subItem)}
                           className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-left text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 group"
                         >
-                          <SubIconComponent size={16} className="transition-colors group-hover:text-blue-600" />
-                          <span className="transition-colors group-hover:text-blue-600">{subItem.label}</span>
+                          <SubIconComponent size={16} className="transition-colors group-hover:text-primary" />
+                          <span className="transition-colors group-hover:text-primary">{subItem.label}</span>
                         </button>
                       );
                     })}
@@ -138,7 +136,7 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen, activeMenuItem, setActive
       {sidebarOpen && (
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <User size={16} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
