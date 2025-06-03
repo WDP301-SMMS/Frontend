@@ -41,13 +41,13 @@ const Notification = () => {
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+        <div className="p-6 mx-auto bg-white rounded-lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Thông báo</h2>
             <div className="space-y-4">
                 {currentNotifications.map((notification) => (
                     <div
                         key={notification.id}
-                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition duration-200"
+                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 shadow-md transition duration-200"
                     >
                         <h3 className="text-lg font-medium text-gray-800">{notification.title}</h3>
                         <p className="text-sm text-gray-600">{notification.message}</p>
