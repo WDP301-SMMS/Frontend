@@ -1,33 +1,44 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 const Header = () => {
   const [isLoggedIn] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="bg-primary text-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <a href="/" className="text-white px-4 py-2 font-bold text-lg">
-            STANFORD
-          </a>
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center space-x-2 text-white px-4 py-2 font-bold text-lg"
+          >
+            <img
+              src="/src/assets/images/logo_w.png"
+              alt="Logo"
+              className="h-8 w-auto"
+            />
+            <span>F HealthCare</span>
+          </button>
           <nav className="hidden lg:block ml-8">
             <ul className="flex space-x-6">
               {[
                 { name: "Home", path: "/" },
-                { name: "Health Care", path: "#" },
+                { name: "Health Care", path: "/healthCare" },
                 { name: "About", path: "/about" },
-                { name: "Blogs", path: "/blog" },
+                { name: "Blogs", path: "/blogs" },
                 { name: "Contact Us", path: "#" },
               ].map((item) => (
                 <li key={item.name}>
-                  <a
+                  <button
+                    onClick={() => navigate(item.path)}
                     href={item.path}
                     className="text-white hover:text-blue-200 transition-colors duration-200 font-medium"
                   >
                     {item.name}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -52,12 +63,12 @@ const Header = () => {
                     Profile
                   </a>
                   <hr className="my-1" />
-                  <a
-                    href="#"
+                  <button
+                    onClick={() => navigate("/login")}
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                   >
                     Logout
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
@@ -69,20 +80,23 @@ const Header = () => {
           >
             <div className="w-6 h-6 flex flex-col justify-center">
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${isMobileMenuOpen
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                  isMobileMenuOpen
                     ? "rotate-45 translate-y-1"
                     : "-translate-y-0.5"
-                  }`}
+                }`}
               ></span>
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${isMobileMenuOpen ? "opacity-0" : "opacity-100"
-                  }`}
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
+                  isMobileMenuOpen ? "opacity-0" : "opacity-100"
+                }`}
               ></span>
               <span
-                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${isMobileMenuOpen
+                className={`bg-white block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                  isMobileMenuOpen
                     ? "-rotate-45 -translate-y-1"
                     : "translate-y-0.5"
-                  }`}
+                }`}
               ></span>
             </div>
           </button>

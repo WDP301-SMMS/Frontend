@@ -4,17 +4,19 @@ import TextInput from "~components/input/TextInput";
 import Button from "~/libs/components/button/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { faLock, faArrowLeft, faHome } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router";
 
 const Login = () => {
   // const { register, handleSubmit } = useForm();
+  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <img src={Stanford} style={{ height: "100vh", objectFit: "cover" }} />
       </div>
-      <div className="flex items-center justify-center bg-white p-8">
+      <div className="flex items-center justify-center bg-white p-8 relative">
         <div className="w-full max-w-md text-center">
           <div className="mb-15">
             <h1 className="text-4xl font-bold mb-2">Sign In</h1>
@@ -34,22 +36,41 @@ const Login = () => {
                 leftIcon={<FontAwesomeIcon icon={faLock} />}
               />
             </div>
-            <a href="/forgot-password" className="block">
+            <button
+              type="button" 
+              onClick={() => navigate("/forgot-password")}
+              className="block"
+            >
               <p
                 className="text-gray-500 text-end hover:text-primary cursor-pointer"
                 style={{ fontSize: "14px", marginTop: "8px" }}
               >
                 Forgot Password?
               </p>
-            </a>
+            </button>
+
             <Button className="mt-15 w-full">Sign In</Button>
           </form>
           <p className="text-gray-500 mt-4">
             Don't have an account?{" "}
-            <a href="/register" className="text-primary hover:underline">
+            <button
+              onClick={() => navigate("/register")}
+              className="text-primary hover:underline"
+            >
               Sign Up
-            </a>
+            </button>
           </p>
+
+          {/* Alternative: Home link at bottom - more prominent version */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => navigate("/")}
+                className="inline-flex items-center px-4 py-2 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 rounded-full transition-all duration-300 text-sm font-medium shadow-sm hover:shadow-lg border border-gray-200 hover:border-primary transform hover:scale-105"
+            >
+              <FontAwesomeIcon icon={faHome} className="mr-2" />
+              Return to Homepage
+            </button>
+          </div>
         </div>
       </div>
     </div>
