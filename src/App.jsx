@@ -1,6 +1,8 @@
 import { BrowserRouter } from "react-router";
 import { Suspense } from "react";
 import AppRoutes from "~/routers/AppRoutes";
+import { Sidebar } from "./pages/layout/Sidebar";
+import NurseDashboard from "./pages/management/nurse/Dashboard";
 
 // Enhanced Loading Component
 const LoadingSpinner = () => {
@@ -57,6 +59,7 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <AppRoutes />
+        {/* <NurseDashboard/> */}
       </Suspense>
     </BrowserRouter>
   );
