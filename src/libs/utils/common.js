@@ -159,4 +159,104 @@ export const mockData = {
       active: false,
     },
   ],
+  menuItemsNurse: [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: 'Home',
+    },
+    {
+      id: 'medical-event-management',
+      label: 'Medical Event Management',
+      icon: 'Bell', // Using Bell for medical events, can be changed
+      subItems: [
+        {
+          id: 'record-incidents',
+          label: 'Record Incidents',
+          icon: 'FileBarChart', // Example icon
+        },
+        {
+          id: 'view-medical-records',
+          label: 'View Medical Records',
+          icon: 'Eye', // Example icon
+        },
+      ],
+    },
+    {
+      id: 'medication-supply-management',
+      label: 'Medication and Supply Management',
+      icon: 'Syringe', // Using Syringe for medication
+      subItems: [
+        {
+          id: 'manage-medications',
+          label: 'Manage Medications',
+          icon: 'Syringe',
+        },
+        {
+          id: 'manage-supplies',
+          label: 'Manage Supplies',
+          icon: 'Settings', // Example icon
+        },
+      ],
+    },
+    {
+      id: 'vaccination-management',
+      label: 'Vaccination Management',
+      icon: 'Shield', // Using Shield for vaccination
+      subItems: [
+        {
+          id: 'send-consent',
+          label: 'Send Consent Form',
+          icon: 'UserCheck', // Example icon
+        },
+        {
+          id: 'prepare-list',
+          label: 'Prepare List',
+          icon: 'Users2', // Example icon
+        },
+        {
+          id: 'vaccinate-record',
+          label: 'Vaccinate & Record',
+          icon: 'Syringe', // Example icon
+        },
+        {
+          id: 'post-vaccination-monitoring',
+          label: 'Post-Vaccination Monitoring',
+          icon: 'Eye', // Example icon
+        },
+      ],
+    },
+    {
+      id: 'periodic-medical-checkup',
+      label: 'Periodic Medical Check-up',
+      icon: 'Calendar', // Using Calendar for check-ups
+      subItems: [
+        {
+          id: 'send-checkup-notice',
+          label: 'Send Check-up Notice',
+          icon: 'Bell', // Example icon
+        },
+        {
+          id: 'prepare-checkup-list',
+          label: 'Prepare Check-up List',
+          icon: 'Users2', // Example icon
+        },
+        {
+          id: 'perform-checkup',
+          label: 'Perform Check-up',
+          icon: 'Activity', // Example icon
+        },
+        {
+          id: 'send-results-consult',
+          label: 'Send Results & Consult',
+          icon: 'BarChart3', // Example icon
+        },
+      ],
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: 'Settings',
+    },
+],
 };
