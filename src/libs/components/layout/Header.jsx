@@ -25,11 +25,11 @@ const Header = () => {
           <nav className="hidden lg:block ml-8">
             <ul className="flex space-x-6">
               {[
-                { name: "Home", path: "/" },
-                { name: "Health Care", path: "/healthCare" },
-                { name: "About", path: "/about" },
-                { name: "Blogs", path: "/blogs" },
-                { name: "Contact Us", path: "#" },
+                { name: "Trang Chủ", path: "/" },
+                { name: "Chăm Sóc Sức Khỏe", path: "/healthCare" },
+                { name: "Giới Thiệu", path: "/about" },
+                { name: "Bài Viết", path: "/blogs" },
+                { name: "Liên Hệ", path: "/contact" },
               ].map((item) => (
                 <li key={item.name}>
                   <button
@@ -60,14 +60,14 @@ const Header = () => {
                     href="/settings"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                   >
-                    Profile
+                    Hồ Sơ
                   </a>
                   <hr className="my-1" />
                   <button
                     onClick={() => navigate("/login")}
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                   >
-                    Logout
+                    Đăng Xuất
                   </button>
                 </div>
               )}
