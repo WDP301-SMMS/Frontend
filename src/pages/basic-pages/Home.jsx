@@ -1,32 +1,33 @@
 import React, { useState } from "react";
 import Header from "~/libs/components/layout/Header";
 import Footer from "~/libs/components/layout/Footer";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => (
   <section className="relative bg-gradient-to-r from-primary to-blue-800 text-white">
     <img
       src="https://www.stanford.edu/wp-content/uploads/2023/10/Hero-3-2-scaled.jpg"
-      alt="Stanford University Campus"
+      alt="F HealthCare Campus"
       className="absolute inset-0 w-full h-full object-cover"
     />
     <div className="absolute inset-0 bg-black opacity-20"></div>
     <div className="relative container mx-auto px-4 py-20 text-center">
       <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-        Stanford
+        F HealthCare
       </h1>
       <h2 className="text-2xl md:text-3xl font-light mb-8 max-w-4xl mx-auto">
-        A Mission Defined by Possibility
+        Sứ Mệnh Được Định Nghĩa Bởi Khả Năng
       </h2>
       <p className="text-lg md:text-xl mb-8 max-w-4xl mx-auto leading-relaxed opacity-90">
-        At Stanford, a mission of discovery and learning is energized by a
-        spirit of optimism and a passion for intellectual expansiveness,
-        wide-ranging perspectives, and free to explore new lines of thinking.
+        Tại F HealthCare, sứ mệnh khám phá và học hỏi được tiếp thêm sinh lực
+        bởi tinh thần lạc quan và đam mê mở rộng tri thức, với góc nhìn đa dạng
+        và tự do để khám phá những cách suy nghĩ mới.
       </p>
       <a
         href="/about"
         className="bg-white text-primary px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
       >
-        Discover Stanford
+        Khám Phá F HealthCare
       </a>
     </div>
   </section>
@@ -44,41 +45,45 @@ const NewsCard = ({ title, image }) => (
 );
 
 const CampusNewsSection = () => {
+  const navigate = useNavigate();
   const newsItems = [
     {
-      title: "Why researchers wear masks in breakthrough study",
+      title:
+        "Tại sao các nhà nghiên cứu đeo khẩu trang trong nghiên cứu đột phá",
       image:
         "https://tse2.mm.bing.net/th/id/OIP.hQQ1z8SOv8NYyvIpVMhlBgHaEc?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Secretary of Energy Christine Granholm visits Stanford",
+      title: "Bộ trưởng Năng lượng Christine Granholm thăm F HealthCare",
       image:
         "https://tse3.mm.bing.net/th/id/OIP.5CbMByfwI-jv4nieVl05WAHaE8?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Artificial Intelligence and real human connection",
+      title: "Trí tuệ nhân tạo và kết nối con người thực sự",
       image:
         "https://tse1.mm.bing.net/th/id/OIP.840k2vBDSw-gfvFi5NpzzQHaEJ?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Most likely to succeed: Student achievement stories",
+      title: "Khả năng thành công cao nhất: Câu chuyện thành tích sinh viên",
       image:
         "https://www.salem.edu/wp-content/uploads/blocks/intro/SalemAcademyandCollege321.jpg",
     },
   ];
-
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Campus News</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">Tin Tức</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {newsItems.map((item, index) => (
             <NewsCard key={index} title={item.title} image={item.image} />
           ))}
         </div>
         <div className="text-center mt-8">
-          <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
-            More Campus News
+          <button
+            onClick={() => navigate("/blogs")}
+            className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300"
+          >
+            Xem Thêm Tin Tức
           </button>
         </div>
       </div>
@@ -98,7 +103,7 @@ const HealthCareServiceCard = ({ title, description, image, icon }) => (
         href="#"
         className="inline-block mt-4 text-primary hover:text-blue-800 font-medium transition-colors duration-200"
       >
-        Learn More →
+        Tìm Hiểu Thêm →
       </a>
     </div>
   </div>
@@ -107,46 +112,43 @@ const HealthCareServiceCard = ({ title, description, image, icon }) => (
 const HealthCareSection = () => {
   const healthServices = [
     {
-      title: "Lucile Packard Children's Hospital",
+      title: "Bệnh Viện Nhi Lucile Packard",
       description:
-        "Leading pediatric and obstetric care, ranked among the nation's best children's hospitals.",
+        "Dịch vụ chăm sóc nhi khoa và sản khoa hàng đầu, được xếp hạng trong số các bệnh viện nhi tốt nhất quốc gia.",
       image:
         "https://tse4.mm.bing.net/th/id/OIP.yaq_l_0BJcO445mjejKjpAHaEO?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Mental Health Services",
+      title: "Dịch Vụ Sức Khỏe Tâm Thần",
       description:
-        "Comprehensive mental health support for students, faculty, and community members.",
+        "Hỗ trợ sức khỏe tâm thần toàn diện cho sinh viên, giảng viên và thành viên cộng đồng.",
       image:
         "https://tse1.mm.bing.net/th/id/OIP.DPtkkqf56mzr0O2S58pW8wHaE8?rs=1&pid=ImgDetMain",
     },
 
     {
-      title: "Health Education",
+      title: "Giáo Dục Y Tế",
       description:
-        "Training the next generation of healthcare professionals and advancing medical knowledge.",
+        "Đào tạo thế hệ chuyên gia y tế tương lai và phát triển kiến thức y khoa.",
       image:
         "https://tse1.mm.bing.net/th/id/OIF.Z5OQo3rSb5Rx2nWWHCscSA?rs=1&pid=ImgDetMain",
     },
   ];
-
 
   return (
     <section className="py-16 bg-gradient-to-br from-blue-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-6 text-blue-800">
-            Stanford Health Care
+            F HealthCare
           </h2>
           <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            At Stanford Health Care, we're committed to providing exceptional
-            patient care, advancing medical knowledge through research, and
-            training the healthcare leaders of tomorrow. Our integrated approach
-            combines clinical excellence with cutting-edge innovation.
+            Tại F HealthCare, chúng tôi cam kết cung cấp dịch vụ chăm sóc bệnh
+            nhân xuất sắc, phát triển kiến thức y khoa thông qua nghiên cứu, và
+            đào tạo các nhà lãnh đạo y tế tương lai. Phương pháp tích hợp của
+            chúng tôi kết hợp giữa sự xuất sắc lâm sàng với đổi mới tiên tiến.
           </p>
         </div>
-
-
 
         {/* Health Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -157,17 +159,17 @@ const HealthCareSection = () => {
 
         {/* Call to Action */}
         <div className="bg-primary text-white rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Need Medical Care?</h3>
+          <h3 className="text-2xl font-bold mb-4">Cần Chăm Sóc Y Tế?</h3>
           <p className="text-lg mb-6 opacity-90">
-            Schedule an appointment or find the right specialist for your
-            healthcare needs.
+            Đặt lịch hẹn hoặc tìm bác sĩ chuyên khoa phù hợp cho nhu cầu chăm
+            sóc sức khỏe của bạn.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-primary px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300">
-              Schedule Appointment
+              Đặt Lịch Hẹn
             </button>
             <button className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-primary transition-colors duration-300">
-              Find a Doctor
+              Tìm Bác Sĩ
             </button>
           </div>
         </div>
@@ -345,19 +347,15 @@ const EventsSection = () => {
   );
 };
 
-
-
 const Home = () => {
   return (
     <div className="min-h-screen">
-      <Header />
       <HeroSection />
       <CampusNewsSection />
       <HealthCareSection />
       <AcademicsSection />
       <ResearchSection />
       <EventsSection />
-      <Footer />
     </div>
   );
 };

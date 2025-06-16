@@ -5,6 +5,9 @@ import {
   Profile,
   Blogs,
   BlogDetail,
+  ParentHealthProfiles,
+  ParentHealthProfileForm,
+  ParentHealthProfileDetail,
   Login,
   Register,
   ForgotPassword,
@@ -26,34 +29,56 @@ import {
   HealthCheck,
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
-
-import ManagementLayout from "../pages/management/Layout"
+import Layout from "../pages/layout/Layout";
+import ManagementLayout from "../pages/management/Layout";
 
 const basicRoutes = [
   {
     path: "/",
-    element: <Home />,
+    element: <Layout />,
+    children: [
+      {
+        path: "",
+        element: <Home />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "settings",
+        element: <Profile />,
+      },
+      {
+        path: "blogs",
+        element: <Blogs />,
+      },
+      {
+        path: "blog-detail",
+        element: <BlogDetail />,
+      },
+      {
+        path: "health-profiles",
+        element: <ParentHealthProfiles />,
+      },
+      {
+        path: "health-profile/new",
+        element: <ParentHealthProfileForm />,
+      },
+      {
+        path: "health-profile/:profileId",
+        element: <ParentHealthProfileDetail />,
+      },
+      {
+        path: "health-profile/:profileId/edit",
+        element: <ParentHealthProfileForm />,
+      },
+    ],
   },
-  {
-    path: "/about",
-    element: <About />,
-  },
-  {
-    path: "/contact",
-    element: <Contact />,
-  },
-  {
-    path: "/settings",
-    element: <Profile />,
-  },
-  {
-    path: "/blogs",
-    element: <Blogs />,
-  },
-  {
-    path: "/blog-detail",
-    element: <BlogDetail />,
-  }
 ];
 
 const authenticatedRoutes = [
