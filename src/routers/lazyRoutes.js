@@ -30,9 +30,22 @@ const VaccinHistoryManagement = React.lazy(() =>
 // Management Routes
 // Nurse Routes
 const NurseDashboard = React.lazy(() =>
-  import("../pages/management/nurse/Dashboard")
+  import("../pages/layout/Dashboard")
 );
 const Message = React.lazy(() => import("../pages/management/nurse/Message"));
+
+const RecordIncident = React.lazy(() =>
+  import("../pages/management/nurse/MedicalEventManagement/RecordIncidents")
+);
+
+const IncidentHistory = React.lazy(() =>
+  import("../pages/management/nurse/MedicalEventManagement/ViewMedicalRecords")
+);
+
+const ManageMedications = React.lazy(() =>
+  import("../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications")
+);
+
 
 // Manager Routes
 const ManagerDashboard = React.lazy(() =>
@@ -42,7 +55,7 @@ const MedicineInventory = React.lazy(() =>
   import("../pages/management/manager/MedicineInventory")
 );
 const NurseManagement = React.lazy(() =>
-  import("../pages/management/manager/NurseManagement")
+  import("../pages/layout/Dashboard")
 );
 const StudentManagement = React.lazy(() =>
   import("../pages/management/manager/StudentManagement")
@@ -99,4 +112,6 @@ export {
   ManagementProfile,
   Vaccination,
   HealthCheck,
+  RecordIncident,
+  IncidentHistory,
 };

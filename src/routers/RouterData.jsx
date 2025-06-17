@@ -11,7 +11,7 @@ import {
   VerifyOTP,
   ResetPassword,
   VaccinHistoryManagement,
-  NurseDashboard,
+  
   Message,
   ManagerDashboard,
   MedicineInventory,
@@ -24,75 +24,69 @@ import {
   ManagementProfile,
   Vaccination,
   HealthCheck,
+  RecordIncident,
+  IncidentHistory,
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
+import DashboardHome from "~/pages/management/nurse/DashboardHome";
+import NurseDashboard from "~/pages/layout/Dashboard";
+import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications";
+import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies";
+import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
+import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
-import ManagementLayout from "../pages/management/Layout"
+// Placeholder components
+const ManageSupplies = () => <div>Quản lý vật tư</div>;
+const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
+const PrepareList = () => <div>Chuẩn bị danh sách</div>;
+const VaccinateRecord = () => <div>Tiêm chủng & Ghi nhận</div>;
+const PostVaccinationMonitoring = () => <div>Theo dõi sau tiêm</div>;
+const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
+const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
+const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
+const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
+const Settings = () => <div>Cài đặt</div>;
 
 const basicRoutes = [
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/about",
-    element: <About />,
-  },
-  {
-    path: "/contact",
-    element: <Contact />,
-  },
-  {
-    path: "/settings",
-    element: <Profile />,
-  },
-  {
-    path: "/blogs",
-    element: <Blogs />,
-  },
-  {
-    path: "/blog-detail",
-    element: <BlogDetail />,
-  }
+  { path: "/", element: <Home /> },
+  { path: "/about", element: <About /> },
+  { path: "/contact", element: <Contact /> },
+  { path: "/settings", element: <Profile /> },
+  { path: "/blogs", element: <Blogs /> },
+  { path: "/blog-detail", element: <BlogDetail /> },
 ];
 
 const authenticatedRoutes = [
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/verify-otp",
-    element: <VerifyOTP />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
-  },
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/verify-otp", element: <VerifyOTP /> },
+  { path: "/reset-password", element: <ResetPassword /> },
 ];
 
 const vaccinHistoryManagementRoutes = [
-  {
-    path: "/vaccination-history-management",
-    element: <VaccinHistoryManagement />,
-  },
+  { path: "/vaccination-history-management", element: <VaccinHistoryManagement /> },
 ];
 
-//management routes
 const managementRoutes = {
   path: "/management",
-  element: <ManagementLayout />,
+  element: <NurseDashboard />, // Default layout
   children: [
-    { path: "nurse", element: <NurseDashboard /> },
+    { path: "nurse", element: <DashboardHome /> },
+    { path: "nurse/record-incidents", element: <RecordIncident /> },
+    { path: "nurse/view-medical-records", element: <IncidentHistory /> },
     { path: "nurse/message", element: <Message /> },
+    { path: "nurse/manage-medications", element: <ManageMedications /> },
+    { path: "nurse/manage-supplies", element: <ManageMedicalSupplies /> },
+    { path: "nurse/send-vaccination-consent", element: <SendVaccinationConsent /> },
+    { path: "nurse/prepare-vaccination-list", element: <PrepareVaccinationList /> },
+    { path: "nurse/vaccinate-record", element: <VaccinateRecord /> },
+    { path: "nurse/post-vaccination-monitoring", element: <PostVaccinationMonitoring /> },
+    { path: "nurse/send-checkup-notice", element: <SendCheckupNotice /> },
+    { path: "nurse/prepare-checkup-list", element: <PrepareCheckupList /> },
+    { path: "nurse/perform-checkup", element: <PerformCheckup /> },
+    { path: "nurse/send-results-consult", element: <SendResultsConsult /> },
+    { path: "nurse/settings", element: <Settings /> },
     { path: "manager", element: <ManagerDashboard /> },
     { path: "manager/medicine", element: <MedicineInventory /> },
     { path: "manager/nurse", element: <NurseManagement /> },

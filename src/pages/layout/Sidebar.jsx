@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Shield,
   User,
@@ -55,16 +56,11 @@ const iconMap = {
   TrendingUp,
 };
 
-export const Sidebar = ({
-  sidebarOpen,
-  setSidebarOpen,
-  activeMenuItem,
-  setActiveMenuItem,
-  setActiveTab,
-}) => {
-  const [expandedMenus, setExpandedMenus] = useState([
-    "vaccination-management",
-  ]); // Default expanded menu
+export const Sidebar = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [expandedMenus, setExpandedMenus] = useState(['vaccination-management']);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenuExpansion = (menuId) => {
     setExpandedMenus((prev) =>
@@ -75,38 +71,23 @@ export const Sidebar = ({
   };
 
   const handleMenuItemClick = (item) => {
-    setActiveMenuItem(item.id);
-
-    // If item has subItems, toggle expansion
+    if (item.route) {
+      navigate(item.route);
+    }
     if (item.subItems) {
       toggleMenuExpansion(item.id);
     }
   };
 
   const handleSubItemClick = (subItem) => {
-    // Handle different sub-items appropriately
-    switch (subItem.id) {
-      case "auto-check":
-        setActiveTab("auto-check");
-        break;
-      case "view-records":
-        setActiveTab("view-records");
-        break;
-      case "schedule-vaccination":
-        setActiveTab("schedule-vaccination");
-        break;
-      default:
-        // For other sub-items, you can add more logic here
-        console.log(`Clicked on ${subItem.label}`);
-        setActiveTab(subItem.id);
-        break;
+    if (subItem.route) {
+      navigate(subItem.route);
     }
   };
 
   const handleLogout = () => {
-    // Handle logout logic here
-    console.log("Logout clicked");
-    // You can add your logout logic here
+    console.log("Đăng xuất đã được nhấp");
+    // Add logout logic here
   };
 
   return (
@@ -115,13 +96,11 @@ export const Sidebar = ({
         sidebarOpen ? "w-72" : "w-19"
       }`}
     >
-      {/* Sidebar Header */}
       <div className="p-4 border-b border-blue-100 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           {sidebarOpen && (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3" onClick={() => navigate("/management")}>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-                {/* <Shield size={22} className="text-white" /> */}
                 <img
                   src="/src/assets/images/logo_w.png"
                   alt="Logo"
@@ -130,10 +109,10 @@ export const Sidebar = ({
               </div>
               <div>
                 <h2 className="font-bold text-gray-900 text-lg">
-                  F HealthMate
+                  EduCare
                 </h2>
                 <p className="text-sm text-blue-600 font-medium">
-                  Nurse Managerment
+                  Quản lý Y tế học đường
                 </p>
               </div>
             </div>
@@ -141,6 +120,7 @@ export const Sidebar = ({
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-blue-100 rounded-xl transition-all duration-200 hover:shadow-md"
+            aria-label={sidebarOpen ? "Đóng menu" : "Mở menu"}
           >
             {sidebarOpen ? (
               <X size={20} className="text-gray-600" />
@@ -151,11 +131,10 @@ export const Sidebar = ({
         </div>
       </div>
 
-      {/* Sidebar Menu */}
-      <div className="p-3 space-y-2 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+      <div className="p-3 space-y-2 flex-1 overflow-y-auto custom-scrollbar">
         {mockData.menuItemsNurse.map((item) => {
           const IconComponent = iconMap[item.icon];
-          const isActive = activeMenuItem === item.id;
+          const isActive = location.pathname.includes(item.route || item.id);
           const isExpanded = expandedMenus.includes(item.id);
 
           return (
@@ -164,9 +143,10 @@ export const Sidebar = ({
                 onClick={() => handleMenuItemClick(item)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-[1.02]"
-                    : "text-gray-700 hover:bg-white hover:shadow-md hover:transform hover:scale-[1.01]"
+                    ? "bg-blue-600 text-white shadow-lg transform scale-[1.02]"
+                    : "text-gray-700 hover:bg-blue-100 hover:shadow-md hover:transform hover:scale-[1.01]"
                 }`}
+                style={{ cursor: 'pointer' }}
               >
                 <div
                   className={`transition-all duration-200 ${
@@ -199,22 +179,39 @@ export const Sidebar = ({
                 )}
               </button>
 
-              {/* Sub Menu Items */}
               {sidebarOpen && item.subItems && isExpanded && (
                 <div className="ml-6 mt-2 space-y-1 overflow-hidden">
                   <div className="animate-in slide-in-from-top-2 duration-200 space-y-1">
                     {item.subItems.map((subItem) => {
                       const SubIconComponent = iconMap[subItem.icon];
+                      const isSubActive = location.pathname === subItem.route;
                       return (
                         <button
                           key={subItem.id}
                           onClick={() => handleSubItemClick(subItem)}
-                          className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-left text-sm transition-all duration-200 text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm group/sub border-l-2 border-transparent hover:border-blue-300"
+                          className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-left text-sm transition-all duration-200 ${
+                            isSubActive
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm"
+                          } border-l-2 border-transparent hover:border-blue-300`}
+                          style={{ cursor: 'pointer' }}
                         >
-                          <div className="transition-colors group-hover/sub:text-blue-600">
+                          <div
+                            className={`transition-colors ${
+                              isSubActive
+                                ? "text-white"
+                                : "group-hover/sub:text-blue-600"
+                            }`}
+                          >
                             <SubIconComponent size={16} />
                           </div>
-                          <span className="transition-colors group-hover/sub:text-blue-700 font-medium">
+                          <span
+                            className={`transition-colors ${
+                              isSubActive
+                                ? "text-white"
+                                : "group-hover/sub:text-blue-700 font-medium"
+                            }`}
+                          >
                             {subItem.label}
                           </span>
                         </button>
@@ -228,10 +225,8 @@ export const Sidebar = ({
         })}
       </div>
 
-      {/* User Profile & Logout */}
       {sidebarOpen && (
         <div className="p-4 border-t border-blue-100 bg-white/80 backdrop-blur-sm space-y-3">
-          {/* User Profile */}
           <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer border border-blue-100">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
               <User size={18} className="text-white" />
@@ -246,7 +241,6 @@ export const Sidebar = ({
             </div>
           </div>
 
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:shadow-md hover:transform hover:scale-[1.01] group border border-red-100 hover:border-red-200"
