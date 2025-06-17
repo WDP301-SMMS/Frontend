@@ -159,104 +159,118 @@ export const mockData = {
       active: false,
     },
   ],
-  menuItemsNurse: [
+   menuItemsNurse: [
     {
       id: 'home',
-      label: 'Home',
+      label: 'Trang chủ',
       icon: 'Home',
+      route: '/management/nurse',
     },
     {
       id: 'medical-event-management',
-      label: 'Medical Event Management',
-      icon: 'Bell', // Using Bell for medical events, can be changed
+      label: 'Quản lý sự kiện y tế',
+      icon: 'Bell',
       subItems: [
         {
           id: 'record-incidents',
-          label: 'Record Incidents',
-          icon: 'FileBarChart', // Example icon
+          label: 'Ghi nhận sự cố',
+          icon: 'FileBarChart',
+          route: '/management/nurse/record-incidents',
         },
         {
           id: 'view-medical-records',
-          label: 'View Medical Records',
-          icon: 'Eye', // Example icon
+          label: 'Xem hồ sơ y tế',
+          icon: 'Eye',
+          route: '/management/nurse/view-medical-records',
         },
       ],
     },
     {
       id: 'medication-supply-management',
-      label: 'Medication and Supply Management',
-      icon: 'Syringe', // Using Syringe for medication
+      label: 'Quản lý thuốc & vật tư',
+      icon: 'Syringe',
       subItems: [
         {
           id: 'manage-medications',
-          label: 'Manage Medications',
+          label: 'Quản lý thuốc',
           icon: 'Syringe',
+          route: '/management/nurse/manage-medications',
         },
         {
           id: 'manage-supplies',
-          label: 'Manage Supplies',
-          icon: 'Settings', // Example icon
+          label: 'Quản lý vật tư',
+          icon: 'Settings',
+          route: '/management/nurse/manage-supplies',
         },
       ],
     },
     {
       id: 'vaccination-management',
-      label: 'Vaccination Management',
-      icon: 'Shield', // Using Shield for vaccination
+      label: 'Quản lý tiêm chủng',
+      icon: 'Shield',
       subItems: [
         {
           id: 'send-consent',
-          label: 'Send Consent Form',
-          icon: 'UserCheck', // Example icon
+          label: 'Gửi phiếu đồng thuận',
+          icon: 'UserCheck',
+          route: '/management/nurse/send-vaccination-consent',
         },
         {
           id: 'prepare-list',
-          label: 'Prepare List',
-          icon: 'Users2', // Example icon
+          label: 'Chuẩn bị danh sách',
+          icon: 'Users2',
+          route: '/management/nurse/prepare-vaccination-list',
         },
         {
           id: 'vaccinate-record',
-          label: 'Vaccinate & Record',
-          icon: 'Syringe', // Example icon
+          label: 'Tiêm chủng & Ghi nhận',
+          icon: 'Syringe',
+          route: '/management/nurse/vaccinate-record',
         },
         {
           id: 'post-vaccination-monitoring',
-          label: 'Post-Vaccination Monitoring',
-          icon: 'Eye', // Example icon
+          label: 'Theo dõi sau tiêm',
+          icon: 'Eye',
+          route: '/management/nurse/post-vaccination-monitoring',
         },
       ],
     },
     {
       id: 'periodic-medical-checkup',
-      label: 'Periodic Medical Check-up',
-      icon: 'Calendar', // Using Calendar for check-ups
+      label: 'Kiểm tra y tế định kỳ',
+      icon: 'Calendar',
       subItems: [
         {
           id: 'send-checkup-notice',
-          label: 'Send Check-up Notice',
-          icon: 'Bell', // Example icon
+          label: 'Gửi thông báo khám sức khỏe',
+          icon: 'Bell',
+          route: '/management/nurse/send-checkup-notice',
         },
         {
           id: 'prepare-checkup-list',
-          label: 'Prepare Check-up List',
-          icon: 'Users2', // Example icon
+          label: 'Chuẩn bị danh sách khám',
+          icon: 'Users2',
+          route: '/management/nurse/prepare-checkup-list',
         },
         {
           id: 'perform-checkup',
-          label: 'Perform Check-up',
-          icon: 'Activity', // Example icon
+          label: 'Thực hiện khám & Ghi nhận',
+          icon: 'Activity',
+          route: '/management/nurse/perform-checkup',
         },
         {
           id: 'send-results-consult',
-          label: 'Send Results & Consult',
-          icon: 'BarChart3', // Example icon
+          label: 'Gửi kết quả & Tư vấn',
+          icon: 'BarChart3',
+          route: '/management/nurse/send-results-consult',
         },
       ],
     },
     {
       id: 'settings',
-      label: 'Settings',
+      label: 'Cài đặt',
       icon: 'Settings',
+      route: '/management/nurse/settings',
     },
-],
+  ],
 };

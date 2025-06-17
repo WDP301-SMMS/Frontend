@@ -2,6 +2,7 @@ import { BrowserRouter } from "react-router";
 import { Suspense } from "react";
 import AppRoutes from "~/routers/AppRoutes";
 
+
 // Enhanced Loading Component
 const LoadingSpinner = () => {
   return (
