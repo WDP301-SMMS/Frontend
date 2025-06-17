@@ -1,0 +1,620 @@
+export const mockStudents = [
+  { id: 'S001', name: 'Nguyễn Văn An', class: '10A1', dob: '15/03/2008' },
+  { id: 'S002', name: 'Trần Thị Bình', class: '10A2', dob: '20/07/2008' },
+  { id: 'S003', name: 'Lê Văn Cường', class: '11B1', dob: '01/11/2007' },
+  { id: 'S004', name: 'Phạm Thị Duyên', class: '10A1', dob: '10/01/2008' },
+  { id: 'S005', name: 'Hoàng Văn Hải', class: '12C3', dob: '25/09/2006' },
+  { id: 'S006', name: 'Nguyễn Thị Hương', class: '10A1', dob: '05/04/2008' },
+  { id: 'S007', name: 'Đỗ Minh Khang', class: '9A1', dob: '11/02/2009' },
+  { id: 'S008', name: 'Vũ Thị Lan Anh', class: '11B2', dob: '07/06/2007' },
+  { id: 'S009', name: 'Trịnh Quang Minh', class: '10A3', dob: '03/09/2008' },
+  { id: 'S010', name: 'Bùi Thanh Mai', class: '9A2', dob: '19/05/2009' },
+];
+
+export const medication = [
+  {
+    id: "MED001",
+    medicationName: "Paracetamol",
+    quantity: 100,
+    type: "viên",
+    entryDate: "2024-05-01",
+    notes: "Hộp 10 viên x 10",
+    timestamp: "01/05/2024, 09:00:00",
+  },
+  {
+    id: "MED002",
+    medicationName: "Ibuprofen",
+    quantity: 50,
+    type: "viên",
+    entryDate: "2024-05-10",
+    notes: "Liều 200mg",
+    timestamp: "10/05/2024, 10:30:00",
+  },
+  {
+    id: "MED003",
+    medicationName: "Amoxicillin",
+    quantity: 60,
+    type: "viên",
+    entryDate: "2024-06-15",
+    notes: "Hộp 6 vỉ x 10 viên, kháng sinh",
+    timestamp: "15/06/2024, 14:20:00",
+  },
+  {
+    id: "MED004",
+    medicationName: "Cefalexin",
+    quantity: 40,
+    type: "viên",
+    entryDate: "2024-06-20",
+    notes: "Liều 500mg, dùng cho nhiễm khuẩn",
+    timestamp: "20/06/2024, 08:45:00",
+  },
+  {
+    id: "MED005",
+    medicationName: "Loratadine",
+    quantity: 80,
+    type: "viên",
+    entryDate: "2024-07-01",
+    notes: "Hộp 8 vỉ x 10 viên, chống dị ứng",
+    timestamp: "01/07/2024, 10:00:00",
+  },
+  {
+    id: "MED006",
+    medicationName: "Omeprazole",
+    quantity: 30,
+    type: "viên",
+    entryDate: "2024-07-10",
+    notes: "Liều 20mg, điều trị loét dạ dày",
+    timestamp: "10/07/2024, 11:30:00",
+  },
+  {
+    id: "MED007",
+    medicationName: "Salbutamol",
+    quantity: 20,
+    type: "ống",
+    entryDate: "2024-08-05",
+    notes: "Dung dịch khí dung, dùng cho hen suyễn",
+    timestamp: "05/08/2024, 09:15:00",
+  },
+  {
+    id: "MED008",
+    medicationName: "Dexamethasone",
+    quantity: 50,
+    type: "viên",
+    entryDate: "2024-08-12",
+    notes: "Liều 0.5mg, chống viêm",
+    timestamp: "12/08/2024, 13:00:00",
+  },
+  {
+    id: "MED009",
+    medicationName: "Metformin",
+    quantity: 100,
+    type: "viên",
+    entryDate: "2024-09-01",
+    notes: "Liều 500mg, điều trị tiểu đường",
+    timestamp: "01/09/2024, 15:45:00",
+  },
+  {
+    id: "MED010",
+    medicationName: "Aspirin",
+    quantity: 120,
+    type: "viên",
+    entryDate: "2024-09-10",
+    notes: "Liều 81mg, phòng ngừa tim mạch",
+    timestamp: "10/09/2024, 08:30:00",
+  },
+  {
+    id: "MED011",
+    medicationName: "Ciprofloxacin",
+    quantity: 40,
+    type: "viên",
+    entryDate: "2024-10-01",
+    notes: "Liều 500mg, kháng sinh",
+    timestamp: "01/10/2024, 10:10:00",
+  },
+  {
+    id: "MED012",
+    medicationName: "Prednisolone",
+    quantity: 60,
+    type: "viên",
+    entryDate: "2024-10-15",
+    notes: "Liều 5mg, chống viêm",
+    timestamp: "15/10/2024, 12:00:00",
+  },
+  {
+    id: "MED013",
+    medicationName: "Domperidone",
+    quantity: 70,
+    type: "viên",
+    entryDate: "2024-11-01",
+    notes: "Liều 10mg, trị buồn nôn",
+    timestamp: "01/11/2024, 14:30:00",
+  },
+  {
+    id: "MED014",
+    medicationName: "Clarithromycin",
+    quantity: 30,
+    type: "viên",
+    entryDate: "2024-11-10",
+    notes: "Liều 250mg, kháng sinh",
+    timestamp: "10/11/2024, 09:50:00",
+  },
+  {
+    id: "MED015",
+    medicationName: "Furosemide",
+    quantity: 50,
+    type: "viên",
+    entryDate: "2024-12-01",
+    notes: "Liều 40mg, lợi tiểu",
+    timestamp: "01/12/2024, 11:20:00",
+  },
+  {
+    id: "MED016",
+    medicationName: "Montelukast",
+    quantity: 40,
+    type: "viên",
+    entryDate: "2024-12-10",
+    notes: "Liều 10mg, điều trị hen suyễn",
+    timestamp: "10/12/2024, 13:15:00",
+  },
+  {
+    id: "MED017",
+    medicationName: "Vitamin C",
+    quantity: 200,
+    type: "viên",
+    entryDate: "2025-01-01",
+    notes: "Liều 500mg, tăng cường miễn dịch",
+    timestamp: "01/01/2025, 08:00:00",
+  },
+  {
+    id: "MED018",
+    medicationName: "Diazepam",
+    quantity: 30,
+    type: "viên",
+    entryDate: "2025-01-15",
+    notes: "Liều 5mg, an thần",
+    timestamp: "15/01/2025, 10:40:00",
+  },
+  {
+    id: "MED019",
+    medicationName: "Natri Clorid 0.9%",
+    quantity: 25,
+    type: "chai",
+    entryDate: "2025-02-01",
+    notes: "Chai 500ml, truyền dịch",
+    timestamp: "01/02/2025, 12:30:00",
+  },
+  {
+    id: "MED020",
+    medicationName: "Betadine",
+    quantity: 15,
+    type: "chai",
+    entryDate: "2025-02-10",
+    notes: "Chai 100ml, sát khuẩn",
+    timestamp: "10/02/2025, 14:00:00",
+  },
+];
+
+
+export const medicalSupplies = [
+  {
+    id: "SUP001",
+    supplyName: "Băng gạc",
+    quantity: 50,
+    type: "cái",
+    entryDate: "2024-05-01",
+    notes: "Gói 10cm x 10cm",
+    timestamp: "01/05/2024, 09:00:00",
+  },
+  {
+    id: "SUP002",
+    supplyName: "Cồn sát trùng",
+    quantity: 20,
+    type: "chai",
+    entryDate: "2024-05-10",
+    notes: "Chai 500ml",
+    timestamp: "10/05/2024, 10:30:00",
+  },
+  {
+    id: "SUP003",
+    supplyName: "Kim tiêm",
+    quantity: 100,
+    type: "cái",
+    entryDate: "2024-06-15",
+    notes: "Kim 5ml",
+    timestamp: "15/06/2024, 14:20:00",
+  },
+  {
+    id: "SUP004",
+    supplyName: "Bông y tế",
+    quantity: 30,
+    type: "gói",
+    entryDate: "2024-06-20",
+    notes: "Gói 100g",
+    timestamp: "20/06/2024, 08:45:00",
+  },
+  {
+    id: "SUP005",
+    supplyName: "Găng tay y tế",
+    quantity: 200,
+    type: "cái",
+    entryDate: "2024-07-01",
+    notes: "Hộp 100 đôi",
+    timestamp: "01/07/2024, 10:00:00",
+  },
+  {
+    id: "SUP006",
+    supplyName: "Khẩu trang y tế",
+    quantity: 500,
+    type: "cái",
+    entryDate: "2024-07-10",
+    notes: "Hộp 50 cái",
+    timestamp: "10/07/2024, 11:30:00",
+  },
+  {
+    id: "SUP007",
+    supplyName: "Ống nghe y tế",
+    quantity: 5,
+    type: "cái",
+    entryDate: "2024-08-05",
+    notes: "Hãng Littmann",
+    timestamp: "05/08/2024, 09:15:00",
+  },
+  {
+    id: "SUP008",
+    supplyName: "Nhiệt kế điện tử",
+    quantity: 10,
+    type: "cái",
+    entryDate: "2024-08-12",
+    notes: "Đo trán",
+    timestamp: "12/08/2024, 13:00:00",
+  },
+  {
+    id: "SUP009",
+    supplyName: "Dụng cụ đo huyết áp",
+    quantity: 3,
+    type: "cái",
+    entryDate: "2024-09-01",
+    notes: "Hãng Omron",
+    timestamp: "01/09/2024, 15:45:00",
+  },
+  {
+    id: "SUP010",
+    supplyName: "Túi chườm lạnh",
+    quantity: 15,
+    type: "cái",
+    entryDate: "2024-09-10",
+    notes: "Dùng giảm sưng",
+    timestamp: "10/09/2024, 08:30:00",
+  },
+  {
+    id: "SUP011",
+    supplyName: "Băng keo y tế",
+    quantity: 40,
+    type: "cuộn",
+    entryDate: "2024-10-01",
+    notes: "Cuộn 5cm x 5m",
+    timestamp: "01/10/2024, 10:10:00",
+  },
+  {
+    id: "SUP012",
+    supplyName: "Dây garo",
+    quantity: 20,
+    type: "cái",
+    entryDate: "2024-10-15",
+    notes: "Dùng cầm máu",
+    timestamp: "15/10/2024, 12:00:00",
+  },
+  {
+    id: "SUP013",
+    supplyName: "Ống hút y tế",
+    quantity: 100,
+    type: "cái",
+    entryDate: "2024-11-01",
+    notes: "Dùng trong sơ cứu",
+    timestamp: "01/11/2024, 14:30:00",
+  },
+  {
+    id: "SUP014",
+    supplyName: "Mặt nạ oxy",
+    quantity: 10,
+    type: "cái",
+    entryDate: "2024-11-10",
+    notes: "Kích cỡ người lớn",
+    timestamp: "10/11/2024, 09:50:00",
+  },
+  {
+    id: "SUP015",
+    supplyName: "Nước muối sinh lý",
+    quantity: 50,
+    type: "chai",
+    entryDate: "2024-12-01",
+    notes: "Chai 500ml",
+    timestamp: "01/12/2024, 11:20:00",
+  },
+  {
+    id: "SUP016",
+    supplyName: "Bộ sơ cứu",
+    quantity: 5,
+    type: "bộ",
+    entryDate: "2024-12-10",
+    notes: "Bộ tiêu chuẩn",
+    timestamp: "10/12/2024, 13:15:00",
+  },
+  {
+    id: "SUP017",
+    supplyName: "Tăm bông y tế",
+    quantity: 200,
+    type: "cái",
+    entryDate: "2025-01-01",
+    notes: "Gói 100 cái",
+    timestamp: "01/01/2025, 08:00:00",
+  },
+  {
+    id: "SUP018",
+    supplyName: "Khăn giấy y tế",
+    quantity: 30,
+    type: "gói",
+    entryDate: "2025-01-15",
+    notes: "Gói 100 tờ",
+    timestamp: "15/01/2025, 10:40:00",
+  },
+  {
+    id: "SUP019",
+    supplyName: "Túi đựng rác y tế",
+    quantity: 100,
+    type: "túi",
+    entryDate: "2025-02-01",
+    notes: "Túi màu vàng",
+    timestamp: "01/02/2025, 12:30:00",
+  },
+  {
+    id: "SUP020",
+    supplyName: "Bình oxy y tế",
+    quantity: 3,
+    type: "bình",
+    entryDate: "2025-02-10",
+    notes: "Dung tích 10L",
+    timestamp: "10/02/2025, 14:00:00",
+  },
+];
+
+
+
+export const classes = [
+  { id: "C001", name: "Lớp 1A" },
+  { id: "C002", name: "Lớp 2A" },
+  { id: "C003", name: "Lớp 3A" },
+  { id: "C004", name: "Lớp 4A" },
+  { id: "C005", name: "Lớp 5A" },
+];
+
+export const students = [
+  // Lớp 1A (C001)
+  { student_id: "S001", full_name: "Nguyễn Văn An", date_of_birth: "2015-03-10", class_id: "C001", health_notes: "Dị ứng penicillin", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-01" }] },
+  { student_id: "S002", full_name: "Trần Thị Bình", date_of_birth: "2015-04-15", class_id: "C001", health_notes: "", vaccination_history: [] },
+  { student_id: "S003", full_name: "Lê Văn Cường", date_of_birth: "2015-07-20", class_id: "C001", health_notes: "Sốt cao trước đây", vaccination_history: [] },
+  { student_id: "S004", full_name: "Phạm Thị Dung", date_of_birth: "2015-09-05", class_id: "C001", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-01" }] },
+  { student_id: "S005", full_name: "Hoàng Văn Em", date_of_birth: "2015-11-12", class_id: "C001", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S006", full_name: "Vũ Thị Hà", date_of_birth: "2015-01-25", class_id: "C001", health_notes: "Hen suyễn nhẹ", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-07-15" }] },
+  { student_id: "S007", full_name: "Đỗ Minh Khang", date_of_birth: "2015-05-30", class_id: "C001", health_notes: "", vaccination_history: [] },
+  { student_id: "S008", full_name: "Ngô Thị Linh", date_of_birth: "2015-12-10", class_id: "C001", health_notes: "Dị ứng thực phẩm", vaccination_history: [{ vaccine_id: "V001", dose: 2, date: "2024-08-01" }] },
+  { student_id: "S009", full_name: "Bùi Văn Nam", date_of_birth: "2015-08-17", class_id: "C001", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S010", full_name: "Phan Thị Oanh", date_of_birth: "2015-03-22", class_id: "C001", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-09-10" }] },
+  { student_id: "S011", full_name: "Trương Văn Phát", date_of_birth: "2015-06-14", class_id: "C001", health_notes: "Tiền sử co giật", vaccination_history: [] },
+  { student_id: "S012", full_name: "Lý Thị Quyên", date_of_birth: "2015-02-28", class_id: "C001", health_notes: "", vaccination_history: [] },
+  { student_id: "S013", full_name: "Hà Văn Sơn", date_of_birth: "2015-09-09", class_id: "C001", health_notes: "Không có", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-15" }] },
+  { student_id: "S014", full_name: "Đặng Thị Thảo", date_of_birth: "2015-11-01", class_id: "C001", health_notes: "Dị ứng thời tiết", vaccination_history: [] },
+  { student_id: "S015", full_name: "Nguyễn Minh Triết", date_of_birth: "2015-07-07", class_id: "C001", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 2, date: "2024-10-01" }] },
+  { student_id: "S016", full_name: "Võ Thị Uyên", date_of_birth: "2015-04-18", class_id: "C001", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S017", full_name: "Hoàng Văn Vương", date_of_birth: "2015-05-12", class_id: "C001", health_notes: "Viêm da cơ địa", vaccination_history: [] },
+  { student_id: "S018", full_name: "Trần Thị Xuân", date_of_birth: "2015-10-25", class_id: "C001", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-01" }] },
+  { student_id: "S019", full_name: "Lê Văn Ý", date_of_birth: "2015-12-05", class_id: "C001", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S020", full_name: "Phạm Thị Zoe", date_of_birth: "2015-09-30", class_id: "C001", health_notes: "Sốt nhẹ gần đây", vaccination_history: [] },
+
+  // Lớp 2A (C002)
+  { student_id: "S021", full_name: "Nguyễn Thành Đạt", date_of_birth: "2014-02-14", class_id: "C002", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-05-20" }] },
+  { student_id: "S022", full_name: "Trần Thị Ánh", date_of_birth: "2014-03-19", class_id: "C002", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S023", full_name: "Lê Minh Đức", date_of_birth: "2014-06-25", class_id: "C002", health_notes: "Dị ứng phấn hoa", vaccination_history: [] },
+  { student_id: "S024", full_name: "Phạm Văn Hùng", date_of_birth: "2014-08-10", class_id: "C002", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-07-01" }] },
+  { student_id: "S025", full_name: "Hoàng Thị Mai", date_of_birth: "2014-10-15", class_id: "C002", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S026", full_name: "Vũ Văn Quang", date_of_birth: "2014-01-30", class_id: "C002", health_notes: "Sốt cao trước đây", vaccination_history: [] },
+  { student_id: "S027", full_name: "Đỗ Thị Ngọc", date_of_birth: "2014-04-05", class_id: "C002", health_notes: "", vaccination_history: [] },
+  { student_id: "S028", full_name: "Ngô Văn Phúc", date_of_birth: "2014-11-20", class_id: "C002", health_notes: "Dị ứng hải sản", vaccination_history: [{ vaccine_id: "V001", dose: 2, date: "2024-08-15" }] },
+  { student_id: "S029", full_name: "Bùi Thị Quy", date_of_birth: "2014-07-12", class_id: "C002", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S030", full_name: "Phan Văn Sơn", date_of_birth: "2014-09-28", class_id: "C002", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-09-05" }] },
+  { student_id: "S031", full_name: "Trương Thị Thanh", date_of_birth: "2014-05-17", class_id: "C002", health_notes: "Tiền sử viêm phổi", vaccination_history: [] },
+  { student_id: "S032", full_name: "Lý Văn Tâm", date_of_birth: "2014-12-01", class_id: "C002", health_notes: "", vaccination_history: [] },
+  { student_id: "S033", full_name: "Hà Thị Thùy", date_of_birth: "2014-03-09", class_id: "C002", health_notes: "Không có", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-10" }] },
+  { student_id: "S034", full_name: "Đặng Văn Toàn", date_of_birth: "2014-10-25", class_id: "C002", health_notes: "Dị ứng thời tiết", vaccination_history: [] },
+  { student_id: "S035", full_name: "Nguyễn Thị Tâm", date_of_birth: "2014-06-30", class_id: "C002", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 2, date: "2024-10-10" }] },
+  { student_id: "S036", full_name: "Võ Văn Trung", date_of_birth: "2014-02-18", class_id: "C002", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S037", full_name: "Hoàng Thị Vân", date_of_birth: "2014-07-22", class_id: "C002", health_notes: "Viêm da cơ địa", vaccination_history: [] },
+  { student_id: "S038", full_name: "Trần Văn Vinh", date_of_birth: "2014-09-15", class_id: "C002", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-20" }] },
+  { student_id: "S039", full_name: "Lê Thị Yến", date_of_birth: "2014-11-30", class_id: "C002", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S040", full_name: "Phạm Văn Zung", date_of_birth: "2014-08-05", class_id: "C002", health_notes: "Sốt nhẹ gần đây", vaccination_history: [] },
+
+  // Lớp 3A (C003)
+  { student_id: "S041", full_name: "Nguyễn Thị Bảo", date_of_birth: "2013-01-12", class_id: "C003", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-05-25" }] },
+  { student_id: "S042", full_name: "Trần Văn Cảnh", date_of_birth: "2013-03-18", class_id: "C003", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S043", full_name: "Lê Thị Diệu", date_of_birth: "2013-06-22", class_id: "C003", health_notes: "Dị ứng phấn hoa", vaccination_history: [] },
+  { student_id: "S044", full_name: "Phạm Văn Định", date_of_birth: "2013-08-07", class_id: "C003", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-07-10" }] },
+  { student_id: "S045", full_name: "Hoàng Thị Hoa", date_of_birth: "2013-10-12", class_id: "C003", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S046", full_name: "Vũ Văn Hùng", date_of_birth: "2013-02-27", class_id: "C003", health_notes: "Sốt cao trước đây", vaccination_history: [] },
+  { student_id: "S047", full_name: "Đỗ Thị Kim", date_of_birth: "2013-04-03", class_id: "C003", health_notes: "", vaccination_history: [] },
+  { student_id: "S048", full_name: "Ngô Văn Lộc", date_of_birth: "2013-11-18", class_id: "C003", health_notes: "Dị ứng hải sản", vaccination_history: [{ vaccine_id: "V001", dose: 2, date: "2024-08-20" }] },
+  { student_id: "S049", full_name: "Bùi Thị Minh", date_of_birth: "2013-07-10", class_id: "C003", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S050", full_name: "Phan Văn Nam", date_of_birth: "2013-09-25", class_id: "C003", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-09-15" }] },
+  { student_id: "S051", full_name: "Trương Thị Oanh", date_of_birth: "2013-05-14", class_id: "C003", health_notes: "Tiền sử viêm phổi", vaccination_history: [] },
+  { student_id: "S052", full_name: "Lý Văn Phát", date_of_birth: "2013-12-28", class_id: "C003", health_notes: "", vaccination_history: [] },
+  { student_id: "S053", full_name: "Hà Thị Quyên", date_of_birth: "2013-03-06", class_id: "C003", health_notes: "Không có", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-25" }] },
+  { student_id: "S054", full_name: "Đặng Văn Sơn", date_of_birth: "2013-10-22", class_id: "C003", health_notes: "Dị ứng thời tiết", vaccination_history: [] },
+  { student_id: "S055", full_name: "Nguyễn Thị Tâm", date_of_birth: "2013-06-27", class_id: "C003", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 2, date: "2024-10-15" }] },
+  { student_id: "S056", full_name: "Võ Văn Thành", date_of_birth: "2013-02-15", class_id: "C003", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S057", full_name: "Hoàng Thị Thảo", date_of_birth: "2013-07-19", class_id: "C003", health_notes: "Viêm da cơ địa", vaccination_history: [] },
+  { student_id: "S058", full_name: "Trần Văn Toàn", date_of_birth: "2013-09-12", class_id: "C003", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-30" }] },
+  { student_id: "S059", full_name: "Lê Thị Uyên", date_of_birth: "2013-11-27", class_id: "C003", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S060", full_name: "Phạm Văn Vinh", date_of_birth: "2013-08-02", class_id: "C003", health_notes: "Sốt nhẹ gần đây", vaccination_history: [] },
+
+  // Lớp 4A (C004)
+  { student_id: "S061", full_name: "Nguyễn Văn Bảo", date_of_birth: "2012-01-09", class_id: "C004", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-05-30" }] },
+  { student_id: "S062", full_name: "Trần Thị Cẩm", date_of_birth: "2012-03-15", class_id: "C004", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S063", full_name: "Lê Văn Dũng", date_of_birth: "2012-06-19", class_id: "C004", health_notes: "Dị ứng phấn hoa", vaccination_history: [] },
+  { student_id: "S064", full_name: "Phạm Thị Hạnh", date_of_birth: "2012-08-04", class_id: "C004", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-07-15" }] },
+  { student_id: "S065", full_name: "Hoàng Văn Hùng", date_of_birth: "2012-10-09", class_id: "C004", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S066", full_name: "Vũ Thị Kim", date_of_birth: "2012-02-24", class_id: "C004", health_notes: "Sốt cao trước đây", vaccination_history: [] },
+  { student_id: "S067", full_name: "Đỗ Văn Lộc", date_of_birth: "2012-04-01", class_id: "C004", health_notes: "", vaccination_history: [] },
+  { student_id: "S068", full_name: "Ngô Thị Minh", date_of_birth: "2012-11-15", class_id: "C004", health_notes: "Dị ứng hải sản", vaccination_history: [{ vaccine_id: "V001", dose: 2, date: "2024-08-25" }] },
+  { student_id: "S069", full_name: "Bùi Văn Nam", date_of_birth: "2012-07-07", class_id: "C004", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S070", full_name: "Phan Thị Oanh", date_of_birth: "2012-09-22", class_id: "C004", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-09-20" }] },
+  { student_id: "S071", full_name: "Trương Văn Phát", date_of_birth: "2012-05-11", class_id: "C004", health_notes: "Tiền sử viêm phổi", vaccination_history: [] },
+  { student_id: "S072", full_name: "Lý Thị Quyên", date_of_birth: "2012-12-25", class_id: "C004", health_notes: "", vaccination_history: [] },
+  { student_id: "S073", full_name: "Hà Văn Sơn", date_of_birth: "2012-03-03", class_id: "C004", health_notes: "Không có", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-07-05" }] },
+  { student_id: "S074", full_name: "Đặng Thị Thảo", date_of_birth: "2012-10-19", class_id: "C004", health_notes: "Dị ứng thời tiết", vaccination_history: [] },
+  { student_id: "S075", full_name: "Nguyễn Minh Triết", date_of_birth: "2012-06-24", class_id: "C004", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 2, date: "2024-10-20" }] },
+  { student_id: "S076", full_name: "Võ Thị Uyên", date_of_birth: "2012-02-12", class_id: "C004", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S077", full_name: "Hoàng Văn Vương", date_of_birth: "2012-07-16", class_id: "C004", health_notes: "Viêm da cơ địa", vaccination_history: [] },
+  { student_id: "S078", full_name: "Trần Thị Xuân", date_of_birth: "2012-09-09", class_id: "C004", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-07-10" }] },
+  { student_id: "S079", full_name: "Lê Văn Ý", date_of_birth: "2012-11-24", class_id: "C004", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S080", full_name: "Phạm Thị Zoe", date_of_birth: "2012-08-29", class_id: "C004", health_notes: "Sốt nhẹ gần đây", vaccination_history: [] },
+
+  // Lớp 5A (C005)
+  { student_id: "S081", full_name: "Nguyễn Văn Ân", date_of_birth: "2011-01-06", class_id: "C005", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-06-05" }] },
+  { student_id: "S082", full_name: "Trần Thị Bích", date_of_birth: "2011-03-12", class_id: "C005", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S083", full_name: "Lê Văn Cường", date_of_birth: "2011-06-16", class_id: "C005", health_notes: "Dị ứng phấn hoa", vaccination_history: [] },
+  { student_id: "S084", full_name: "Phạm Thị Duyên", date_of_birth: "2011-08-01", class_id: "C005", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-07-20" }] },
+  { student_id: "S085", full_name: "Hoàng Văn Hùng", date_of_birth: "2011-10-06", class_id: "C005", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S086", full_name: "Vũ Thị Kim", date_of_birth: "2011-02-21", class_id: "C005", health_notes: "Sốt cao trước đây", vaccination_history: [] },
+  { student_id: "S087", full_name: "Đỗ Văn Lộc", date_of_birth: "2011-03-29", class_id: "C005", health_notes: "", vaccination_history: [] },
+  { student_id: "S088", full_name: "Ngô Thị Minh", date_of_birth: "2011-11-12", class_id: "C005", health_notes: "Dị ứng hải sản", vaccination_history: [{ vaccine_id: "V001", dose: 2, date: "2024-08-30" }] },
+  { student_id: "S089", full_name: "Bùi Văn Nam", date_of_birth: "2011-07-04", class_id: "C005", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S090", full_name: "Phan Thị Oanh", date_of_birth: "2011-09-19", class_id: "C005", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 1, date: "2024-09-25" }] },
+  { student_id: "S091", full_name: "Trương Văn Phát", date_of_birth: "2011-05-08", class_id: "C005", health_notes: "Tiền sử viêm phổi", vaccination_history: [] },
+  { student_id: "S092", full_name: "Lý Thị Quyên", date_of_birth: "2011-12-22", class_id: "C005", health_notes: "", vaccination_history: [] },
+  { student_id: "S093", full_name: "Hà Văn Sơn", date_of_birth: "2011-02-28", class_id: "C005", health_notes: "Không có", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-07-15" }] },
+  { student_id: "S094", full_name: "Đặng Thị Thảo", date_of_birth: "2011-10-16", class_id: "C005", health_notes: "Dị ứng thời tiết", vaccination_history: [] },
+  { student_id: "S095", full_name: "Nguyễn Minh Triết", date_of_birth: "2011-06-21", class_id: "C005", health_notes: "", vaccination_history: [{ vaccine_id: "V002", dose: 2, date: "2024-10-25" }] },
+  { student_id: "S096", full_name: "Võ Thị Uyên", date_of_birth: "2011-02-09", class_id: "C005", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S097", full_name: "Hoàng Văn Vương", date_of_birth: "2011-07-13", class_id: "C005", health_notes: "Viêm da cơ địa", vaccination_history: [] },
+  { student_id: "S098", full_name: "Trần Thị Xuân", date_of_birth: "2011-09-06", class_id: "C005", health_notes: "", vaccination_history: [{ vaccine_id: "V001", dose: 1, date: "2024-07-20" }] },
+  { student_id: "S099", full_name: "Lê Văn Ý", date_of_birth: "2011-11-21", class_id: "C005", health_notes: "Không có", vaccination_history: [] },
+  { student_id: "S100", full_name: "Phạm Thị Zoe", date_of_birth: "2011-08-26", class_id: "C005", health_notes: "Sốt nhẹ gần đây", vaccination_history: [] },
+];
+
+export const notifications = [
+  {
+    id: "1",
+    campaign_id: "CAMP001",
+    campaignName: "Chiến dịch tiêm Sởi",
+    vaccineName: "Sởi",
+    vaccine_id: "V001",
+    targetClasses: ["C001", "C002", "C003"],
+    status: {
+      agreed: [
+        "S001", "S002", "S004", "S008", "S013", "S018", "S019", // Lớp 1A
+        "S021", "S024", "S028", "S033", "S038", // Lớp 2A
+        "S041", "S044", "S048", "S053", "S058", // Lớp 3A
+      ],
+      declined: [
+        "S003", "S011", "S020", // Lớp 1A
+        "S026", "S031", "S040", // Lớp 2A
+        "S046", "S051", "S060", // Lớp 3A
+      ],
+      pending: [
+        "S005", "S007", "S009", "S012", "S014", "S016", // Lớp 1A
+        "S022", "S025", "S027", "S029", "S032", // Lớp 2A
+        "S042", "S045", "S047", "S049", "S052", // Lớp 3A
+      ],
+    },
+  },
+  {
+    id: "2",
+    campaign_id: "CAMP002",
+    campaignName: "Chiến dịch tiêm HPV",
+    vaccineName: "HPV",
+    vaccine_id: "V002",
+    targetClasses: ["C003", "C004", "C005"],
+    status: {
+      agreed: [
+        "S044", "S050", "S055", "S058", // Lớp 3A
+        "S064", "S070", "S075", "S078", // Lớp 4A
+        "S084", "S090", "S095", "S098", // Lớp 5A
+      ],
+      declined: [
+        "S054", "S057", // Lớp 3A
+        "S074", "S077", // Lớp 4A
+        "S094", "S097", // Lớp 5A
+      ],
+      pending: [
+        "S041", "S042", "S045", "S047", "S049", // Lớp 3A
+        "S061", "S062", "S065", "S067", "S069", // Lớp 4A
+        "S081", "S082", "S085", "S087", "S089", // Lớp 5A
+      ],
+    },
+  },
+  {
+    id: "3",
+    campaign_id: "CAMP003",
+    campaignName: "Chiến dịch tiêm Cúm",
+    vaccineName: "Cúm",
+    vaccine_id: "V003",
+    targetClasses: ["C001", "C004", "C005"],
+    status: {
+      agreed: [
+        "S001", "S002", "S006", "S007", "S012", "S016", // Lớp 1A
+        "S061", "S064", "S067", "S073", "S078", // Lớp 4A
+        "S081", "S084", "S087", "S093", "S098", // Lớp 5A
+      ],
+      declined: [
+        "S011", "S014", // Lớp 1A
+        "S071", "S074", // Lớp 4A
+        "S091", "S094", // Lớp 5A
+      ],
+      pending: [
+        "S005", "S009", "S013", "S015", "S018", // Lớp 1A
+        "S062", "S065", "S069", "S072", "S076", // Lớp 4A
+        "S082", "S085", "S089", "S092", "S096", // Lớp 5A
+      ],
+    },
+  },
+];
+
+
+
+export const eventRecords = [
+  {
+      id: "REC001",
+      student: { name: "Nguyễn Văn An", class: "10A1", id: "S001" },
+      event: {
+        eventType: "Sốt",
+        date: "2024-05-10",
+        time: "14:00",
+        description: "Sốt nhẹ, mệt mỏi",
+        actionsTaken: "Cho uống thuốc hạ sốt, báo phụ huynh",
+      },
+      timestamp: "10/05/2024, 14:15:30",
+    },
+    {
+      id: "REC002",
+      student: { name: "Trần Thị Bình", class: "10A2", id: "S002" },
+      event: {
+        eventType: "Té ngã",
+        date: "2024-05-15",
+        time: "09:30",
+        description: "Té ngã sân trường, trầy xước tay",
+        actionsTaken: "Sát trùng",
+      },
+      timestamp: "15/05/2024, 09:45:00",
+    },
+    {
+      id: "REC003",
+      student: { name: "Lê Văn Cường", class: "11B1", id: "S003" },
+      event: {
+        eventType: "Dị ứng",
+        date: "2024-05-20",
+        time: "11:00",
+        description: "Nổi mẩn đỏ sau khi ăn hải sản",
+        actionsTaken: "Cho uống thuốc điều trị dị ứng, gọi phụ huynh",
+      },
+      timestamp: "20/05/2024, 11:30:10",
+    }
+  ]

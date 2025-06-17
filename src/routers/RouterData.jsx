@@ -236,13 +236,25 @@ const sharedManagementRoutes = [
   },
 ];
 
-//management routes
 const managementRoutes = {
   path: "/management",
-  element: <ManagementLayout />,
+  element: <NurseDashboard />, // Default layout
   children: [
-    { path: "nurse", element: <NurseDashboard /> },
+    { path: "nurse", element: <DashboardHome /> },
+    { path: "nurse/record-incidents", element: <RecordIncident /> },
+    { path: "nurse/view-medical-records", element: <IncidentHistory /> },
     { path: "nurse/message", element: <Message /> },
+    { path: "nurse/manage-medications", element: <ManageMedications /> },
+    { path: "nurse/manage-supplies", element: <ManageMedicalSupplies /> },
+    { path: "nurse/send-vaccination-consent", element: <SendVaccinationConsent /> },
+    { path: "nurse/prepare-vaccination-list", element: <PrepareVaccinationList /> },
+    { path: "nurse/vaccinate-record", element: <VaccinateRecord /> },
+    { path: "nurse/post-vaccination-monitoring", element: <PostVaccinationMonitoring /> },
+    { path: "nurse/send-checkup-notice", element: <SendCheckupNotice /> },
+    { path: "nurse/prepare-checkup-list", element: <PrepareCheckupList /> },
+    { path: "nurse/perform-checkup", element: <PerformCheckup /> },
+    { path: "nurse/send-results-consult", element: <SendResultsConsult /> },
+    { path: "nurse/settings", element: <Settings /> },
     { path: "manager", element: <ManagerDashboard /> },
     { path: "manager/medicine", element: <MedicineInventory /> },
     { path: "manager/nurse", element: <NurseManagement /> },
