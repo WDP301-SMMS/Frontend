@@ -58,7 +58,6 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <AppRoutes />
-        {/* <NurseDashboard/> */}
       </Suspense>
     </BrowserRouter>
   );
