@@ -582,39 +582,626 @@ export const notifications = [
 
 export const eventRecords = [
   {
-      id: "REC001",
-      student: { name: "Nguyễn Văn An", class: "10A1", id: "S001" },
-      event: {
-        eventType: "Sốt",
-        date: "2024-05-10",
-        time: "14:00",
-        description: "Sốt nhẹ, mệt mỏi",
-        actionsTaken: "Cho uống thuốc hạ sốt, báo phụ huynh",
-      },
-      timestamp: "10/05/2024, 14:15:30",
+    id: "REC001",
+    student: { name: "Nguyễn Văn An", class: "10A1", id: "S001" },
+    event: {
+      eventType: "Sốt",
+      date: "2025-06-18",
+      time: "14:00",
+      description: "Sốt nhẹ, mệt mỏi",
+      actionsTaken: "Cho uống thuốc hạ sốt, báo phụ huynh",
     },
-    {
-      id: "REC002",
-      student: { name: "Trần Thị Bình", class: "10A2", id: "S002" },
-      event: {
-        eventType: "Té ngã",
-        date: "2024-05-15",
-        time: "09:30",
-        description: "Té ngã sân trường, trầy xước tay",
-        actionsTaken: "Sát trùng",
-      },
-      timestamp: "15/05/2024, 09:45:00",
+    timestamp: "18/06/2025, 14:15:30",
+  },
+  {
+    id: "REC002",
+    student: { name: "Trần Thị Bình", class: "10A2", id: "S002" },
+    event: {
+      eventType: "Té ngã",
+      date: "2025-06-17",
+      time: "09:30",
+      description: "Té ngã sân trường, trầy xước tay",
+      actionsTaken: "Sát trùng, cấp phát vật tư",
     },
-    {
-      id: "REC003",
-      student: { name: "Lê Văn Cường", class: "11B1", id: "S003" },
-      event: {
-        eventType: "Dị ứng",
-        date: "2024-05-20",
-        time: "11:00",
-        description: "Nổi mẩn đỏ sau khi ăn hải sản",
-        actionsTaken: "Cho uống thuốc điều trị dị ứng, gọi phụ huynh",
+    timestamp: "17/06/2025, 09:45:00",
+  },
+  {
+    id: "REC003",
+    student: { name: "Lê Văn Cường", class: "11B1", id: "S003" },
+    event: {
+      eventType: "Dị ứng",
+      date: "2025-06-16",
+      time: "11:00",
+      description: "Nổi mẩn đỏ sau khi ăn hải sản",
+      actionsTaken: "Cho uống thuốc điều trị dị ứng, gọi phụ huynh",
+    },
+    timestamp: "16/06/2025, 11:30:10",
+  },
+  {
+    id: "REC004",
+    student: { name: "Phạm Thị D", class: "9A4", id: "S004" },
+    event: {
+      eventType: "Tai nạn sân chơi",
+      date: "2025-06-15",
+      time: "16:20",
+      description: "Hỗ trợ khẩn cấp tại sân chơi",
+      actionsTaken: "Cấp phát vật tư, sơ cứu",
+    },
+    timestamp: "15/06/2025, 16:25:00",
+  },
+  {
+    id: "REC005",
+    student: { name: "Hoàng Văn E", class: "10B5", id: "S005" },
+    event: {
+      eventType: "Hội thao trường",
+      date: "2025-06-14",
+      time: "10:00",
+      description: "Cung cấp nước và chăm sóc y tế",
+      actionsTaken: "Cấp phát vật tư",
+    },
+    timestamp: "14/06/2025, 10:05:00",
+  },
+  {
+    id: "REC006",
+    student: { name: "Ngô Thị F", class: "11A6", id: "S006" },
+    event: {
+      eventType: "Lớp học thực hành",
+      date: "2025-06-13",
+      time: "14:10",
+      description: "Thực hành hóa học an toàn",
+      actionsTaken: "Chưa có xử lý",
+    },
+    timestamp: "13/06/2025, 14:15:00",
+  },
+  {
+    id: "REC007",
+    student: { name: "Đỗ Văn G", class: "12B7", id: "S007" },
+    event: {
+      eventType: "Sự cố điện",
+      date: "2025-06-12",
+      time: "15:50",
+      description: "Hỗ trợ sơ cứu sau sự cố",
+      actionsTaken: "Cấp phát vật tư",
+    },
+    timestamp: "12/06/2025, 15:55:00",
+  },
+  {
+    id: "REC008",
+    student: { name: "Trần Văn H", class: "9C8", id: "S008" },
+    event: {
+      eventType: "Ngày hội thể thao",
+      date: "2025-06-11",
+      time: "11:30",
+      description: "Chăm sóc y tế cho vận động viên",
+      actionsTaken: "Cấp phát vật tư",
+    },
+    timestamp: "11/06/2025, 11:35:00",
+  },
+  {
+    id: "REC009",
+    student: { name: "Lý Thị I", class: "10C9", id: "S009" },
+    event: {
+      eventType: "Học kỳ quân đội",
+      date: "2025-06-10",
+      time: "09:25",
+      description: "Hỗ trợ y tế trong huấn luyện",
+      actionsTaken: "Chưa có xử lý",
+    },
+    timestamp: "10/06/2025, 09:30:00",
+  },
+  {
+    id: "REC010",
+    student: { name: "Vũ Văn K", class: "11C10", id: "S010" },
+    event: {
+      eventType: "Sự cố cầu thang",
+      date: "2025-06-09",
+      time: "17:15",
+      description: "Hỗ trợ khẩn cấp tại cầu thang",
+      actionsTaken: "Cấp phát vật tư, sơ cứu",
+    },
+    timestamp: "09/06/2025, 17:20:00",
+  },
+];
+
+
+export const eventsLog = [
+  {
+    id: 1, studentName: "Nguyễn Văn A", studentId: "HS001", class: "10A1", eventType: "Đau đầu",
+    date: "2024-06-17", time: "08:30", description: "Học sinh phàn nàn đau đầu sau tiết thể dục", severity: "medium"
+  },
+  {
+    id: 2, studentName: "Trần Thị B", studentId: "HS002", class: "11B2", eventType: "Đau bụng",
+    date: "2024-06-17", time: "10:15", description: "Đau bụng nhẹ, có thể do ăn sáng không đúng giờ", severity: "low"
+  },
+  {
+    id: 3, studentName: "Lê Văn C", studentId: "HS003", class: "12A3", eventType: "Cảm cúm",
+    date: "2024-06-16", time: "14:20", description: "Sốt nhẹ, ho, chảy nước mũi", severity: "high"
+  },
+  {
+    id: 4, studentName: "Phạm Thị D", studentId: "HS004", class: "10A2", eventType: "Chóng mặt",
+    date: "2024-06-18", time: "09:45", description: "Chóng mặt khi đứng dậy quá nhanh", severity: "medium"
+  },
+  {
+    id: 5, studentName: "Ngô Minh E", studentId: "HS005", class: "11C1", eventType: "Đau chân",
+    date: "2024-06-18", time: "11:10", description: "Đau cơ sau khi chạy bộ", severity: "low"
+  },
+  {
+    id: 6, studentName: "Đặng Thị F", studentId: "HS006", class: "12B1", eventType: "Sốt",
+    date: "2024-06-15", time: "13:30", description: "Sốt cao 38.5°C, cảm thấy mệt mỏi", severity: "high"
+  },
+  {
+    id: 7, studentName: "Bùi Văn G", studentId: "HS007", class: "10C3", eventType: "Đau bụng",
+    date: "2024-06-17", time: "15:00", description: "Đau bụng dữ dội, nghi ngờ bị rối loạn tiêu hóa", severity: "medium"
+  },
+  {
+    id: 8, studentName: "Võ Thị H", studentId: "HS008", class: "11A4", eventType: "Ngất xỉu",
+    date: "2024-06-18", time: "07:50", description: "Ngất trong giờ chào cờ, được đưa đi nghỉ ngơi", severity: "high"
+  },
+  {
+    id: 9, studentName: "Trịnh Văn I", studentId: "HS009", class: "12C2", eventType: "Ho",
+    date: "2024-06-16", time: "16:10", description: "Ho nhiều, nghi ngờ cảm cúm", severity: "low"
+  },
+  {
+    id: 10, studentName: "Lý Thị J", studentId: "HS010", class: "10B2", eventType: "Đau mắt",
+    date: "2024-06-18", time: "12:40", description: "Mỏi mắt sau khi học online liên tục", severity: "low"
+  }
+]
+
+
+
+export const Medication = [
+  {
+    id: 1, name: "Paracetamol 500mg", type: "viên", stockQuantity: 150,
+    usage: "Uống 1-2 viên khi đau đầu, sốt. Tối đa 8 viên/ngày", indication: "Giảm đau, hạ sốt", expiry: "2025-12-31"
+  },
+  {
+    id: 2, name: "Smecta", type: "gói", stockQuantity: 80,
+    usage: "Pha 1 gói với 50ml nước, uống 3 lần/ngày", indication: "Điều trị tiêu chảy, đau bụng", expiry: "2025-08-15"
+  },
+  {
+    id: 3, name: "Vitamin C 1000mg", type: "viên sủi", stockQuantity: 120,
+    usage: "Pha 1 viên với 200ml nước, uống 1 lần/ngày", indication: "Tăng cường sức đề kháng", expiry: "2025-10-20"
+  },
+  {
+    id: 4, name: "Cao Sao Vàng", type: "lọ", stockQuantity: 45,
+    usage: "Thoa ngoài da vùng thái dương, sau gáy", indication: "Giảm đau đầu, chóng mặt", expiry: "2026-03-10"
+  },
+  {
+    id: 5, name: "Efferalgan", type: "viên sủi", stockQuantity: 100,
+    usage: "Hòa tan 1 viên trong nước, uống khi sốt", indication: "Giảm sốt, giảm đau", expiry: "2026-01-05"
+  },
+  {
+    id: 6, name: "Oresol", type: "gói", stockQuantity: 200,
+    usage: "Pha 1 gói với 200ml nước, uống nhiều lần trong ngày", indication: "Bù nước khi tiêu chảy", expiry: "2025-09-30"
+  },
+  {
+    id: 7, name: "Salonpas", type: "miếng dán", stockQuantity: 60,
+    usage: "Dán lên vùng cơ bị đau, không dùng quá 8 tiếng", indication: "Đau cơ, đau lưng", expiry: "2026-07-12"
+  },
+  {
+    id: 8, name: "Tiffy", type: "viên", stockQuantity: 90,
+    usage: "Uống 1 viên khi có triệu chứng cảm cúm", indication: "Cảm lạnh, sổ mũi", expiry: "2025-11-11"
+  },
+  {
+    id: 9, name: "Antot", type: "lọ", stockQuantity: 35,
+    usage: "Uống 5ml mỗi ngày", indication: "Tăng cường thị lực", expiry: "2026-02-01"
+  },
+  {
+    id: 10, name: "Remos", type: "chai xịt", stockQuantity: 25,
+    usage: "Xịt lên da để chống muỗi", indication: "Chống muỗi cắn", expiry: "2026-06-20"
+  }
+]
+
+export const defaultLogs = [
+  {
+    event: {
+      id: 1,
+      studentName: "Nguyễn Văn A",
+      studentId: "HS001",
+      class: "10A1",
+      eventType: "Đau đầu",
+      date: "2024-06-17",
+      time: "08:30",
+      description: "Học sinh phàn nàn đau đầu sau tiết thể dục",
+      severity: "medium",
+    },
+    medications: [
+      {
+        id: 1,
+        name: "Paracetamol 500mg",
+        type: "viên",
+        quantity: 2,
+        notes: "Uống sau ăn",
+        usage: "Uống 1-2 viên khi đau đầu",
+        dispensedAt: "17/06/2024, 08:35",
       },
-      timestamp: "20/05/2024, 11:30:10",
-    }
-  ]
+    ],
+  },
+  {
+    event: {
+      id: 2,
+      studentName: "Trần Thị B",
+      studentId: "HS002",
+      class: "11B2",
+      eventType: "Đau bụng",
+      date: "2024-06-17",
+      time: "10:15",
+      description: "Đau bụng nhẹ, có thể do ăn sáng không đúng giờ",
+      severity: "low",
+    },
+    medications: [
+      {
+        id: 2,
+        name: "Smecta",
+        type: "gói",
+        quantity: 1,
+        notes: "",
+        usage: "Pha với 50ml nước",
+        dispensedAt: "17/06/2024, 10:20",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 3,
+      studentName: "Lê Văn C",
+      studentId: "HS003",
+      class: "12A3",
+      eventType: "Cảm cúm",
+      date: "2024-06-16",
+      time: "14:20",
+      description: "Sốt nhẹ, ho, chảy nước mũi",
+      severity: "high",
+    },
+    medications: [
+      {
+        id: 3,
+        name: "Tiffy",
+        type: "viên",
+        quantity: 1,
+        notes: "Uống vào buổi chiều",
+        usage: "Uống 1 viên khi có triệu chứng cảm cúm",
+        dispensedAt: "16/06/2024, 14:30",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 4,
+      studentName: "Phạm Thị D",
+      studentId: "HS004",
+      class: "10A2",
+      eventType: "Chóng mặt",
+      date: "2024-06-18",
+      time: "09:45",
+      description: "Chóng mặt khi đứng dậy quá nhanh",
+      severity: "medium",
+    },
+    medications: [
+      {
+        id: 4,
+        name: "Cao Sao Vàng",
+        type: "lọ",
+        quantity: 1,
+        notes: "Thoa nhẹ vùng thái dương",
+        usage: "Thoa ngoài da vùng thái dương",
+        dispensedAt: "18/06/2024, 09:50",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 5,
+      studentName: "Ngô Minh E",
+      studentId: "HS005",
+      class: "11C1",
+      eventType: "Đau chân",
+      date: "2024-06-18",
+      time: "11:10",
+      description: "Đau cơ sau khi chạy bộ",
+      severity: "low",
+    },
+    medications: [
+      {
+        id: 5,
+        name: "Salonpas",
+        type: "miếng dán",
+        quantity: 1,
+        notes: "Dán lên vùng bắp chân",
+        usage: "Dán lên vùng cơ bị đau",
+        dispensedAt: "18/06/2024, 11:20",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 6,
+      studentName: "Đặng Thị F",
+      studentId: "HS006",
+      class: "12B1",
+      eventType: "Sốt",
+      date: "2024-06-15",
+      time: "13:30",
+      description: "Sốt cao 38.5°C, cảm thấy mệt mỏi",
+      severity: "high",
+    },
+    medications: [
+      {
+        id: 1,
+        name: "Paracetamol 500mg",
+        type: "viên",
+        quantity: 2,
+        notes: "Theo dõi thêm sau 30 phút",
+        usage: "Uống 1-2 viên khi sốt",
+        dispensedAt: "15/06/2024, 13:40",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 7,
+      studentName: "Bùi Văn G",
+      studentId: "HS007",
+      class: "10C3",
+      eventType: "Đau bụng",
+      date: "2024-06-17",
+      time: "15:00",
+      description: "Đau bụng dữ dội, nghi ngờ bị rối loạn tiêu hóa",
+      severity: "medium",
+    },
+    medications: [
+      {
+        id: 2,
+        name: "Smecta",
+        type: "gói",
+        quantity: 1,
+        notes: "Nhắc học sinh uống nhiều nước",
+        usage: "Pha với 50ml nước",
+        dispensedAt: "17/06/2024, 15:05",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 8,
+      studentName: "Võ Thị H",
+      studentId: "HS008",
+      class: "11A4",
+      eventType: "Ngất xỉu",
+      date: "2024-06-18",
+      time: "07:50",
+      description: "Ngất trong giờ chào cờ, được đưa đi nghỉ ngơi",
+      severity: "high",
+    },
+    medications: [
+      {
+        id: 3,
+        name: "Vitamin C 1000mg",
+        type: "viên sủi",
+        quantity: 1,
+        notes: "Uống sau khi tỉnh",
+        usage: "Pha với 200ml nước",
+        dispensedAt: "18/06/2024, 08:00",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 9,
+      studentName: "Trịnh Văn I",
+      studentId: "HS009",
+      class: "12C2",
+      eventType: "Ho",
+      date: "2024-06-16",
+      time: "16:10",
+      description: "Ho nhiều, nghi ngờ cảm cúm",
+      severity: "low",
+    },
+    medications: [
+      {
+        id: 8,
+        name: "Tiffy",
+        type: "viên",
+        quantity: 1,
+        notes: "Theo dõi ho sau 1 tiết học",
+        usage: "Uống 1 viên khi có triệu chứng cảm cúm",
+        dispensedAt: "16/06/2024, 16:15",
+      },
+    ],
+  },
+  {
+    event: {
+      id: 10,
+      studentName: "Lý Thị J",
+      studentId: "HS010",
+      class: "10B2",
+      eventType: "Đau mắt",
+      date: "2024-06-18",
+      time: "12:40",
+      description: "Mỏi mắt sau khi học online liên tục",
+      severity: "low",
+    },
+    medications: [
+      {
+        id: 9,
+        name: "Antot",
+        type: "lọ",
+        quantity: 1,
+        notes: "Uống 5ml",
+        usage: "Uống 5ml mỗi ngày",
+        dispensedAt: "18/06/2024, 12:45",
+      },
+    ],
+  }
+];
+
+
+const dispenseLogs = [
+  {
+    id: "1",
+    eventName: "Sự kiện y tế tháng 6",
+    studentName: "Nguyễn Văn A",
+    supplies: [
+      { supplyName: "Băng gạc", quantity: 5, type: "cuộn", notes: "Dùng khẩn cấp" },
+      { supplyName: "Cồn y tế", quantity: 2, type: "chai", notes: "" },
+    ],
+    dispenseDate: "2025-06-18",
+    event: {
+      class: "10A1",
+      studentId: "ST001",
+      description: "Hỗ trợ sơ cứu tại sân trường",
+      severity: "medium",
+    },
+    timestamp: "2025-06-18 14:30:00",
+  },
+  {
+    id: "2",
+    eventName: "Hoạt động ngoại khóa",
+    studentName: "Trần Thị B",
+    supplies: [
+      { supplyName: "Găng tay y tế", quantity: 10, type: "đôi", notes: "Kích thước M" },
+    ],
+    dispenseDate: "2025-06-17",
+    event: {
+      class: "11B2",
+      studentId: "ST002",
+      description: "Hỗ trợ dọn dẹp sân trường",
+      severity: "low",
+    },
+    timestamp: "2025-06-17 09:15:00",
+  },
+  {
+    id: "3",
+    eventName: "Khám sức khỏe định kỳ",
+    studentName: "Lê Văn C",
+    supplies: [
+      { supplyName: "Nhiệt kế", quantity: 1, type: "cái", notes: "" },
+      { supplyName: "Băng keo y tế", quantity: 3, type: "cuộn", notes: "Dán vết thương" },
+    ],
+    dispenseDate: "2025-06-16",
+    event: {
+      class: "12C3",
+      studentId: "ST003",
+      description: "Kiểm tra sức khỏe học sinh",
+      severity: "low",
+    },
+    timestamp: "2025-06-16 13:45:00",
+  },
+  {
+    id: "4",
+    eventName: "Tai nạn sân chơi",
+    studentName: "Phạm Thị D",
+    supplies: [
+      { supplyName: "Băng gạc", quantity: 8, type: "cuộn", notes: "Vết thương lớn" },
+    ],
+    dispenseDate: "2025-06-15",
+    event: {
+      class: "9A4",
+      studentId: "ST004",
+      description: "Hỗ trợ khẩn cấp tại sân chơi",
+      severity: "high",
+    },
+    timestamp: "2025-06-15 16:20:00",
+  },
+  {
+    id: "5",
+    eventName: "Hội thao trường",
+    studentName: "Hoàng Văn E",
+    supplies: [
+      { supplyName: "Khăn lạnh", quantity: 15, type: "cái", notes: "" },
+      { supplyName: "Nước muối sinh lý", quantity: 5, type: "chai", notes: "Rửa mắt" },
+    ],
+    dispenseDate: "2025-06-14",
+    event: {
+      class: "10B5",
+      studentId: "ST005",
+      description: "Cung cấp nước và chăm sóc y tế",
+      severity: "medium",
+    },
+    timestamp: "2025-06-14 10:00:00",
+  },
+  {
+    id: "6",
+    eventName: "Lớp học thực hành",
+    studentName: "Ngô Thị F",
+    supplies: [
+      { supplyName: "Găng tay", quantity: 20, type: "đôi", notes: "Kích thước S" },
+    ],
+    dispenseDate: "2025-06-13",
+    event: {
+      class: "11A6",
+      studentId: "ST006",
+      description: "Thực hành hóa học an toàn",
+      severity: "low",
+    },
+    timestamp: "2025-06-13 14:10:00",
+  },
+  {
+    id: "7",
+    eventName: "Sự cố điện",
+    studentName: "Đỗ Văn G",
+    supplies: [
+      { supplyName: "Băng gạc", quantity: 4, type: "cuộn", notes: "Nhẹ" },
+      { supplyName: "Cồn", quantity: 1, type: "chai", notes: "" },
+    ],
+    dispenseDate: "2025-06-12",
+    event: {
+      class: "12B7",
+      studentId: "ST007",
+      description: "Hỗ trợ sơ cứu sau sự cố",
+      severity: "high",
+    },
+    timestamp: "2025-06-12 15:50:00",
+  },
+  {
+    id: "8",
+    eventName: "Ngày hội thể thao",
+    studentName: "Trần Văn H",
+    supplies: [
+      { supplyName: "Khăn lạnh", quantity: 12, type: "cái", notes: "" },
+    ],
+    dispenseDate: "2025-06-11",
+    event: {
+      class: "9C8",
+      studentId: "ST008",
+      description: "Chăm sóc y tế cho vận động viên",
+      severity: "medium",
+    },
+    timestamp: "2025-06-11 11:30:00",
+  },
+  {
+    id: "9",
+    eventName: "Học kỳ quân đội",
+    studentName: "Lý Thị I",
+    supplies: [
+      { supplyName: "Băng keo", quantity: 6, type: "cuộn", notes: "Dán vết xước" },
+    ],
+    dispenseDate: "2025-06-10",
+    event: {
+      class: "10C9",
+      studentId: "ST009",
+      description: "Hỗ trợ y tế trong huấn luyện",
+      severity: "low",
+    },
+    timestamp: "2025-06-10 09:25:00",
+  },
+  {
+    id: "10",
+    eventName: "Sự cố cầu thang",
+    studentName: "Vũ Văn K",
+    supplies: [
+      { supplyName: "Băng gạc", quantity: 7, type: "cuộn", notes: "Vết thương trung bình" },
+      { supplyName: "Nước muối", quantity: 3, type: "chai", notes: "Rửa vết thương" },
+    ],
+    dispenseDate: "2025-06-09",
+    event: {
+      class: "11C10",
+      studentId: "ST010",
+      description: "Hỗ trợ khẩn cấp tại cầu thang",
+      severity: "high",
+    },
+    timestamp: "2025-06-09 17:15:00",
+  },
+];
+
+export default dispenseLogs;

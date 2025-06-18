@@ -43,7 +43,7 @@ const IncidentHistory = React.lazy(() =>
 );
 
 const ManageMedications = React.lazy(() =>
-  import("../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications")
+  import("../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications")
 );
 
 
