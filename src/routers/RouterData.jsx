@@ -36,6 +36,25 @@ import NotFound from "../pages/basic-pages/NotFound";
 import Layout from "../pages/layout/Layout";
 import ManagementLayout from "../pages/management/Layout";
 
+import DashboardHome from "~/pages/management/nurse/DashboardHome";
+import NurseDashboard from "~/pages/layout/Dashboard";
+import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications";
+import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/ManageMedicalSupplies";
+import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
+import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
+
+// Placeholder components
+const ManageSupplies = () => <div>Quản lý vật tư</div>;
+const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
+const PrepareList = () => <div>Chuẩn bị danh sách</div>;
+const VaccinateRecord = () => <div>Tiêm chủng & Ghi nhận</div>;
+const PostVaccinationMonitoring = () => <div>Theo dõi sau tiêm</div>;
+const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
+const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
+const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
+const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
+const Settings = () => <div>Cài đặt</div>;
+
 const basicRoutes = [
   {
     path: "/",
