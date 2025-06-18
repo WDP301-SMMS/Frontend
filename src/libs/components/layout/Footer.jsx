@@ -1,22 +1,21 @@
-
 const Footer = () => (
   <footer className="bg-primary text-white py-12">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <h3 className="text-xl font-semibold mb-4">Stanford University</h3>
-          <p className="opacity-90">Stanford, California 94305</p>
-          <p className="opacity-90">(650) 723-2300</p>
+          <h3 className="text-xl font-semibold mb-4">F HealthCare</h3>
+          <p className="opacity-90">Hòa Lạc, Hà Nội, Việt Nam</p>
+          <p className="opacity-90">(024) 7300 1866</p>
         </div>
         <div>
-          <h4 className="font-semibold mb-4">Quick Links</h4>
+          <h4 className="font-semibold mb-4">Liên Kết Nhanh</h4>
           <ul className="space-y-2">
             <li>
               <a
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Schools & Programs
+                Chương Trình & Khoa
               </a>
             </li>
             <li>
@@ -24,7 +23,7 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Health Care
+                Chăm Sóc Sức Khỏe
               </a>
             </li>
             <li>
@@ -32,7 +31,7 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Campus Map
+                Bản Đồ
               </a>
             </li>
             <li>
@@ -40,20 +39,20 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Contact
+                Liên Hệ
               </a>
             </li>
           </ul>
-        </div>
+        </div>{" "}
         <div>
-          <h4 className="font-semibold mb-4">Health Services</h4>
+          <h4 className="font-semibold mb-4">Dịch Vụ Y Tế</h4>
           <ul className="space-y-2">
             <li>
               <a
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Stanford Medicine
+                F HealthCare Y Khoa
               </a>
             </li>
             <li>
@@ -61,7 +60,7 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Stanford Health Care
+                Chăm Sóc Sức Khỏe F
               </a>
             </li>
             <li>
@@ -69,7 +68,7 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Children's Hospital
+                Bệnh Viện Nhi
               </a>
             </li>
             <li>
@@ -77,13 +76,13 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                Find a Doctor
+                Tìm Bác Sĩ
               </a>
             </li>
           </ul>
-        </div>
+        </div>{" "}
         <div>
-          <h4 className="font-semibold mb-4">Connect</h4>
+          <h4 className="font-semibold mb-4">Kết Nối</h4>
           <div className="flex space-x-4">
             <a
               href="#"

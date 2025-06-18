@@ -5,6 +5,9 @@ import {
   Profile,
   Blogs,
   BlogDetail,
+  ParentHealthProfiles,
+  ParentHealthProfileForm,
+  ParentHealthProfileDetail,
   Login,
   Register,
   ForgotPassword,
@@ -35,7 +38,6 @@ import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSupplie
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
-// Placeholder components
 const ManageSupplies = () => <div>Quản lý vật tư</div>;
 const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
 const PrepareList = () => <div>Chuẩn bị danh sách</div>;
@@ -46,14 +48,55 @@ const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
 const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
 const Settings = () => <div>Cài đặt</div>;
-
+import Layout from "../pages/layout/Layout";
+import ManagementLayout from "../pages/management/Layout";
 const basicRoutes = [
-  { path: "/", element: <Home /> },
-  { path: "/about", element: <About /> },
-  { path: "/contact", element: <Contact /> },
-  { path: "/settings", element: <Profile /> },
-  { path: "/blogs", element: <Blogs /> },
-  { path: "/blog-detail", element: <BlogDetail /> },
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        path: "",
+        element: <Home />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "settings",
+        element: <Profile />,
+      },
+      {
+        path: "blogs",
+        element: <Blogs />,
+      },
+      {
+        path: "blog-detail",
+        element: <BlogDetail />,
+      },
+      {
+        path: "health-profiles",
+        element: <ParentHealthProfiles />,
+      },
+      {
+        path: "health-profile/new",
+        element: <ParentHealthProfileForm />,
+      },
+      {
+        path: "health-profile/:profileId",
+        element: <ParentHealthProfileDetail />,
+      },
+      {
+        path: "health-profile/:profileId/edit",
+        element: <ParentHealthProfileForm />,
+      },
+    ],
+  },
 ];
 
 const authenticatedRoutes = [

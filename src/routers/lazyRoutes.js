@@ -9,6 +9,17 @@ const Profile = React.lazy(() => import("../pages/setting/Profile"));
 const Blogs = React.lazy(() => import("../pages/blogs/Blogs"));
 const BlogDetail = React.lazy(() => import("../pages/blogs/BlogDetail"));
 
+// Health Profile Routes for Parents
+const ParentHealthProfiles = React.lazy(() =>
+  import("../pages/health/Profiles")
+);
+const ParentHealthProfileForm = React.lazy(() =>
+  import("../pages/health/ProfileForm")
+);
+const ParentHealthProfileDetail = React.lazy(() =>
+  import("../pages/health/ProfileDetail")
+);
+
 // Authenticated Routes
 const Login = React.lazy(() => import("../pages/authentication/login/Login"));
 const Register = React.lazy(() =>
@@ -86,6 +97,7 @@ const HealthCheck = React.lazy(() =>
   import("../pages/management/shared-page/HealthCheck")
 );
 
+
 export {
   Home,
   About,
@@ -93,6 +105,9 @@ export {
   Profile,
   Blogs,
   BlogDetail,
+  ParentHealthProfiles,
+  ParentHealthProfileForm,
+  ParentHealthProfileDetail,
   Login,
   Register,
   ForgotPassword,
