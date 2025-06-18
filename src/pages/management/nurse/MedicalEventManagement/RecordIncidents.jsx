@@ -27,8 +27,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Alert,
+  Container,
 } from "@mui/material";
 import { useNavigate } from "react-router";
+import { Warning } from "@mui/icons-material";
 
 function RecordIncidents() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -190,18 +193,23 @@ function RecordIncidents() {
   };
 
   return (
-    <div className="min-h-[90vh] p-6 bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-300">
-      <h1 className="text-3xl font-extrabold mb-3 text-blue-800 tracking-tight">
-        Ghi nhận Sự kiện Y tế
-      </h1>
-
-      <div className="bg-blue-100 w-fit text-left p-4 rounded-lg border border-blue-200 shadow-md mb-6">
-        <AlertTriangle size={18} className="text-yellow-500 inline-block mr-2" />
-        <p className="text-sm text-blue-600 inline-block">
-          Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như tai
+    <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+      >  Ghi nhận Sự kiện Y tế
+      </Typography>
+            <Alert
+              severity="info"
+              icon={<Warning />}
+              sx={{ mb: 3, fontWeight: "medium" }}
+            >
+             Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như tai
           nạn, sốt, té ngã, hoặc dịch bệnh một cách nhanh chóng và chính xác.
-        </p>
-      </div>
+          </Alert>
 
       {/* Phần Tìm kiếm & Lọc Học sinh */}
       <div className="mb-10 p-6 bg-white rounded-xl border border-blue-100 shadow-md transition-all duration-300 hover:shadow-lg">
@@ -533,7 +541,7 @@ function RecordIncidents() {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Container>
   );
 }
 
