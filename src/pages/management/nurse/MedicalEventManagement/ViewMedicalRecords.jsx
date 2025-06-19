@@ -379,6 +379,15 @@ console.log("Update Data:", updateData);
                         </Box>
                       </Box>
 
+                      {/* Divider */}
+                      <Box
+                        sx={{
+                          height: 1,
+                          bgcolor: "rgba(34, 197, 94, 0.2)",
+                          mb: 3,
+                        }}
+                      />
+
                       {/* Status & Severity */}
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <Chip
