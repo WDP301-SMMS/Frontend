@@ -32,7 +32,7 @@ const LoadingSpinner = () => {
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-200 rounded-full opacity-20 animate-pulse animation-delay-300"></div>
       <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-purple-200 rounded-full opacity-20 animate-pulse animation-delay-500"></div>
 
-      <style jsx>{`
+      <style>{`
         .animation-delay-75 {
           animation-delay: 0.075s;
         }

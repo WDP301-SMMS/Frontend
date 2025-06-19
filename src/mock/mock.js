@@ -580,129 +580,6 @@ export const notifications = [
 
 
 
-export const eventRecords = [
-  {
-    id: "REC001",
-    student: { name: "Nguyễn Văn An", class: "10A1", id: "S001" },
-    event: {
-      eventType: "Sốt",
-      date: "2025-06-18",
-      time: "14:00",
-      description: "Sốt nhẹ, mệt mỏi",
-      actionsTaken: "Cho uống thuốc hạ sốt, báo phụ huynh",
-    },
-    timestamp: "18/06/2025, 14:15:30",
-  },
-  {
-    id: "REC002",
-    student: { name: "Trần Thị Bình", class: "10A2", id: "S002" },
-    event: {
-      eventType: "Té ngã",
-      date: "2025-06-17",
-      time: "09:30",
-      description: "Té ngã sân trường, trầy xước tay",
-      actionsTaken: "Sát trùng, cấp phát vật tư",
-    },
-    timestamp: "17/06/2025, 09:45:00",
-  },
-  {
-    id: "REC003",
-    student: { name: "Lê Văn Cường", class: "11B1", id: "S003" },
-    event: {
-      eventType: "Dị ứng",
-      date: "2025-06-16",
-      time: "11:00",
-      description: "Nổi mẩn đỏ sau khi ăn hải sản",
-      actionsTaken: "Cho uống thuốc điều trị dị ứng, gọi phụ huynh",
-    },
-    timestamp: "16/06/2025, 11:30:10",
-  },
-  {
-    id: "REC004",
-    student: { name: "Phạm Thị D", class: "9A4", id: "S004" },
-    event: {
-      eventType: "Tai nạn sân chơi",
-      date: "2025-06-15",
-      time: "16:20",
-      description: "Hỗ trợ khẩn cấp tại sân chơi",
-      actionsTaken: "Cấp phát vật tư, sơ cứu",
-    },
-    timestamp: "15/06/2025, 16:25:00",
-  },
-  {
-    id: "REC005",
-    student: { name: "Hoàng Văn E", class: "10B5", id: "S005" },
-    event: {
-      eventType: "Hội thao trường",
-      date: "2025-06-14",
-      time: "10:00",
-      description: "Cung cấp nước và chăm sóc y tế",
-      actionsTaken: "Cấp phát vật tư",
-    },
-    timestamp: "14/06/2025, 10:05:00",
-  },
-  {
-    id: "REC006",
-    student: { name: "Ngô Thị F", class: "11A6", id: "S006" },
-    event: {
-      eventType: "Lớp học thực hành",
-      date: "2025-06-13",
-      time: "14:10",
-      description: "Thực hành hóa học an toàn",
-      actionsTaken: "Chưa có xử lý",
-    },
-    timestamp: "13/06/2025, 14:15:00",
-  },
-  {
-    id: "REC007",
-    student: { name: "Đỗ Văn G", class: "12B7", id: "S007" },
-    event: {
-      eventType: "Sự cố điện",
-      date: "2025-06-12",
-      time: "15:50",
-      description: "Hỗ trợ sơ cứu sau sự cố",
-      actionsTaken: "Cấp phát vật tư",
-    },
-    timestamp: "12/06/2025, 15:55:00",
-  },
-  {
-    id: "REC008",
-    student: { name: "Trần Văn H", class: "9C8", id: "S008" },
-    event: {
-      eventType: "Ngày hội thể thao",
-      date: "2025-06-11",
-      time: "11:30",
-      description: "Chăm sóc y tế cho vận động viên",
-      actionsTaken: "Cấp phát vật tư",
-    },
-    timestamp: "11/06/2025, 11:35:00",
-  },
-  {
-    id: "REC009",
-    student: { name: "Lý Thị I", class: "10C9", id: "S009" },
-    event: {
-      eventType: "Học kỳ quân đội",
-      date: "2025-06-10",
-      time: "09:25",
-      description: "Hỗ trợ y tế trong huấn luyện",
-      actionsTaken: "Chưa có xử lý",
-    },
-    timestamp: "10/06/2025, 09:30:00",
-  },
-  {
-    id: "REC010",
-    student: { name: "Vũ Văn K", class: "11C10", id: "S010" },
-    event: {
-      eventType: "Sự cố cầu thang",
-      date: "2025-06-09",
-      time: "17:15",
-      description: "Hỗ trợ khẩn cấp tại cầu thang",
-      actionsTaken: "Cấp phát vật tư, sơ cứu",
-    },
-    timestamp: "09/06/2025, 17:20:00",
-  },
-];
-
 
 export const eventsLog = [
   {
@@ -1205,3 +1082,168 @@ const dispenseLogs = [
 ];
 
 export default dispenseLogs;
+
+
+
+
+
+export const eventRecords = [
+  {
+    id: "REC001",
+    student: { name: "Nguyễn Văn An", class: "10A1", id: "S001" },
+    event: {
+      eventType: "Sốt",
+      date: "2024-05-10",
+      time: "14:00",
+      description: "Sốt nhẹ 38.2°C, mệt mỏi, đau đầu",
+      actionsTaken: "Cho nghỉ ngơi, theo dõi nhiệt độ, báo phụ huynh",
+      medicinesUsed: [
+        { name: "Paracetamol 500mg", quantity: "1 viên", time: "14:00" },
+        { name: "Nước muối sinh lý", quantity: "1 chai nhỏ", time: "14:05" },
+      ],
+    },
+    timestamp: "10/05/2024, 14:15:30",
+  },
+  {
+    id: "REC002",
+    student: { name: "Trần Thị Bình", class: "10A2", id: "S002" },
+    event: {
+      eventType: "Té ngã",
+      date: "2024-05-15",
+      time: "09:30",
+      description: "Té ngã sân trường, trầy xước tay phải, vết thương 3cm",
+      actionsTaken: "Sát trùng vết thương, băng bó, theo dõi",
+      medicinesUsed: [
+        { name: "Betadine", quantity: "5ml", time: "09:35" },
+        { name: "Băng y tế", quantity: "1 cuộn", time: "09:40" },
+        { name: "Bông y tế", quantity: "5 miếng", time: "09:35" },
+      ],
+    },
+    timestamp: "15/05/2024, 09:45:00",
+  },
+  {
+    id: "REC003",
+    student: { name: "Lê Văn Cường", class: "11B1", id: "S003" },
+    event: {
+      eventType: "Dị ứng",
+      date: "2024-05-20",
+      time: "11:00",
+      description: "Nổi mẩn đỏ sau khi ăn hải sản, ngứa nhiều vùng tay và mặt",
+      actionsTaken:
+        "Cho uống thuốc chống dị ứng, rửa mặt nước lạnh, gọi phụ huynh",
+      medicinesUsed: [
+        { name: "Loratadine 10mg", quantity: "1 viên", time: "11:05" },
+        { name: "Kem bôi chống ngứa", quantity: "Bôi mỏng", time: "11:10" },
+      ],
+    },
+    timestamp: "20/05/2024, 11:30:10",
+  },
+  {
+    id: "REC004",
+    student: { name: "Phạm Thị Duyên", class: "12A3", id: "S004" },
+    event: {
+      eventType: "Đau bụng",
+      date: "2024-05-22",
+      time: "13:15",
+      description: "Đau bụng nhẹ sau khi ăn trưa, không sốt",
+      actionsTaken: "Cho nằm nghỉ, quan sát triệu chứng",
+      medicinesUsed: [], // Không sử dụng thuốc
+    },
+    timestamp: "22/05/2024, 13:30:45",
+  },
+];
+
+
+export const vaccinationCampaigns = [
+  {
+    id: "VC001",
+    campaignName: "Chiến dịch tiêm Sởi-Quai bị-Rubella",
+    vaccineName: "Sởi - Quai bị - Rubella",
+    vaccineType: "Kết hợp",
+    manufacturer: "Viện Vắc-xin Quốc gia",
+    ageGroup: "1-12 tuổi",
+    vaccineInfo:
+      "Vaccine MMR (Sởi - Quai bị - Rubella) giúp bảo vệ trẻ em khỏi ba bệnh truyền nhiễm phổ biến. Tiêm 2 mũi cách nhau ít nhất 1 tháng.",
+    specialRequirements: "Không cần yêu cầu đặc biệt.",
+    thirdPartyProvider: {
+      name: "Công ty Y tế Sức Khỏe Toàn Cầu",
+      contact: "0901234567",
+    },
+    targetClasses: ["C001", "C002", "C003"],
+    batchNumber: "MMR2025-001",
+    expiryDate: "2026-12-31",
+  },
+  {
+    id: "VC002",
+    campaignName: "Chiến dịch tiêm Viêm gan B",
+    vaccineName: "Viêm gan B",
+    vaccineType: "Đơn lẻ",
+    manufacturer: "Công ty BioPharma",
+    ageGroup: "Sơ sinh - 18 tuổi",
+    vaccineInfo:
+      "Vaccine Viêm gan B bảo vệ chống lại virus viêm gan B. Lịch tiêm thường bao gồm 3-4 mũi tùy thuộc vào độ tuổi.",
+    specialRequirements: "Không có.",
+    thirdPartyProvider: {
+      name: "Trung tâm Tiêm chủng An Tâm",
+      contact: "0912345678",
+    },
+    targetClasses: ["C004", "C005"],
+    batchNumber: "HBV2025-002",
+    expiryDate: "2027-06-30",
+  },
+  {
+    id: "VC003",
+    campaignName: "Chiến dịch tiêm Cúm mùa 2025",
+    vaccineName: "Cúm mùa",
+    vaccineType: "Đơn lẻ",
+    manufacturer: "Sanofi Pasteur",
+    ageGroup: "Trên 6 tháng tuổi",
+    vaccineInfo:
+      "Vaccine cúm mùa giúp phòng ngừa các chủng virus cúm phổ biến trong mùa. Nên tiêm nhắc lại hàng năm.",
+    specialRequirements: "Tránh tiêm nếu có tiền sử dị ứng trứng.",
+    thirdPartyProvider: {
+      name: "Công ty Y tế Sức Khỏe Toàn Cầu",
+      contact: "0901234567",
+    },
+    targetClasses: ["C001", "C005"],
+    batchNumber: "FLU2025-003",
+    expiryDate: "2025-12-31",
+  },
+  {
+    id: "VC004",
+    campaignName: "Chiến dịch tiêm HPV",
+    vaccineName: "HPV (Human Papillomavirus)",
+    vaccineType: "Đơn lẻ",
+    manufacturer: "Merck & Co.",
+    ageGroup: "9-14 tuổi",
+    vaccineInfo:
+      "Vaccine HPV giúp ngăn ngừa nhiễm virus HPV, nguyên nhân gây ra một số loại ung thư. Gồm 2 mũi.",
+    specialRequirements: "Tư vấn bác sĩ nếu có bệnh mãn tính.",
+    thirdPartyProvider: {
+      name: "Trung tâm Tiêm chủng An Tâm",
+      contact: "0912345678",
+    },
+    targetClasses: ["C003", "C004"],
+    batchNumber: "HPV2025-004",
+    expiryDate: "2027-03-31",
+  },
+  {
+    id: "VC005",
+    campaignName: "Chiến dịch tiêm Phế cầu",
+    vaccineName: "Phế cầu (PCV13)",
+    vaccineType: "Khác",
+    customVaccineType: "Vaccine ngừa phế cầu khuẩn",
+    manufacturer: "Pfizer",
+    ageGroup: "Dưới 5 tuổi và người lớn trên 65 tuổi",
+    vaccineInfo:
+      "Vaccine PCV13 bảo vệ trẻ em khỏi các bệnh do phế cầu khuẩn như viêm phổi, viêm tai giữa, viêm màng não. Lịch tiêm theo độ tuổi.",
+    specialRequirements: "Không có.",
+    thirdPartyProvider: {
+      name: "Công ty Y tế Sức Khỏe Toàn Cầu",
+      contact: "0901234567",
+    },
+    targetClasses: ["C001"],
+    batchNumber: "PCV2025-005",
+    expiryDate: "2026-09-30",
+  },
+];

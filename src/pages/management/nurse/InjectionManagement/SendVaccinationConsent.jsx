@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Send, Plus, Eye, AlertTriangle, CheckCircle } from "lucide-react";
 import {
   Dialog,
@@ -23,23 +23,29 @@ import {
   TableRow,
   Paper,
   Pagination,
+  Container,
+  Alert,
 } from "@mui/material";
 import ReactMarkdown from "react-markdown";
+import { Warning } from "@mui/icons-material";
+import { classes, vaccinationCampaigns } from "~/mock/mock";
 
-// Danh sách lớp mẫu
-const classes = [
-  { id: "C001", name: "Lớp 1A" },
-  { id: "C002", name: "Lớp 1B" },
-  { id: "C003", name: "Lớp 2A" },
-  { id: "C004", name: "Lớp 2B" },
-  { id: "C005", name: "Lớp 3A" },
-];
+
+
+// Dữ liệu chiến dịch tiêm chủng mẫu
+// Dữ liệu chiến dịch tiêm chủng mẫu
 
 // Reusable Alert Dialog Component
-const AlertDialog = ({ open, onClose, message, type }) => {
+const AlertDialog = ({ open, onClose, message, type, onConfirm }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{type === "success" ? "Thành công" : "Lỗi"}</DialogTitle>
+      <DialogTitle>
+        {type === "success"
+          ? "Thành công"
+          : type === "error"
+          ? "Lỗi"
+          : "Xác nhận"}
+      </DialogTitle>
       <DialogContent>
         <Box display="flex" alignItems="center" gap={2}>
           {type === "success" ? (
@@ -51,9 +57,20 @@ const AlertDialog = ({ open, onClose, message, type }) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary" variant="contained">
-          Đóng
-        </Button>
+        {type === "confirm" ? (
+          <>
+            <Button onClick={onClose} color="inherit">
+              Hủy
+            </Button>
+            <Button onClick={onConfirm} color="primary" variant="contained">
+              Xác nhận
+            </Button>
+          </>
+        ) : (
+          <Button onClick={onClose} color="primary" variant="contained">
+            Đóng
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
@@ -61,16 +78,17 @@ const AlertDialog = ({ open, onClose, message, type }) => {
 
 function SendVaccinationConsent() {
   const [form, setForm] = useState({
-    vaccineName: "",
+    selectedCampaignId: "", // New: to select an existing campaign
+    vaccineName: "", // These will be populated from selected campaign
     vaccineType: "",
     customVaccineType: "",
     ageGroup: "",
+    vaccineInfo: "",
+    specialRequirements: "",
     targetClasses: [],
     scheduledDate: new Date().toISOString().substring(0, 10),
     scheduledTime: "08:00",
     location: "",
-    vaccineInfo: "",
-    specialRequirements: "",
     channels: { email: false, app: false },
   });
   const [notifications, setNotifications] = useState([]);
@@ -82,11 +100,10 @@ function SendVaccinationConsent() {
   const [alertDialog, setAlertDialog] = useState({
     open: false,
     message: "",
-    type: "error", // 'error' or 'success'
+    type: "error", // 'error', 'success', or 'confirm'
+    onConfirm: null,
   });
   const itemsPerPage = 10;
-
-  const vaccineTypes = ["Kết hợp", "Đơn lẻ", "Khác"];
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -94,6 +111,38 @@ function SendVaccinationConsent() {
       ...prevForm,
       [name]: value,
     }));
+  };
+
+  const handleCampaignSelect = (e) => {
+    const campaignId = e.target.value;
+    const selectedCampaign = vaccinationCampaigns.find(
+      (campaign) => campaign.id === campaignId
+    );
+
+    if (selectedCampaign) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        selectedCampaignId: campaignId,
+        vaccineName: selectedCampaign.vaccineName,
+        vaccineType: selectedCampaign.vaccineType,
+        customVaccineType: selectedCampaign.customVaccineType || "",
+        ageGroup: selectedCampaign.ageGroup,
+        vaccineInfo: selectedCampaign.vaccineInfo,
+        specialRequirements: selectedCampaign.specialRequirements,
+      }));
+    } else {
+      // Reset vaccine-related fields if no campaign is selected (e.g., if "Choose campaign" is re-selected)
+      setForm((prevForm) => ({
+        ...prevForm,
+        selectedCampaignId: "",
+        vaccineName: "",
+        vaccineType: "",
+        customVaccineType: "",
+        ageGroup: "",
+        vaccineInfo: "",
+        specialRequirements: "",
+      }));
+    }
   };
 
   const handleCheckboxChange = (e) => {
@@ -142,13 +191,30 @@ Vui lòng phản hồi trước ngày **${new Date(
       form.scheduledDate
     ).toLocaleDateString("vi-VN")}**.
 
-Trân trọng,  
+Trân trọng,  
 **Ban Y tế Trường học**
     `;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!form.selectedCampaignId) {
+      setAlertDialog({
+        open: true,
+        message: "Vui lòng chọn một chiến dịch tiêm chủng.",
+        type: "error",
+      });
+      return;
+    }
+    if (form.targetClasses.length === 0) {
+      setAlertDialog({
+        open: true,
+        message: "Vui lòng chọn ít nhất một lớp mục tiêu.",
+        type: "error",
+      });
+      return;
+    }
     if (!Object.values(form.channels).some((channel) => channel)) {
       setAlertDialog({
         open: true,
@@ -157,17 +223,18 @@ Trân trọng,
       });
       return;
     }
-    if (form.vaccineType === "Khác" && !form.customVaccineType) {
+    if (!form.location) {
       setAlertDialog({
         open: true,
-        message: "Vui lòng nhập loại vaccine nếu chọn 'Khác'.",
+        message: "Vui lòng nhập địa điểm tiêm.",
         type: "error",
       });
       return;
     }
+
     const newNotification = {
       id: Date.now().toString(),
-      campaignName: `Chiến dịch tiêm ${form.vaccineName}`,
+      campaignName: form.campaignName, // This will be set from the selected campaign
       vaccineName: form.vaccineName,
       vaccineType:
         form.vaccineType === "Khác" ? form.customVaccineType : form.vaccineType,
@@ -186,27 +253,28 @@ Trân trọng,
     setNotifications((prev) => [...prev, newNotification]);
     setOpenDialog(false);
     setForm({
+      selectedCampaignId: "",
       vaccineName: "",
       vaccineType: "",
       customVaccineType: "",
       ageGroup: "",
+      vaccineInfo: "",
+      specialRequirements: "",
       targetClasses: [],
       scheduledDate: new Date().toISOString().substring(0, 10),
       scheduledTime: "08:00",
       location: "",
-      vaccineInfo: "",
-      specialRequirements: "",
       channels: { email: false, app: false },
     });
     setAlertDialog({
       open: true,
       message: "Thông báo đã được gửi thành công!",
       type: "success",
+      onConfirm: null,
     });
   };
 
   const handleResend = (notification) => {
-    // Replace confirm with Dialog
     setAlertDialog({
       open: true,
       message: "Bạn có chắc chắn muốn tái gửi thông báo này?",
@@ -223,6 +291,7 @@ Trân trọng,
           open: true,
           message: "Thông báo đã được tái gửi.",
           type: "success",
+          onConfirm: null,
         });
       },
     });
@@ -246,24 +315,29 @@ Trân trọng,
 
   // Handle closing alert dialog
   const handleCloseAlertDialog = () => {
-    setAlertDialog((prev) => ({ ...prev, open: false }));
+    setAlertDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
   };
 
   return (
-    <div className="min-h-[90vh] p-6 bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-300">
-      <h1 className="text-3xl font-extrabold mb-3 text-blue-800 tracking-tight">
-        Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
-      </h1>
+<Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+            <Typography
+                    variant="h4"
+                    sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+                  >
+                   Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
+                  </Typography>
 
-      <div className="bg-blue-100 w-fit text-left p-4 rounded-lg border border-blue-200 shadow-md mb-6">
-        <AlertTriangle
-          size={18}
-          className="text-yellow-500 inline-block mr-2"
-        />
-        <p className="text-sm text-blue-600 inline-block">
-          Tạo và gửi thông báo tiêm chủng đến phụ huynh học sinh.
-        </p>
-      </div>
+      <Alert
+              severity="info"
+              icon={<Warning />}
+              sx={{ mb: 3, fontWeight: "medium" }}
+            >
+               Tạo và gửi thông báo tiêm chủng đến phụ huynh học sinh.s
+            </Alert>
+      
 
       {/* Nút tạo thông báo */}
       <Box display="flex" justifyContent="flex-end" mb={6}>
@@ -279,7 +353,23 @@ Trân trọng,
             textTransform: "none",
           }}
           startIcon={<Plus size={20} />}
-          onClick={() => setOpenDialog(true)}
+          onClick={() => {
+            setOpenDialog(true);
+            setForm({
+              selectedCampaignId: "",
+              vaccineName: "",
+              vaccineType: "",
+              customVaccineType: "",
+              ageGroup: "",
+              vaccineInfo: "",
+              specialRequirements: "",
+              targetClasses: [],
+              scheduledDate: new Date().toISOString().substring(0, 10),
+              scheduledTime: "08:00",
+              location: "",
+              channels: { email: false, app: false },
+            }); // Reset form when opening dialog
+          }}
         >
           Tạo thông báo mới
         </Button>
@@ -331,10 +421,12 @@ Trân trọng,
                     </span>{" "}
                     |
                     <span style={{ color: "red" }}>
+                      {" "}
                       Từ chối: {notification.status.declined}
                     </span>{" "}
                     |
                     <span style={{ color: "blue" }}>
+                      {" "}
                       Chưa phản hồi: {notification.status.pending}
                     </span>
                   </TableCell>
@@ -393,61 +485,88 @@ Trân trọng,
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Tạo Thông Báo Tiêm Chủng</DialogTitle>
+        <DialogTitle>Tạo Thông Báo Tiêm Chủng Mới</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
-            <TextField
-              name="vaccineName"
-              label="Tên vaccine"
-              value={form.vaccineName}
-              onChange={handleFormChange}
-              required
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              placeholder="Ví dụ: Sởi - Quai bị - Rubella"
-            />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Loại vaccine</InputLabel>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Chọn Chiến Dịch Tiêm Chủng</InputLabel>
               <Select
-                name="vaccineType"
-                value={form.vaccineType}
-                onChange={handleFormChange}
-                required
-                label="Loại vaccine"
+                name="selectedCampaignId"
+                value={form.selectedCampaignId}
+                onChange={handleCampaignSelect}
+                label="Chọn Chiến Dịch Tiêm Chủng"
               >
-                <MenuItem value="">Chọn loại</MenuItem>
-                {vaccineTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
+                <MenuItem value="">
+                  <em>-- Chọn một chiến dịch --</em>
+                </MenuItem>
+                {vaccinationCampaigns.map((campaign) => (
+                  <MenuItem key={campaign.id} value={campaign.id}>
+                    {campaign.campaignName}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            {form.vaccineType === "Khác" && (
-              <TextField
-                name="customVaccineType"
-                label="Mô tả loại vaccine"
-                value={form.customVaccineType}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                placeholder="Nhập loại vaccine khác"
-              />
+
+            {/* Display fields from selected campaign (read-only or conditionally editable if needed) */}
+            {form.selectedCampaignId && (
+              <>
+                <TextField
+                  name="vaccineName"
+                  label="Tên vaccine"
+                  value={form.vaccineName}
+                  fullWidth
+                  variant="outlined"
+                  margin="normal"
+                  InputProps={{ readOnly: true }} // Make it read-only
+                />
+                <TextField
+                  name="vaccineType"
+                  label="Loại vaccine"
+                  value={
+                    form.vaccineType === "Khác"
+                      ? form.customVaccineType
+                      : form.vaccineType
+                  }
+                  fullWidth
+                  variant="outlined"
+                  margin="normal"
+                  InputProps={{ readOnly: true }} // Make it read-only
+                />
+                <TextField
+                  name="ageGroup"
+                  label="Nhóm tuổi"
+                  value={form.ageGroup}
+                  fullWidth
+                  variant="outlined"
+                  margin="normal"
+                  InputProps={{ readOnly: true }} // Make it read-only
+                />
+                <TextField
+                  name="vaccineInfo"
+                  label="Thông tin vaccine"
+                  value={form.vaccineInfo}
+                  fullWidth
+                  variant="outlined"
+                  margin="normal"
+                  multiline
+                  rows={4}
+                  InputProps={{ readOnly: true }} // Make it read-only
+                />
+                <TextField
+                  name="specialRequirements"
+                  label="Yêu cầu đặc biệt"
+                  value={form.specialRequirements}
+                  fullWidth
+                  variant="outlined"
+                  margin="normal"
+                  multiline
+                  rows={2}
+                  InputProps={{ readOnly: true }} // Make it read-only
+                />
+              </>
             )}
-            <TextField
-              name="ageGroup"
-              label="Nhóm tuổi"
-              value={form.ageGroup}
-              onChange={handleFormChange}
-              required
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              placeholder="Ví dụ: 1-12 tuổi"
-            />
+
+            {/* Remaining fields are for the specific notification instance */}
             <FormControl fullWidth margin="normal">
               <InputLabel>Lớp mục tiêu</InputLabel>
               <Select
@@ -520,31 +639,7 @@ Trân trọng,
               margin="normal"
               placeholder="Ví dụ: Phòng y tế trường"
             />
-            <TextField
-              name="vaccineInfo"
-              label="Thông tin vaccine"
-              value={form.vaccineInfo}
-              onChange={handleFormChange}
-              required
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              multiline
-              rows={4}
-              placeholder="Tác dụng, tác dụng phụ, lợi ích..."
-            />
-            <TextField
-              name="specialRequirements"
-              label="Yêu cầu đặc biệt"
-              value={form.specialRequirements}
-              onChange={handleFormChange}
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              multiline
-              rows={2}
-              placeholder="Ví dụ: Nhịn ăn sáng, tránh dùng thuốc..."
-            />
+
             <Box mt={2}>
               <Typography variant="subtitle1" gutterBottom>
                 Kênh gửi thông báo
@@ -578,10 +673,16 @@ Trân trọng,
                 onClick={() => setOpenPreviewDialog(true)}
                 variant="outlined"
                 color="primary"
+                disabled={!form.selectedCampaignId || !form.location || form.targetClasses.length === 0 || (!form.channels.email && !form.channels.app)}
               >
                 Xem trước
               </Button>
-              <Button type="submit" variant="contained" color="primary">
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!form.selectedCampaignId || !form.location || form.targetClasses.length === 0 || (!form.channels.email && !form.channels.app)}
+              >
                 Gửi
               </Button>
             </DialogActions>
@@ -673,6 +774,9 @@ Trân trọng,
                 <strong>Kênh gửi:</strong>{" "}
                 {Object.keys(selectedNotification.channels)
                   .filter((key) => selectedNotification.channels[key])
+                  .map((key) =>
+                    key === "email" ? "Email" : key === "app" ? "App" : ""
+                  )
                   .join(", ")}
               </Typography>
               <Typography variant="body1" mt={2}>
@@ -702,59 +806,15 @@ Trân trọng,
         </DialogActions>
       </Dialog>
 
-      {/* Alert Dialog for Errors and Success Messages */}
-      <Dialog
+      {/* Alert Dialog for Errors, Success, and Confirm Messages */}
+      <AlertDialog
         open={alertDialog.open}
         onClose={handleCloseAlertDialog}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>
-          {alertDialog.type === "success"
-            ? "Thành công"
-            : alertDialog.type === "error"
-            ? "Lỗi"
-            : "Xác nhận"}
-        </DialogTitle>
-        <DialogContent>
-          <Box display="flex" alignItems="center" gap={2}>
-            {alertDialog.type === "success" ? (
-              <CheckCircle size={24} className="text-green-500" />
-            ) : (
-              <AlertTriangle size={24} className="text-red-500" />
-            )}
-            <Typography>{alertDialog.message}</Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          {alertDialog.type === "confirm" ? (
-            <>
-              <Button onClick={handleCloseAlertDialog} color="inherit">
-                Hủy
-              </Button>
-              <Button
-                onClick={() => {
-                  alertDialog.onConfirm();
-                  handleCloseAlertDialog();
-                }}
-                color="primary"
-                variant="contained"
-              >
-                Xác nhận
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={handleCloseAlertDialog}
-              color="primary"
-              variant="contained"
-            >
-              Đóng
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </div>
+        message={alertDialog.message}
+        type={alertDialog.type}
+        onConfirm={alertDialog.onConfirm}
+      />
+    </Container>
   );
 }
 

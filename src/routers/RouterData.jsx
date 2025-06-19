@@ -47,14 +47,15 @@ import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement
 const ManageSupplies = () => <div>Quản lý vật tư</div>;
 const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
 const PrepareList = () => <div>Chuẩn bị danh sách</div>;
-const VaccinateRecord = () => <div>Tiêm chủng & Ghi nhận</div>;
 const PostVaccinationMonitoring = () => <div>Theo dõi sau tiêm</div>;
 const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
 const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
 const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
 const Settings = () => <div>Cài đặt</div>;
-
+import Layout from "../pages/layout/Layout";
+import ManagementLayout from "../pages/management/Layout";
+import VaccinateRecord from "~/pages/management/nurse/InjectionManagement/VaccinateRecord";
 const basicRoutes = [
   {
     path: "/",
