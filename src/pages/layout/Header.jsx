@@ -85,11 +85,11 @@ const Header = () => {
           <Link to="/" className="flex items-center space-x-3">
             <img
               src="/src/assets/images/logo.png"
-              alt="F HealthCare Logo"
+              alt="EduCare Logo"
               className="h-12 w-auto transition-transform hover:scale-105"
             />
             <span className="text-2xl font-semibold text-blue-600">
-              F HealthCare
+              EduCare
             </span>
           </Link>
           {/* Desktop Navigation */}{" "}

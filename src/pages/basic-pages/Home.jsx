@@ -1,33 +1,31 @@
 import React, { useState } from "react";
-import Header from "~/libs/components/layout/Header";
-import Footer from "~/libs/components/layout/Footer";
 import { useNavigate } from "react-router-dom";
 
+// Adjusted Hero Section for a school healthcare theme
 const HeroSection = () => (
   <section className="relative bg-gradient-to-r from-primary to-blue-800 text-white">
     <img
-      src="https://www.stanford.edu/wp-content/uploads/2023/10/Hero-3-2-scaled.jpg"
-      alt="F HealthCare Campus"
-      className="absolute inset-0 w-full h-full object-cover"
+      src="https://www.aap.org/contentassets/23d196ab330c4a6fbdc5d849ecb68d33/student-writing-worksheet-in-class-smiling.jpg" // Consider a more school-health relevant image
+      alt="EduCare School Health"
+      className="absolute inset-0 w-full h-full object-cover opacity-50"
     />
     <div className="absolute inset-0 bg-black opacity-20"></div>
     <div className="relative container mx-auto px-4 py-20 text-center">
       <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-        F HealthCare
+        EduCare-Sức Khỏe Học Đường
       </h1>
       <h2 className="text-2xl md:text-3xl font-light mb-8 max-w-4xl mx-auto">
-        Sứ Mệnh Được Định Nghĩa Bởi Khả Năng
+        Chăm Sóc Toàn Diện Cho Học Sinh, Nâng Cao Sức Khỏe Cộng Đồng
       </h2>
       <p className="text-lg md:text-xl mb-8 max-w-4xl mx-auto leading-relaxed opacity-90">
-        Tại F HealthCare, sứ mệnh khám phá và học hỏi được tiếp thêm sinh lực
-        bởi tinh thần lạc quan và đam mê mở rộng tri thức, với góc nhìn đa dạng
-        và tự do để khám phá những cách suy nghĩ mới.
+        Tại EduCare Sức Khỏe Học Đường, chúng tôi cam kết mang đến dịch vụ chăm sóc sức khỏe chất lượng cao,
+        giáo dục phòng ngừa và các chương trình nâng cao thể chất, tinh thần cho toàn thể học sinh và cán bộ.
       </p>
       <a
         href="/about"
         className="bg-white text-primary px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
       >
-        Khám Phá F HealthCare
+        Tìm Hiểu Dịch Vụ Của Chúng Tôi
       </a>
     </div>
   </section>
@@ -44,27 +42,27 @@ const NewsCard = ({ title, image }) => (
   </div>
 );
 
+// Adjusted Campus News Section for health-related news
 const CampusNewsSection = () => {
   const navigate = useNavigate();
   const newsItems = [
     {
-      title:
-        "Tại sao các nhà nghiên cứu đeo khẩu trang trong nghiên cứu đột phá",
+      title: "Chiến dịch tiêm chủng cúm mùa học đường: Bảo vệ sức khỏe cộng đồng",
       image:
         "https://tse2.mm.bing.net/th/id/OIP.hQQ1z8SOv8NYyvIpVMhlBgHaEc?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Bộ trưởng Năng lượng Christine Granholm thăm F HealthCare",
+      title: "Tầm quan trọng của sức khỏe tinh thần trong môi trường học đường",
       image:
         "https://tse3.mm.bing.net/th/id/OIP.5CbMByfwI-jv4nieVl05WAHaE8?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Trí tuệ nhân tạo và kết nối con người thực sự",
+      title: "Phòng chống dịch bệnh tay chân miệng và sốt xuất huyết tại trường",
       image:
         "https://tse1.mm.bing.net/th/id/OIP.840k2vBDSw-gfvFi5NpzzQHaEJ?rs=1&pid=ImgDetMain",
     },
     {
-      title: "Khả năng thành công cao nhất: Câu chuyện thành tích sinh viên",
+      title: "Ngày hội sức khỏe học đường: Kiểm tra tổng quát và tư vấn dinh dưỡng",
       image:
         "https://www.salem.edu/wp-content/uploads/blocks/intro/SalemAcademyandCollege321.jpg",
     },
@@ -72,7 +70,7 @@ const CampusNewsSection = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Tin Tức</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">Tin Tức Sức Khỏe Học Đường</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {newsItems.map((item, index) => (
             <NewsCard key={index} title={item.title} image={item.image} />
@@ -83,7 +81,7 @@ const CampusNewsSection = () => {
             onClick={() => navigate("/blogs")}
             className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
-            Xem Thêm Tin Tức
+            Xem Thêm Tin Tức Sức Khỏe
           </button>
         </div>
       </div>
@@ -109,27 +107,27 @@ const HealthCareServiceCard = ({ title, description, image, icon }) => (
   </div>
 );
 
+// Adjusted HealthCare Section for school-specific health services
 const HealthCareSection = () => {
   const healthServices = [
     {
-      title: "Bệnh Viện Nhi Lucile Packard",
+      title: "Phòng Y Tế Học Đường",
       description:
-        "Dịch vụ chăm sóc nhi khoa và sản khoa hàng đầu, được xếp hạng trong số các bệnh viện nhi tốt nhất quốc gia.",
+        "Cung cấp sơ cứu, khám sức khỏe định kỳ và tư vấn y tế cho học sinh và cán bộ trong trường.",
       image:
-        "https://tse4.mm.bing.net/th/id/OIP.yaq_l_0BJcO445mjejKjpAHaEO?rs=1&pid=ImgDetMain",
+        "https://tse4.mm.bing.net/th/id/OIP.yaq_l_0BJcO445mjejKjpAHaEO?rs=1&pid=ImgDetMain", // Consider an image of a school clinic
     },
     {
-      title: "Dịch Vụ Sức Khỏe Tâm Thần",
+      title: "Tư Vấn Sức Khỏe Tâm Lý",
       description:
-        "Hỗ trợ sức khỏe tâm thần toàn diện cho sinh viên, giảng viên và thành viên cộng đồng.",
+        "Hỗ trợ tâm lý, tư vấn các vấn đề về học tập, mối quan hệ và áp lực thi cử cho học sinh.",
       image:
         "https://tse1.mm.bing.net/th/id/OIP.DPtkkqf56mzr0O2S58pW8wHaE8?rs=1&pid=ImgDetMain",
     },
-
     {
-      title: "Giáo Dục Y Tế",
+      title: "Chương Trình Giáo Dục Sức Khỏe",
       description:
-        "Đào tạo thế hệ chuyên gia y tế tương lai và phát triển kiến thức y khoa.",
+        "Tổ chức các buổi nói chuyện chuyên đề, workshop về dinh dưỡng, vệ sinh cá nhân và phòng chống dịch bệnh.",
       image:
         "https://tse1.mm.bing.net/th/id/OIF.Z5OQo3rSb5Rx2nWWHCscSA?rs=1&pid=ImgDetMain",
     },
@@ -140,13 +138,12 @@ const HealthCareSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-6 text-blue-800">
-            F HealthCare
+            Dịch Vụ Sức Khỏe Học Đường
           </h2>
           <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            Tại F HealthCare, chúng tôi cam kết cung cấp dịch vụ chăm sóc bệnh
-            nhân xuất sắc, phát triển kiến thức y khoa thông qua nghiên cứu, và
-            đào tạo các nhà lãnh đạo y tế tương lai. Phương pháp tích hợp của
-            chúng tôi kết hợp giữa sự xuất sắc lâm sàng với đổi mới tiên tiến.
+            Tại EduCare Sức Khỏe Học Đường, chúng tôi ưu tiên sức khỏe và sự an toàn của học sinh.
+            Chúng tôi cung cấp một loạt các dịch vụ y tế và chương trình giáo dục sức khỏe nhằm
+            đảm bảo một môi trường học tập lành mạnh và an toàn.
           </p>
         </div>
 
@@ -159,17 +156,16 @@ const HealthCareSection = () => {
 
         {/* Call to Action */}
         <div className="bg-primary text-white rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Cần Chăm Sóc Y Tế?</h3>
+          <h3 className="text-2xl font-bold mb-4">Cần Hỗ Trợ Y Tế?</h3>
           <p className="text-lg mb-6 opacity-90">
-            Đặt lịch hẹn hoặc tìm bác sĩ chuyên khoa phù hợp cho nhu cầu chăm
-            sóc sức khỏe của bạn.
+            Liên hệ với phòng y tế hoặc tìm hiểu thêm về các dịch vụ chăm sóc sức khỏe của chúng tôi.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-primary px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300">
-              Đặt Lịch Hẹn
+              Liên Hệ Phòng Y Tế
             </button>
             <button className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-primary transition-colors duration-300">
-              Tìm Bác Sĩ
+              Xem Chính Sách Sức Khỏe
             </button>
           </div>
         </div>
@@ -190,25 +186,26 @@ const SectionCard = ({ title, description, image }) => (
   </div>
 );
 
+// Re-purpose Academics Section to focus on health education/programs
 const AcademicsSection = () => {
   const academicAreas = [
     {
-      title: "Undergraduate Education",
-      description: "Comprehensive liberal arts foundation",
+      title: "Chương Trình Giáo Dục Sức Khỏe",
+      description: "Các khóa học và hoạt động về sức khỏe thể chất và tinh thần",
       image:
-        "https://tulane.edu/sites/default/files/images/universal-landing/24608125694_f3463370e8_k%20copy.jpg",
+        "https://tulane.edu/sites/default/files/images/universal-landing/24608125694_f3463370e8_k%20copy.jpg", // Image of students learning about health
     },
     {
-      title: "Graduate Education",
-      description: "Advanced research and scholarship",
+      title: "Huấn Luyện Sơ Cứu & Cấp Cứu",
+      description: "Đào tạo kỹ năng sơ cứu cơ bản cho học sinh và cán bộ",
       image:
-        "https://tse4.mm.bing.net/th/id/OIP.yeeEIPyhXm2QZep7zr61GQHaE8?rs=1&pid=ImgDetMain",
+        "https://tse4.mm.bing.net/th/id/OIP.yeeEIPyhXm2QZep7zr61GQHaE8?rs=1&pid=ImgDetMain", // Image of first aid training
     },
     {
-      title: "Continuing Studies",
-      description: "Lifelong learning opportunities",
+      title: "Hoạt Động Nâng Cao Thể Chất",
+      description: "Các câu lạc bộ thể thao, yoga, và hoạt động ngoài trời",
       image:
-        "https://tse3.mm.bing.net/th/id/OIP.3hP2UhljgTB65QFIPuYIjwHaE8?rs=1&pid=ImgDetMain",
+        "https://tse3.mm.bing.net/th/id/OIP.3hP2UhljgTB65QFIPuYIjwHaE8?rs=1&pid=ImgDetMain", // Image of students doing physical activities
     },
   ];
 
@@ -216,10 +213,10 @@ const AcademicsSection = () => {
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Academics</h2>
+          <h2 className="text-3xl font-bold mb-4">Các Chương Trình Sức Khỏe</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Preparing students to make meaningful contributions to society as
-            engaged citizens and leaders in a complex world
+            Chúng tôi cung cấp các chương trình giáo dục và hoạt động thiết thực nhằm nâng cao
+            nhận thức và xây dựng lối sống lành mạnh cho cộng đồng học đường.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -230,27 +227,27 @@ const AcademicsSection = () => {
         <div className="text-center mt-8">
           <p className="text-primary mb-4">
             <a href="#" className="hover:underline">
-              Law
+              Dinh Dưỡng
             </a>{" "}
             |
             <a href="#" className="hover:underline ml-2">
-              Humanities & Sciences
+              Sức Khỏe Tâm Thần
             </a>{" "}
             |
             <a href="#" className="hover:underline ml-2">
-              Engineering
+              Phòng Chống Dịch Bệnh
             </a>{" "}
             |
             <a href="#" className="hover:underline ml-2">
-              Sustainability
+              Thể Dục Thể Thao
             </a>{" "}
             |
             <a href="#" className="hover:underline ml-2">
-              Business
+              An Toàn Học Đường
             </a>
           </p>
           <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
-            Explore Academics
+            Khám Phá Các Chương Trình
           </button>
         </div>
       </div>
@@ -258,6 +255,7 @@ const AcademicsSection = () => {
   );
 };
 
+// Re-purpose Research Section for health-related statistics/impact
 const StatCard = ({ number, label }) => (
   <div className="text-center p-6 bg-white rounded-lg shadow-md">
     <div className="text-3xl font-bold text-primary mb-2">{number}</div>
@@ -267,20 +265,20 @@ const StatCard = ({ number, label }) => (
 
 const ResearchSection = () => {
   const stats = [
-    { number: "6,869", label: "Researchers" },
-    { number: "$350M", label: "Research Funding" },
-    { number: "5,029", label: "US Patents" },
-    { number: "400+", label: "Research Centers" },
+    { number: "95%", label: "Tỷ Lệ Học Sinh Khỏe Mạnh" },
+    { number: "20+", label: "Chương Trình Sức Khỏe Cộng Đồng" },
+    { number: "150+", label: "Buổi Tư Vấn Tâm Lý/Năm" },
+    { number: "10+", label: "Chiến Dịch Y Tế Học Đường" },
   ];
 
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Research</h2>
+          <h2 className="text-3xl font-bold mb-4">Tác Động Sức Khỏe Học Đường</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Driving discoveries to improve health and our world through
-            innovative research
+            Những con số này thể hiện cam kết của chúng tôi trong việc xây dựng một cộng đồng học đường
+            khỏe mạnh và an toàn.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -290,7 +288,7 @@ const ResearchSection = () => {
         </div>
         <div className="text-center">
           <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
-            Explore Research
+            Xem Báo Cáo Sức Khỏe
           </button>
         </div>
       </div>
@@ -309,29 +307,30 @@ const EventCard = ({ title, image }) => (
   </div>
 );
 
+// Adjusted Events Section for school health-related events
 const EventsSection = () => {
   const events = [
     {
-      title: "University Orchestra Showcase",
+      title: "Ngày Hội Sức Khỏe & Dinh Dưỡng Học Đường",
       image:
-        "https://th.bing.com/th/id/R.4de43d4c83765065d64b027c773bc367?rik=AMCoiMtWWBtYKQ&pid=ImgRaw&r=0",
+        "https://th.bing.com/th/id/R.4de43d4c83765065d64b027c773bc367?rik=AMCoiMtWWBtYKQ&pid=ImgRaw&r=0", // Image of a health fair
     },
     {
-      title: "Climate Health Symposium",
+      title: "Hội Thảo Chuyên Đề: Quản Lý Căng Thẳng Trong Học Tập",
       image:
-        "https://tse4.mm.bing.net/th/id/OIP.w8J7jCDPJ2UHQwAp7kuHCQHaD4?w=600&h=314&rs=1&pid=ImgDetMain",
+        "https://tse4.mm.bing.net/th/id/OIP.w8J7jCDPJ2UHQwAp7kuHCQHaD4?w=600&h=314&rs=1&pid=ImgDetMain", // Image of a symposium/workshop
     },
     {
-      title: "Stanford Energy Week",
+      title: "Giải Chạy Bộ Sức Khỏe Học Đường EduCare",
       image:
-        "https://tse4.mm.bing.net/th/id/OIP.VhRyvBW-HKRcMNGy8AeIiQHaE8?rs=1&pid=ImgDetMain",
+        "https://tse4.mm.bing.net/th/id/OIP.VhRyvBW-HKRcMNGy8AeIiQHaE8?rs=1&pid=ImgDetMain", // Image of a school sports event
     },
   ];
 
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Upcoming Events</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">Sự Kiện Sức Khỏe Sắp Tới</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {events.map((event, index) => (
             <EventCard key={index} {...event} />
@@ -339,7 +338,7 @@ const EventsSection = () => {
         </div>
         <div className="text-center mt-8">
           <button className="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300">
-            View All Events
+            Xem Tất Cả Sự Kiện
           </button>
         </div>
       </div>
@@ -351,11 +350,11 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
-      <CampusNewsSection />
+      <CampusNewsSection /> {/* Renamed implicitly to "Tin Tức Sức Khỏe Học Đường" */}
       <HealthCareSection />
-      <AcademicsSection />
-      <ResearchSection />
-      <EventsSection />
+      <AcademicsSection /> {/* Repurposed as "Các Chương Trình Sức Khỏe" */}
+      <ResearchSection /> {/* Repurposed as "Tác Động Sức Khỏe Học Đường" */}
+      <EventsSection /> {/* Renamed implicitly to "Sự Kiện Sức Khỏe Sắp Tới" */}
     </div>
   );
 };
