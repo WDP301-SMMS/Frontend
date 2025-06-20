@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-const Header = () => {
+export const Header = () => {
   const [isLoggedIn] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -130,5 +130,3 @@ const Header = () => {
     </header>
   );
 };
-
-export default Header;

@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router";
 import { Suspense } from "react";
 import AppRoutes from "~/routers/AppRoutes";
+import { AuthProvider } from "./libs/contexts/AuthContext";
 
 
 // Enhanced Loading Component
@@ -56,9 +57,11 @@ const LoadingSpinner = () => {
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingSpinner />}>
-        <AppRoutes />
-      </Suspense>
+      <AuthProvider>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AppRoutes />
+        </Suspense>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
