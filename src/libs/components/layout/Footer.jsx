@@ -3,7 +3,7 @@ const Footer = () => (
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <h3 className="text-xl font-semibold mb-4">F HealthCare</h3>
+          <h3 className="text-xl font-semibold mb-4">EduCare</h3>
           <p className="opacity-90">Hòa Lạc, Hà Nội, Việt Nam</p>
           <p className="opacity-90">(024) 7300 1866</p>
         </div>
@@ -52,7 +52,7 @@ const Footer = () => (
                 href="#"
                 className="opacity-90 hover:opacity-100 transition-opacity"
               >
-                F HealthCare Y Khoa
+                Educare Y Khoa
               </a>
             </li>
             <li>
