@@ -26,6 +26,8 @@ import {
   Container,
   Alert,
   Avatar,
+  Container,
+  Alert,
 } from "@mui/material";
 import { Download, CheckCircle, Save, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
@@ -1089,6 +1091,8 @@ function VaccinateRecord() {
                   }
                   disabled
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  required
                 />
               </Box>
             </Box>
