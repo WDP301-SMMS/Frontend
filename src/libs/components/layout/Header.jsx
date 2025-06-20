@@ -20,7 +20,7 @@ const Header = () => {
               alt="Logo"
               className="h-8 w-auto"
             />
-            <span>F HealthCare</span>
+            <span>EduCare</span>
           </button>
           <nav className="hidden lg:block ml-8">
             <ul className="flex space-x-6">
