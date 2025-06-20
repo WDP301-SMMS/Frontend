@@ -24,12 +24,14 @@ import {
   InputAdornment,
   Chip,
   Avatar,
+  Container,
+  Alert,
 } from "@mui/material";
 import { Download, CheckCircle, Save, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { students } from "~/mock/mock";
 import { vaccinationCampaigns, classes } from "~/mock/mock";
-import { Visibility } from "@mui/icons-material";
+import { Visibility, Warning } from "@mui/icons-material";
 
 function VaccinateRecord() {
   const [selectedCampaign, setSelectedCampaign] = useState("");
@@ -48,9 +50,18 @@ function VaccinateRecord() {
   const [expiryDate, setExpiryDate] = useState("");
   const [dosage, setDosage] = useState("0.5ml");
   const [injectionSite, setInjectionSite] = useState("Cánh tay trái");
-  const [administrationDateTime, setAdministrationDateTime] = useState(
-    new Date().toISOString().slice(0, 16)
-  );
+  const [administrationDateTime, setAdministrationDateTime] = useState(() => {
+    const now = new Date();
+    const vietnamTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
+    );
+    const year = vietnamTime.getFullYear();
+    const month = String(vietnamTime.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const day = String(vietnamTime.getDate()).padStart(2, "0");
+    const hours = String(vietnamTime.getHours()).padStart(2, "0");
+    const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  });
   const [administeredBy, setAdministeredBy] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [healthCheckNote, setHealthCheckNote] = useState("");
@@ -101,7 +112,8 @@ function VaccinateRecord() {
             stt: index + 1,
             student_id: student.student_id,
             full_name: student.full_name,
-            class_name: classes.find((c) => c.id === student.class_id)?.name || "",
+            class_name:
+              classes.find((c) => c.id === student.class_id)?.name || "",
             date_of_birth: student.date_of_birth,
             health_notes: student.health_notes || "Không có",
             consent_status:
@@ -154,7 +166,12 @@ function VaccinateRecord() {
     const classId = e.target.value;
     setSelectedClass(classId);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, classId, searchQuery, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      classId,
+      searchQuery,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle search
@@ -162,7 +179,12 @@ function VaccinateRecord() {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, query, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      query,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle vaccination status filter
@@ -170,19 +192,37 @@ function VaccinateRecord() {
     const status = e.target.value;
     setVaccinationStatusFilter(status);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, searchQuery, status);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      searchQuery,
+      status
+    );
   };
 
   // Open vaccination dialog
   const handleOpenVaccinationDialog = (student) => {
-    const campaign = vaccinationCampaigns.find((c) => c.id === selectedCampaign);
+    const campaign = vaccinationCampaigns.find(
+      (c) => c.id === selectedCampaign
+    );
     setSelectedStudent(student);
     setThirdPartyProvider(campaign?.thirdPartyProvider.name || "");
     setBatchNumber(campaign?.batchNumber || "");
     setExpiryDate(campaign?.expiryDate || "");
     setDosage("0.5ml");
     setInjectionSite("Cánh tay trái");
-    setAdministrationDateTime(new Date().toISOString().slice(0, 16));
+    setAdministrationDateTime(() => {
+    const now = new Date();
+    const vietnamTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
+    );
+    const year = vietnamTime.getFullYear();
+    const month = String(vietnamTime.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const day = String(vietnamTime.getDate()).padStart(2, "0");
+    const hours = String(vietnamTime.getHours()).padStart(2, "0");
+    const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  });
     setAdministeredBy("");
     setManufacturer(campaign?.manufacturer || "");
     setHealthCheckNote("");
@@ -360,11 +400,24 @@ function VaccinateRecord() {
   };
 
   return (
-    <div className="min-h-[90vh] p-6 bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-300">
-      <Typography variant="h4" fontWeight="bold" color="#1a202c" mb={3}>
-        Tiêm Chủng và Ghi Nhận Kết Quả
+     <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+      >
+       Tiêm Chủng và Ghi Nhận Kết Quả
       </Typography>
 
+      <Alert
+        severity="info"
+        icon={<Warning />}
+        sx={{ mb: 3, fontWeight: "medium" }}
+      >
+        Tiến hành ghi nhận kết quả tiêm chủng cho học sinh theo chiến dịch đã chọn. Vui lòng đảm bảo thông tin đầy đủ và chính xác trước khi lưu.
+      </Alert>
       <Box display="flex" gap={2} mb={4}>
         <FormControl fullWidth>
           <InputLabel>Chọn chiến dịch</InputLabel>
@@ -441,18 +494,37 @@ function VaccinateRecord() {
         </Box>
       ) : (
         <>
-          <TableContainer component={Paper} sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+          <TableContainer
+            component={Paper}
+            sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+          >
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>STT</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Họ và Tên</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Lớp</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Ngày Sinh</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Tình Trạng Sức Khỏe</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Đồng Ý Tiêm</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Trạng Thái Tiêm</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Hành Động</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    STT
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Họ và Tên
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Lớp
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Ngày Sinh
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Tình Trạng Sức Khỏe
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Đồng Ý Tiêm
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Trạng Thái Tiêm
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Hành Động
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -462,21 +534,40 @@ function VaccinateRecord() {
                       <TableCell>{record.stt}</TableCell>
                       <TableCell>{record.full_name}</TableCell>
                       <TableCell>{record.class_name}</TableCell>
-                      <TableCell>{new Date(record.date_of_birth).toLocaleDateString("vi-VN")}</TableCell>
-                      <TableCell sx={{ color: record.health_notes !== "Không có" ? "red" : "inherit" }}>
+                      <TableCell>
+                        {new Date(record.date_of_birth).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color:
+                            record.health_notes !== "Không có"
+                              ? "red"
+                              : "inherit",
+                        }}
+                      >
                         {record.health_notes}
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={record.consent_status}
-                          color={record.consent_status === "Đã đồng ý" ? "success" : "error"}
+                          color={
+                            record.consent_status === "Đã đồng ý"
+                              ? "success"
+                              : "error"
+                          }
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={record.vaccination_status}
-                          color={record.vaccination_status === "Đã tiêm" ? "success" : "warning"}
+                          color={
+                            record.vaccination_status === "Đã tiêm"
+                              ? "success"
+                              : "warning"
+                          }
                           size="small"
                         />
                       </TableCell>
@@ -556,7 +647,12 @@ function VaccinateRecord() {
       )}
 
       {/* Vaccination Dialog */}
-      <Dialog open={openVaccinationDialog} onClose={handleCloseVaccinationDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openVaccinationDialog}
+        onClose={handleCloseVaccinationDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Tiêm Chủng và Ghi Nhận</DialogTitle>
         <DialogContent>
           {selectedStudent && (
@@ -566,11 +662,16 @@ function VaccinateRecord() {
                   {selectedStudent.full_name.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">{selectedStudent.full_name}</Typography>
+                  <Typography variant="h6">
+                    {selectedStudent.full_name}
+                  </Typography>
                   <Typography>Mã HS: {selectedStudent.student_id}</Typography>
                   <Typography>Lớp: {selectedStudent.class_name}</Typography>
                   <Typography>
-                    Ngày sinh: {new Date(selectedStudent.date_of_birth).toLocaleDateString("vi-VN")}
+                    Ngày sinh:{" "}
+                    {new Date(selectedStudent.date_of_birth).toLocaleDateString(
+                      "vi-VN"
+                    )}
                   </Typography>
                 </Box>
               </Box>
@@ -579,7 +680,13 @@ function VaccinateRecord() {
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                   Tiền sử sức khỏe
                 </Typography>
-                <Typography color={selectedStudent.health_notes !== "Không có" ? "red" : "inherit"}>
+                <Typography
+                  color={
+                    selectedStudent.health_notes !== "Không có"
+                      ? "red"
+                      : "inherit"
+                  }
+                >
                   {selectedStudent.health_notes}
                 </Typography>
               </Box>
@@ -589,7 +696,8 @@ function VaccinateRecord() {
                   Lịch sử tiêm chủng
                 </Typography>
                 <Typography>
-                  Mũi {selectedStudent.dose_number} - {selectedStudent.vaccine_name}
+                  Mũi {selectedStudent.dose_number} -{" "}
+                  {selectedStudent.vaccine_name}
                 </Typography>
               </Box>
 
@@ -603,8 +711,10 @@ function VaccinateRecord() {
                 <TextField
                   label="Loại vắc-xin"
                   value={
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)?.vaccineType ||
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)?.customVaccineType ||
+                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
+                      ?.vaccineType ||
+                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
+                      ?.customVaccineType ||
                     ""
                   }
                   disabled
@@ -628,6 +738,7 @@ function VaccinateRecord() {
                   onChange={(e) => setBatchNumber(e.target.value)}
                   fullWidth
                   required
+                  disabled
                 />
                 <TextField
                   label="Hạn sử dụng"
@@ -637,18 +748,9 @@ function VaccinateRecord() {
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                   required
+                  disabled
                 />
-                <FormControl fullWidth>
-                  <InputLabel>Liều lượng</InputLabel>
-                  <Select
-                    value={dosage}
-                    onChange={(e) => setDosage(e.target.value)}
-                    label="Liều lượng"
-                  >
-                    <MenuItem value="0.5ml">0.5ml</MenuItem>
-                    <MenuItem value="1.0ml">1.0ml</MenuItem>
-                  </Select>
-                </FormControl>
+
                 <FormControl fullWidth>
                   <InputLabel>Vị trí tiêm</InputLabel>
                   <Select
@@ -717,7 +819,12 @@ function VaccinateRecord() {
             onClick={handleSaveVaccination}
             color="primary"
             variant="contained"
-            disabled={!batchNumber || !expiryDate || !administrationDateTime || !administeredBy}
+            disabled={
+              !batchNumber ||
+              !expiryDate ||
+              !administrationDateTime ||
+              !administeredBy
+            }
           >
             Lưu và Hoàn thành
           </Button>
@@ -725,7 +832,12 @@ function VaccinateRecord() {
       </Dialog>
 
       {/* Detail Dialog */}
-      <Dialog open={openDetailDialog} onClose={handleCloseDetailDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDetailDialog}
+        onClose={handleCloseDetailDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Chi Tiết Tiêm Chủng</DialogTitle>
         <DialogContent>
           {selectedStudent && (
@@ -735,11 +847,16 @@ function VaccinateRecord() {
                   {selectedStudent.full_name.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">{selectedStudent.full_name}</Typography>
+                  <Typography variant="h6">
+                    {selectedStudent.full_name}
+                  </Typography>
                   <Typography>Mã HS: {selectedStudent.student_id}</Typography>
                   <Typography>Lớp: {selectedStudent.class_name}</Typography>
                   <Typography>
-                    Ngày sinh: {new Date(selectedStudent.date_of_birth).toLocaleDateString("vi-VN")}
+                    Ngày sinh:{" "}
+                    {new Date(selectedStudent.date_of_birth).toLocaleDateString(
+                      "vi-VN"
+                    )}
                   </Typography>
                 </Box>
               </Box>
@@ -748,7 +865,13 @@ function VaccinateRecord() {
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                   Tiền sử sức khỏe
                 </Typography>
-                <Typography color={selectedStudent.health_notes !== "Không có" ? "red" : "inherit"}>
+                <Typography
+                  color={
+                    selectedStudent.health_notes !== "Không có"
+                      ? "red"
+                      : "inherit"
+                  }
+                >
                   {selectedStudent.health_notes}
                 </Typography>
               </Box>
@@ -758,7 +881,8 @@ function VaccinateRecord() {
                   Lịch sử tiêm chủng
                 </Typography>
                 <Typography>
-                  Mũi {selectedStudent.dose_number} - {selectedStudent.vaccine_name}
+                  Mũi {selectedStudent.dose_number} -{" "}
+                  {selectedStudent.vaccine_name}
                 </Typography>
               </Box>
 
@@ -772,8 +896,10 @@ function VaccinateRecord() {
                 <TextField
                   label="Loại vắc-xin"
                   value={
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)?.vaccineType ||
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)?.customVaccineType ||
+                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
+                      ?.vaccineType ||
+                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
+                      ?.customVaccineType ||
                     ""
                   }
                   disabled
@@ -793,33 +919,26 @@ function VaccinateRecord() {
                 />
                 <TextField
                   label="Số lô vắc-xin"
-                  value={selectedStudent.batch_number}
+                  value={batchNumber}
                   disabled
                   fullWidth
                 />
                 <TextField
                   label="Hạn sử dụng"
-                  value={selectedStudent.expiry_date}
+                  type="date"
+                  value={expiryDate}
                   disabled
                   fullWidth
-                />
-                <TextField
-                  label="Liều lượng"
-                  value={selectedStudent.dosage}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Vị trí tiêm"
-                  value={selectedStudent.injection_site}
-                  disabled
-                  fullWidth
+                  InputLabelProps={{ shrink: true }}
                 />
                 <TextField
                   label="Ngày giờ tiêm"
-                  value={selectedStudent.administration_date}
-                  disabled
+                  type="datetime-local"
+                  value={administrationDateTime}
+                  onChange={(e) => setAdministrationDateTime(e.target.value)}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  required
                 />
                 <TextField
                   label="Người thực hiện"
@@ -854,14 +973,23 @@ function VaccinateRecord() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDetailDialog} color="primary" variant="contained">
+          <Button
+            onClick={handleCloseDetailDialog}
+            color="primary"
+            variant="contained"
+          >
             Đóng
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Success Dialog */}
-      <Dialog open={openSuccessDialog} onClose={handleCloseSuccessDialog} maxWidth="xs" fullWidth>
+      <Dialog
+        open={openSuccessDialog}
+        onClose={handleCloseSuccessDialog}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Thành Công</DialogTitle>
         <DialogContent>
           <Box display="flex" alignItems="center" gap={2}>
@@ -874,12 +1002,16 @@ function VaccinateRecord() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseSuccessDialog} color="primary" variant="contained">
+          <Button
+            onClick={handleCloseSuccessDialog}
+            color="primary"
+            variant="contained"
+          >
             Đóng
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Container>
   );
 }
 

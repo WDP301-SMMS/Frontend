@@ -20,10 +20,13 @@ import {
   DialogActions,
   CircularProgress,
   Pagination,
+  Container,
+  Alert,
 } from "@mui/material";
 import { Download, CheckCircle } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { classes, notifications, students } from "~/mock/mock";
+import { Warning } from "@mui/icons-material";
 
 function PrepareVaccinationList() {
   const [selectedCampaign, setSelectedCampaign] = useState("");
@@ -98,7 +101,8 @@ function PrepareVaccinationList() {
           return {
             stt: index + 1,
             full_name: student.full_name,
-            class_name: classes.find((c) => c.id === student.class_id)?.name || "",
+            class_name:
+              classes.find((c) => c.id === student.class_id)?.name || "",
             date_of_birth: student.date_of_birth,
             vaccine_name: campaign.vaccineName,
             dose_number: doseNumber,
@@ -195,10 +199,24 @@ function PrepareVaccinationList() {
   };
 
   return (
-    <div className="min-h-[90vh] p-6 bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-300">
-      <Typography variant="h4" fontWeight="bold" color="#1a202c" mb={3}>
+    <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+      >
         Chuẩn Bị Danh Sách Tiêm Chủng
       </Typography>
+      <Alert
+        severity="info"
+        icon={<Warning />}
+        sx={{ mb: 3, fontWeight: "medium" }}
+      >
+        Chuẩn bị danh sách tiêm chủng cho chiến dịch tiêm vaccine. Vui lòng chọn
+        chiến dịch và lớp học để xem danh sách học sinh.
+      </Alert>
 
       <Box display="flex" gap={2} mb={4}>
         <FormControl fullWidth>
@@ -247,17 +265,34 @@ function PrepareVaccinationList() {
         </Box>
       ) : (
         <>
-          <TableContainer component={Paper} sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+          <TableContainer
+            component={Paper}
+            sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+          >
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>STT</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Họ và Tên</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Lớp</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Ngày Sinh</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Tên Vaccine</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Mũi Số</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>Ghi Chú Sức Khỏe</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    STT
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Họ và Tên
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Lớp
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Ngày Sinh
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Tên Vaccine
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Mũi Số
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                    Ghi Chú Sức Khỏe
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -267,10 +302,21 @@ function PrepareVaccinationList() {
                       <TableCell>{student.stt}</TableCell>
                       <TableCell>{student.full_name}</TableCell>
                       <TableCell>{student.class_name}</TableCell>
-                      <TableCell>{new Date(student.date_of_birth).toLocaleDateString("vi-VN")}</TableCell>
+                      <TableCell>
+                        {new Date(student.date_of_birth).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </TableCell>
                       <TableCell>{student.vaccine_name}</TableCell>
                       <TableCell>{student.dose_number}</TableCell>
-                      <TableCell sx={{ color: student.health_notes !== "Không có" ? "red" : "inherit" }}>
+                      <TableCell
+                        sx={{
+                          color:
+                            student.health_notes !== "Không có"
+                              ? "red"
+                              : "inherit",
+                        }}
+                      >
                         {student.health_notes}
                       </TableCell>
                     </TableRow>
@@ -325,7 +371,12 @@ function PrepareVaccinationList() {
       )}
 
       {/* Export Options Dialog */}
-      <Dialog open={openExportDialog} onClose={handleCloseExportDialog} maxWidth="xs" fullWidth>
+      <Dialog
+        open={openExportDialog}
+        onClose={handleCloseExportDialog}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Chọn tùy chọn xuất Excel</DialogTitle>
         <DialogContent>
           <Typography>Chọn phạm vi xuất danh sách:</Typography>
@@ -345,7 +396,9 @@ function PrepareVaccinationList() {
               disabled={!selectedClass}
               sx={{ textTransform: "none" }}
             >
-              Theo lớp đã chọn ({classes.find((c) => c.id === selectedClass)?.name || "Chưa chọn"})
+              Theo lớp đã chọn (
+              {classes.find((c) => c.id === selectedClass)?.name || "Chưa chọn"}
+              )
             </Button>
           </Box>
         </DialogContent>
@@ -357,21 +410,32 @@ function PrepareVaccinationList() {
       </Dialog>
 
       {/* Export Success Dialog */}
-      <Dialog open={openSuccessDialog} onClose={handleCloseSuccessDialog} maxWidth="xs" fullWidth>
+      <Dialog
+        open={openSuccessDialog}
+        onClose={handleCloseSuccessDialog}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle>Xuất Excel Thành Công</DialogTitle>
         <DialogContent>
           <Box display="flex" alignItems="center" gap={2}>
             <CheckCircle size={24} className="text-green-500" />
-            <Typography>File danh sách tiêm chủng đã được tải xuống.</Typography>
+            <Typography>
+              File danh sách tiêm chủng đã được tải xuống.
+            </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseSuccessDialog} color="primary" variant="contained">
+          <Button
+            onClick={handleCloseSuccessDialog}
+            color="primary"
+            variant="contained"
+          >
             Đóng
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Container>
   );
 }
 

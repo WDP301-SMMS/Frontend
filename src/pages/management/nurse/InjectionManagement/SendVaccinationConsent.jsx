@@ -30,8 +30,6 @@ import ReactMarkdown from "react-markdown";
 import { Warning } from "@mui/icons-material";
 import { classes, vaccinationCampaigns } from "~/mock/mock";
 
-
-
 // Dữ liệu chiến dịch tiêm chủng mẫu
 // Dữ liệu chiến dịch tiêm chủng mẫu
 
@@ -319,25 +317,24 @@ Trân trọng,  
   };
 
   return (
-<Container
+    <Container
       maxWidth="xl"
       sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
     >
-            <Typography
-                    variant="h4"
-                    sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
-                  >
-                   Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
-                  </Typography>
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+      >
+        Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
+      </Typography>
 
       <Alert
-              severity="info"
-              icon={<Warning />}
-              sx={{ mb: 3, fontWeight: "medium" }}
-            >
-               Tạo và gửi thông báo tiêm chủng đến phụ huynh học sinh.s
-            </Alert>
-      
+        severity="info"
+        icon={<Warning />}
+        sx={{ mb: 3, fontWeight: "medium" }}
+      >
+        Tạo và gửi thông báo tiêm chủng đến phụ huynh học sinh.
+      </Alert>
 
       {/* Nút tạo thông báo */}
       <Box display="flex" justifyContent="flex-end" mb={6}>
@@ -673,7 +670,12 @@ Trân trọng,  
                 onClick={() => setOpenPreviewDialog(true)}
                 variant="outlined"
                 color="primary"
-                disabled={!form.selectedCampaignId || !form.location || form.targetClasses.length === 0 || (!form.channels.email && !form.channels.app)}
+                disabled={
+                  !form.selectedCampaignId ||
+                  !form.location ||
+                  form.targetClasses.length === 0 ||
+                  (!form.channels.email && !form.channels.app)
+                }
               >
                 Xem trước
               </Button>
@@ -681,7 +683,12 @@ Trân trọng,  
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={!form.selectedCampaignId || !form.location || form.targetClasses.length === 0 || (!form.channels.email && !form.channels.app)}
+                disabled={
+                  !form.selectedCampaignId ||
+                  !form.location ||
+                  form.targetClasses.length === 0 ||
+                  (!form.channels.email && !form.channels.app)
+                }
               >
                 Gửi
               </Button>
