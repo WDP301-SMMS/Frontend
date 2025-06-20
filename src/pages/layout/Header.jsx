@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
-const Header = () => {
+export const Sidebar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isHealthProfileOpen, setIsHealthProfileOpen] = useState(false);
@@ -308,8 +308,6 @@ const MobileNavLink = ({ to, label, icon, indent = false, active }) => (
     {label}
   </Link>
 );
-
-export default Header;
 
 /* Animation styles for dropdown menus */
 const style = document.createElement("style");
