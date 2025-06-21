@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-const Header = () => {
+export const Header = () => {
   const [isLoggedIn] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,7 +20,7 @@ const Header = () => {
               alt="Logo"
               className="h-8 w-auto"
             />
-            <span>F HealthCare</span>
+            <span>EduCare</span>
           </button>
           <nav className="hidden lg:block ml-8">
             <ul className="flex space-x-6">
@@ -130,5 +130,3 @@ const Header = () => {
     </header>
   );
 };
-
-export default Header;
