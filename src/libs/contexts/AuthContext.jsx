@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (token) => {
     setLoading(true);
-    localStorage.setItem("token", token.accessToken);
+    localStorage.setItem("token", token);
 
     try {
       const response = await api.get("/user/me");
