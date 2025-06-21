@@ -1,5 +1,6 @@
 import React from "react";
 import Stanford from "~assets/images/stanford.jpg";
+import Google from "~/assets/images/google.svg"
 import TextInput from "~components/input/TextInput";
 import Button from "~/libs/components/button/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -29,22 +30,16 @@ const Login = () => {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const response = await api.post('/auth/login', values);
-        login(response.data.data);
+        login(response.data.data.accessToken);
         toast.success("Đăng nhập thành công!", {
           position: "bottom-right",
           autoClose: 3000,
         });
-        navigate('/');
       } catch (error) {
         if (error.response?.status === 401) {
           toast.error("Email hoặc mật khẩu không đúng.", {
             position: "bottom-right",
             autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
           });
         } else {
           toast.error("Đã xảy ra lỗi. Vui lòng thử lại.", {
@@ -57,6 +52,36 @@ const Login = () => {
       }
     },
   });
+
+  const handleGoogle = () => {
+    const width = 500;
+    const height = 600;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+
+    const authWindow = window.open(
+      "http://localhost:3000/api/auth/google",
+      "_blank",
+      `width=${width},height=${height},left=${left},top=${top},resizable=no`
+    );
+
+    if (!authWindow) {
+      toast.error("Không thể mở popup Google");
+      return;
+    }
+
+    window.addEventListener("message", async (event) => {
+      if (event.origin !== "http://localhost:3000") return;
+
+      const { accessToken } = event.data;
+      login(accessToken);
+
+      if (!accessToken) {
+        toast.error("Không nhận được access token");
+        return;
+      }
+    });
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,6 +135,21 @@ const Login = () => {
 
             <Button type="submit" className="mt-15 w-full">
               {loading ? <Loader className="animate-spin w-5 h-5 mx-auto" /> : 'Đăng nhập'}
+            </Button>
+
+            <Button
+              type="button"
+              className="mt-5 w-full bg-white border border-primary text-primary hover:bg-blue-50"
+              onClick={handleGoogle}
+            >
+              <div className="flex justify-center items-center gap-x-5">
+                <img
+                  src={Google}
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                <span>Đăng nhập bằng Google</span>
+              </div>
             </Button>
           </form>
 
