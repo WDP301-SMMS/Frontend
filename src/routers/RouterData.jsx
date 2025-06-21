@@ -95,14 +95,20 @@ const authenticatedRoutes = [
   { path: "/reset-password", element: <ResetPassword /> },
 ];
 
-const parentRoutes = [
+export const parentRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Parent"]} />,
+    path: "/",
+    element: <Layout />,
     children: [
-      { path: "/health-profiles", element: <ParentHealthProfiles /> },
-      { path: "/health-profile/new", element: <ParentHealthProfileForm /> },
-      { path: "/health-profile/:profileId", element: <ParentHealthProfileDetail /> },
-      { path: "/health-profile/:profileId/edit", element: <ParentHealthProfileForm /> },
+      {
+        element: <ProtectedRoute allowedRoles={["Parent"]} />,
+        children: [
+          { path: "health-profiles", element: <ParentHealthProfiles /> },
+          { path: "health-profile/new", element: <ParentHealthProfileForm /> },
+          { path: "health-profile/:profileId", element: <ParentHealthProfileDetail /> },
+          { path: "health-profile/:profileId/edit", element: <ParentHealthProfileForm /> },
+        ],
+      },
     ],
   },
 ];
@@ -117,7 +123,11 @@ const vaccinHistoryManagementRoutes = [
 const nurseRoutes = [
   {
     path: "/management/nurse",
-    element: <ProtectedRoute allowedRoles={["Nurse"]} />,
+    element: (
+      <ProtectedRoute allowedRoles={["Nurse"]}>
+        <NurseDashboard />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "", element: <DashboardHome /> },
       { path: "record-incidents", element: <RecordIncident /> },
@@ -141,7 +151,11 @@ const nurseRoutes = [
 const managerRoutes = [
   {
     path: "/management/manager",
-    element: <ProtectedRoute allowedRoles={["Manager"]} />,
+    element: (
+      <ProtectedRoute allowedRoles={["Manager"]}>
+        <NurseDashboard />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "", element: <ManagerDashboard /> },
       { path: "medicine", element: <MedicineInventory /> },
@@ -154,7 +168,11 @@ const managerRoutes = [
 const adminRoutes = [
   {
     path: "/management/admin",
-    element: <ProtectedRoute allowedRoles={["ADMIN"]} />,
+    element: (
+      <ProtectedRoute allowedRoles={["Admin"]}>
+        <NurseDashboard />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "", element: <AdminDashboard /> },
       { path: "blogs", element: <BlogManagement /> },
@@ -166,7 +184,11 @@ const adminRoutes = [
 const sharedManagementRoutes = [
   {
     path: "/management",
-    element: <ProtectedRoute allowedRoles={["NURSE", "MANAGER", "ADMIN"]} />,
+    element: (
+      <ProtectedRoute allowedRoles={["Nurse, Manager, Admin"]}>
+        <NurseDashboard />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "notification", element: <Notification /> },
       { path: "profile", element: <ManagementProfile /> },
@@ -175,20 +197,6 @@ const sharedManagementRoutes = [
     ],
   },
 ];
-
-// const managementRoutes = {
-//   path: "/management",
-//   element: <NurseDashboard />, // Default layout
-//   children: [
-//     { path: "admin", element: <AdminDashboard /> },
-//     { path: "admin/blogs", element: <BlogManagement /> },
-//     { path: "admin/users", element: <UserManagement /> },
-//     { path: "notification", element: <Notification /> },
-//     { path: "profile", element: <ManagementProfile /> },
-//     { path: "vaccination", element: <Vaccination /> },
-//     { path: "health-check", element: <HealthCheck /> },
-//   ],
-// };
 
 export const mainRoutes = [
   ...basicRoutes,
@@ -199,6 +207,5 @@ export const mainRoutes = [
   ...managerRoutes,
   ...adminRoutes,
   ...sharedManagementRoutes,
-  // managementRoutes,
   { path: "*", element: <NotFound /> },
 ];
