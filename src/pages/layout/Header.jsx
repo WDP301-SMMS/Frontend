@@ -19,26 +19,24 @@ export const Header = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [dropdownAnimation, setDropdownAnimation] = useState("dropdown-enter");
 
-  const { isLoggedIn, logout, user } = useAuth();
+  const { isLoggedIn, logout, user, role } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
   const profileMenuRef = useRef(null);
 
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (e) => {
       setTimeout(() => {
         if (
           profileMenuRef.current &&
-          !profileMenuRef.current.contains(event.target)
+          !profileMenuRef.current.contains(e.target)
         ) {
           setIsProfileMenuOpen(false);
         }
       }, 0);
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
@@ -60,11 +58,53 @@ export const Header = () => {
     navigate("/");
   };
 
+  const getManagementPath = () => {
+    switch (role) {
+      case "Nurse":
+        return "/management/nurse";
+      case "Manager":
+        return "/management/manager";
+      case "Admin":
+        return "/management/admin";
+      default:
+        return "/";
+    }
+  };
+
+  const getRoleBasedMenuItems = () => {
+    if (!isLoggedIn) return [];
+
+    switch (role) {
+      case "Nurse":
+      case "Manager":
+      case "Admin":
+        return [
+          {
+            label: "Quản lý",
+            to: getManagementPath(),
+            icon: <FileText className="w-4 h-4 inline mr-2" />,
+          },
+        ];
+      default:
+        return [
+          {
+            label: "Danh sách hồ sơ của con",
+            to: "/health-profiles",
+            icon: <FileText className="w-4 h-4 inline mr-2" />,
+          },
+          {
+            label: "Khai báo hồ sơ mới",
+            to: "/health-profile/new",
+            icon: <FileText className="w-4 h-4 inline mr-2" />,
+          },
+        ];
+    }
+  };
+
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img
               src="/src/assets/images/logo.png"
@@ -74,7 +114,6 @@ export const Header = () => {
             <span className="text-2xl font-semibold text-blue-600">EduCare</span>
           </Link>
 
-          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-10">
             <NavLink to="/" icon={<Home />} label="Trang chủ" active={isActive("/")} />
             <NavLink to="/about" icon={<Info />} label="Giới thiệu" active={isActive("/about")} />
@@ -82,7 +121,6 @@ export const Header = () => {
             <NavLink to="/blogs" icon={<BookOpen />} label="Blogs" active={isActive("/blogs")} />
           </nav>
 
-          {/* Tài khoản */}
           <div ref={profileMenuRef} className="hidden md:flex items-center relative z-30">
             {isLoggedIn ? (
               <>
@@ -110,17 +148,27 @@ export const Header = () => {
                       <p className="text-sm font-medium text-gray-900">{user?.username}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                     </div>
-                    <div className="py-1 border-b border-gray-100">
-                      <span className="block px-4 py-2 text-xs font-medium text-gray-500">Hồ sơ sức khỏe</span>
-                      <Link to="/health-profiles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                        <FileText className="w-4 h-4 inline mr-2" />
-                        Danh sách hồ sơ của con
-                      </Link>
-                      <Link to="/health-profile/new" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                        <FileText className="w-4 h-4 inline mr-2" />
-                        Khai báo hồ sơ mới
-                      </Link>
-                    </div>
+
+                    {getRoleBasedMenuItems().length > 0 && (
+                      <div className="py-1 border-b border-gray-100">
+                        <span className="block px-4 py-2 text-xs font-medium text-gray-500">
+                          {["Nurse", "Manager", "Admin"].includes(role)
+                            ? "Trang quản lý"
+                            : "Hồ sơ sức khỏe"}
+                        </span>
+                        {getRoleBasedMenuItems().map((item) => (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            {item.icon}
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="py-1">
                       <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                         Cài đặt tài khoản
@@ -148,7 +196,6 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -160,7 +207,6 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden px-4 pt-4 pb-6 space-y-3 bg-white shadow-lg">
           <MobileNavLink to="/" label="Trang chủ" icon={<Home />} active={isActive("/")} />
@@ -171,12 +217,22 @@ export const Header = () => {
           <div className="pt-3 border-t border-gray-200">
             {isLoggedIn ? (
               <>
-                <p className="px-4 py-2 font-medium text-gray-900">Nguyễn Văn Bình</p>
-                <span className="text-gray-800 font-semibold flex items-center px-4 mt-2">
-                  <FileText className="w-5 h-5 mr-2" /> Hồ sơ sức khỏe
-                </span>
-                <MobileNavLink to="/health-profiles" label="Danh sách hồ sơ của con" indent active={isActive("/health-profiles")} />
-                <MobileNavLink to="/health-profile/new" label="Khai báo hồ sơ mới" indent active={isActive("/health-profile/new")} />
+                <p className="px-4 py-2 font-medium text-gray-900">{user?.username}</p>
+
+                {getRoleBasedMenuItems().length > 0 && (
+                  <>
+                    <span className="text-gray-800 font-semibold flex items-center px-4 mt-2">
+                      <FileText className="w-5 h-5 mr-2" />
+                      {["Nurse", "Manager", "Admin"].includes(role)
+                        ? "Trang quản lý"
+                        : "Hồ sơ sức khỏe"}
+                    </span>
+                    {getRoleBasedMenuItems().map((item) => (
+                      <MobileNavLink key={item.to} to={item.to} label={item.label} indent active={isActive(item.to)} />
+                    ))}
+                  </>
+                )}
+
                 <MobileNavLink to="/settings" label="Cài đặt tài khoản" icon={<User />} active={isActive("/settings")} />
                 <button
                   onClick={handleLogout}
@@ -202,8 +258,11 @@ export const Header = () => {
 const NavLink = ({ to, label, icon, active }) => (
   <Link
     to={to}
-    className={`inline-flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors ${active ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-      }`}
+    className={`inline-flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors ${
+      active
+        ? "text-blue-600 border-b-2 border-blue-600"
+        : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+    }`}
   >
     {icon && <span className="mr-2">{icon}</span>}
     {label}
@@ -213,15 +272,16 @@ const NavLink = ({ to, label, icon, active }) => (
 const MobileNavLink = ({ to, label, icon, indent = false, active }) => (
   <Link
     to={to}
-    className={`block px-4 py-2 rounded-lg text-base font-medium transition-colors ${active ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-      } ${indent ? "pl-8" : ""}`}
+    className={`block px-4 py-2 rounded-lg text-base font-medium transition-colors ${
+      active ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+    } ${indent ? "pl-8" : ""}`}
   >
     {icon && <span className="inline-block mr-2">{icon}</span>}
     {label}
   </Link>
 );
 
-// Animation styles
+// Add dropdown animation globally
 const style = document.createElement("style");
 style.textContent = `
   .dropdown-enter {
