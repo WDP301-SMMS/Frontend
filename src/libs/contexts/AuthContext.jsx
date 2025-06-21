@@ -1,9 +1,7 @@
-// context/AuthContext.jsx
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../hooks/axiosInstance';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -15,9 +13,9 @@ export const AuthProvider = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Memoized function to check login status
   const checkLoginStatus = useCallback(async () => {
     try {
+      console.log(role)
       const response = await api.get('/user/me');
       setUser(response.data.data);
       setRole(response.data.data.role);
@@ -30,16 +28,44 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Run on initial load and route changes
   useEffect(() => {
     checkLoginStatus();
   }, [location.pathname, checkLoginStatus]);
 
-  const login = (token) => {
-    setIsLoggedIn(true);
+  const login = async (token) => {
+    setLoading(true);
     localStorage.setItem("token", token.accessToken);
-    checkLoginStatus();
-    setLoading(false);
+
+    try {
+      const response = await api.get("/user/me");
+      const userData = response.data.data;
+      setUser(userData);
+      setRole(userData.role);
+      setIsLoggedIn(true);
+
+      switch (userData.role) {
+        case "Parent":
+          navigate("/health-profiles");
+          break;
+        case "Nurse":
+          navigate("/management/nurse");
+          break;
+        case "Admin":
+          navigate("/management/admin");
+          break;
+        case "Manager":
+          navigate("/management/manager");
+          break;
+        default:
+          navigate("/");
+      }
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUser(null);
+      setRole(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
