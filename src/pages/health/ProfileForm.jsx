@@ -228,21 +228,23 @@ const ParentHealthProfileForm = () => {
     <div className="container mx-auto p-4 max-w-6xl">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center border-b pb-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {isEditing ? "Chỉnh Sửa" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Vui lòng cung cấp thông tin chi tiết và chính xác về sức khỏe của
-              con bạn để nhà trường có thể hỗ trợ tốt nhất.
-            </p>
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate("/health-profiles")}
+              className="flex items-center text-gray-600 hover:text-primary mr-5"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+            </button>
+            <div className="flex-grow">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {isEditing ? "Chỉnh Sửa" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Vui lòng cung cấp thông tin chi tiết và chính xác về sức khỏe của
+                con bạn để nhà trường có thể hỗ trợ tốt nhất.
+              </p>
+            </div>
           </div>
-          <button
-            onClick={() => navigate("/health-profiles")}
-            className="flex items-center text-gray-600 hover:text-primary"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại
-          </button>
         </div>
 
         {/* Thông báo thành công/lỗi */}
@@ -282,11 +284,6 @@ const ParentHealthProfileForm = () => {
               icon={<FileText size={18} />}
             />
             <TabButton id="vision" label="Thị lực" icon={<Eye size={18} />} />
-            <TabButton
-              id="hearing"
-              label="Thính lực"
-              icon={<Ear size={18} />}
-            />
             <TabButton
               id="vaccination"
               label="Tiêm chủng"
@@ -854,99 +851,6 @@ const ParentHealthProfileForm = () => {
                       )
                     }
                     placeholder="Thông tin bổ sung về thị lực"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    rows="2"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tab thính lực */}
-          {activeTab === "hearing" && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center">
-                <Ear className="mr-2 text-primary" size={20} />
-                Thính lực
-              </h2>
-
-              <div className="mb-6 p-4 border rounded-md">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Thính lực tai phải
-                    </label>
-                    <input
-                      type="text"
-                      value={healthInfo.hearing.rightEar}
-                      onChange={(e) =>
-                        handleHealthInfoChange(
-                          "hearing",
-                          null,
-                          "rightEar",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Ví dụ: Bình thường, Giảm nhẹ, ..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Thính lực tai trái
-                    </label>
-                    <input
-                      type="text"
-                      value={healthInfo.hearing.leftEar}
-                      onChange={(e) =>
-                        handleHealthInfoChange(
-                          "hearing",
-                          null,
-                          "leftEar",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Ví dụ: Bình thường, Giảm nhẹ, ..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="hearingAid"
-                      checked={healthInfo.hearing.hearingAid}
-                      onChange={() =>
-                        handleCheckboxChange("hearing", "hearingAid")
-                      }
-                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="hearingAid"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      Sử dụng thiết bị trợ thính
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ghi chú
-                  </label>
-                  <textarea
-                    value={healthInfo.hearing.notes}
-                    onChange={(e) =>
-                      handleHealthInfoChange(
-                        "hearing",
-                        null,
-                        "notes",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Thông tin bổ sung về thính lực"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                     rows="2"
                   ></textarea>

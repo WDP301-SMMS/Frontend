@@ -352,9 +352,7 @@ export default function BlogPage() {
 
   return (
     <>
-    <Header />
     <BlogListingPage />
-    <Footer/>
     </>
   )
 }

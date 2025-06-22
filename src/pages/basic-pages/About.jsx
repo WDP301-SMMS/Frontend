@@ -255,14 +255,12 @@ const ValuesSection = () => {
 const About = () => {
   return (
     <div className="min-h-screen">
-      <Header />
       <HeroSection />
       <MissionSection />
       <AcademicsSection />
       <DialogueSection />
       <ResearchSection />
       <ValuesSection />
-      <Footer />
     </div>
   );
 };

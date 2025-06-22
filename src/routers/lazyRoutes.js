@@ -69,6 +69,18 @@ const BlogManagement = React.lazy(() =>
 const UserManagement = React.lazy(() =>
   import("../pages/management/admin/UserManagement")
 );
+const StudentManagementAdmin = React.lazy(() =>
+  import("../pages/management/admin/StudentManagement")
+);
+const ClassManagement = React.lazy(() =>
+  import("../pages/management/admin/ClassManagement")
+);
+const PartnerManagement = React.lazy(() =>
+  import("../pages/management/admin/PartnerManagement")
+);
+const InventoryManagement = React.lazy(() =>
+  import("../pages/management/admin/InventoryManagement")
+);
 
 // Shared Management Routes
 const Notification = React.lazy(() =>
@@ -83,7 +95,6 @@ const Vaccination = React.lazy(() =>
 const HealthCheck = React.lazy(() =>
   import("../pages/management/shared-page/HealthCheck")
 );
-
 
 export {
   Home,
@@ -110,6 +121,10 @@ export {
   AdminDashboard,
   BlogManagement,
   UserManagement,
+  StudentManagementAdmin,
+  ClassManagement,
+  PartnerManagement,
+  InventoryManagement,
   Notification,
   ManagementProfile,
   Vaccination,

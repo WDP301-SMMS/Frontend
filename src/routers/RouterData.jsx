@@ -27,6 +27,10 @@ import {
   ManagementProfile,
   Vaccination,
   HealthCheck,
+  StudentManagementAdmin,
+  ClassManagement,
+  PartnerManagement,
+  InventoryManagement,
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
 import Layout from "../pages/layout/Layout";
@@ -125,6 +129,10 @@ const managementRoutes = {
     { path: "admin", element: <AdminDashboard /> },
     { path: "admin/blogs", element: <BlogManagement /> },
     { path: "admin/users", element: <UserManagement /> },
+    { path: "admin/students", element: <StudentManagementAdmin /> },
+    { path: "admin/classes", element: <ClassManagement /> },
+    { path: "admin/partners", element: <PartnerManagement /> },
+    { path: "admin/inventory", element: <InventoryManagement /> },
     { path: "notification", element: <Notification /> },
     { path: "profile", element: <ManagementProfile /> },
     { path: "vaccination", element: <Vaccination /> },

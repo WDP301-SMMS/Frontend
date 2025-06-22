@@ -288,45 +288,7 @@ const ParentHealthProfileDetail = () => {
             </div>
           </div>
         );
-
-      case "hearing":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
-              Thông tin thính lực
-            </h2>
-            <div className="p-4 border rounded-md">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium">Thính lực tai phải</p>
-                  <p>
-                    {profile.healthInfo.hearing.rightEar ||
-                      "Không có thông tin"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Thính lực tai trái</p>
-                  <p>
-                    {profile.healthInfo.hearing.leftEar || "Không có thông tin"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Sử dụng thiết bị trợ thính</p>
-                  <p>
-                    {profile.healthInfo.hearing.hearingAid ? "Có" : "Không"}
-                  </p>
-                </div>
-                {profile.healthInfo.hearing.notes && (
-                  <div className="md:col-span-2">
-                    <p className="font-medium">Ghi chú</p>
-                    <p>{profile.healthInfo.hearing.notes}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-
+      
       case "vaccination":
         return (
           <div className="space-y-4">
@@ -556,16 +518,6 @@ const ParentHealthProfileDetail = () => {
               }`}
             >
               <Eye className="w-4 h-4 inline mr-1" /> Thị lực
-            </button>
-            <button
-              onClick={() => setActiveTab("hearing")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "hearing"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <Ear className="w-4 h-4 inline mr-1" /> Thính lực
             </button>
             <button
               onClick={() => setActiveTab("vaccination")}
