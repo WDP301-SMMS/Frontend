@@ -223,19 +223,7 @@ export const Sidebar = () => {
 
       {sidebarOpen && (
         <div className="p-4 border-t border-blue-100 bg-white/80 backdrop-blur-sm space-y-3">
-          <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer border border-blue-100">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-              <User size={18} className="text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 truncate">
-                BS. Nguyễn Văn A
-              </p>
-              <p className="text-xs text-blue-600 truncate font-medium">
-                Y tá trường
-              </p>
-            </div>
-          </div>
+          
 
           <button
             onClick={handleLogout}
