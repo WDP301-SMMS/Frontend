@@ -304,7 +304,7 @@ Trường học tổ chức tiêm chủng vaccine **${selectedCampaign.vaccineNa
 
 Vui lòng phản hồi trước ngày **${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}**.
 
-Trân trọng,  
+Trân trọng,  
 **Ban Y tế Trường học**
     `;
   };
