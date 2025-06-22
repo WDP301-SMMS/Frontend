@@ -13,6 +13,7 @@ import {
   ForgotPassword,
   VerifyOTP,
   ResetPassword,
+  CompleteProfile,
   VaccinHistoryManagement,
 
   Message,
@@ -93,6 +94,7 @@ const authenticatedRoutes = [
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/verify-otp", element: <VerifyOTP /> },
   { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/complete-profile", element: <CompleteProfile /> },
 ];
 
 export const parentRoutes = [
