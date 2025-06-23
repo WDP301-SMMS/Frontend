@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import HomeHero from "~/assets/images/Home.jpg"
 
 // Adjusted Hero Section for a school healthcare theme
 const HeroSection = () => (
   <section className="relative bg-gradient-to-r from-primary to-blue-800 text-white">
     <img
-      src="https://www.aap.org/contentassets/23d196ab330c4a6fbdc5d849ecb68d33/student-writing-worksheet-in-class-smiling.jpg" // Consider a more school-health relevant image
+      src={HomeHero}
       alt="EduCare School Health"
       className="absolute inset-0 w-full h-full object-cover opacity-50"
     />

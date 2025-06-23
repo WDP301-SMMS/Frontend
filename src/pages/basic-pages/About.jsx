@@ -1,11 +1,12 @@
 import React from "react";
+import AboutHero from "~/assets/images/About.png"
 
 // Hero Section
 const HeroSection = () => (
   <section className="relative bg-gradient-to-r from-primary to-blue-800 text-white">
     <div className="w-full">
       <img
-        src="https://www.cdnsba.org/wp-content/uploads/2025/02/school-health-image-1024x512.png"
+        src={AboutHero}
         alt="Phòng Y tế Học đường EduCare"
         className="w-full h-96 object-cover opacity-50"
       />

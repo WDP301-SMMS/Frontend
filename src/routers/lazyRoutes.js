@@ -34,15 +34,16 @@ const VerifyOTP = React.lazy(() =>
 const ResetPassword = React.lazy(() =>
   import("../pages/authentication/forgot-password/ResetPassword")
 );
+const CompleteProfile = React.lazy(() =>
+  import("../pages/authentication/complete-profile/complete-profile")
+);
 const VaccinHistoryManagement = React.lazy(() =>
   import("../pages/vaccination/vaccinHistoryManagement")
 );
 
 // Management Routes
 // Nurse Routes
-const NurseDashboard = React.lazy(() =>
-  import("../pages/layout/Dashboard")
-);
+const NurseDashboard = React.lazy(() => import("../pages/layout/Dashboard"));
 const Message = React.lazy(() => import("../pages/management/nurse/Message"));
 
 const RecordIncident = React.lazy(() =>
@@ -54,9 +55,10 @@ const IncidentHistory = React.lazy(() =>
 );
 
 const ManageMedications = React.lazy(() =>
-  import("../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications")
+  import(
+    "../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications"
+  )
 );
-
 
 // Manager Routes
 const ManagerDashboard = React.lazy(() =>
@@ -65,9 +67,7 @@ const ManagerDashboard = React.lazy(() =>
 const MedicineInventory = React.lazy(() =>
   import("../pages/management/manager/MedicineInventory")
 );
-const NurseManagement = React.lazy(() =>
-  import("../pages/layout/Dashboard")
-);
+const NurseManagement = React.lazy(() => import("../pages/layout/Dashboard"));
 const StudentManagement = React.lazy(() =>
   import("../pages/management/manager/StudentManagement")
 );
@@ -97,7 +97,6 @@ const HealthCheck = React.lazy(() =>
   import("../pages/management/shared-page/HealthCheck")
 );
 
-
 export {
   Home,
   About,
@@ -113,6 +112,7 @@ export {
   ForgotPassword,
   VerifyOTP,
   ResetPassword,
+  CompleteProfile,
   VaccinHistoryManagement,
   NurseDashboard,
   Message,
