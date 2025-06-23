@@ -16,7 +16,7 @@ const LoadingSpinner = () => {
 
         {/* Text + bouncing dots */}
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-gray-700 animate-pulse">Loading...</h2>
+          <h2 className="text-xl font-semibold text-gray-700 animate-pulse">Đang tải...</h2>
           <div className="flex justify-center space-x-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-100"></div>

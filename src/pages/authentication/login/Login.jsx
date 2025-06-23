@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import Stanford from "~assets/images/stanford.jpg";
 import Google from "~/assets/images/google.svg";
 import TextInput from "~components/input/TextInput";
@@ -64,36 +64,36 @@ const Login = () => {
 
     if (!authWindow) {
       toast.error("Không thể mở popup Google");
-      return;
     }
-
-    window.addEventListener(
-      "message",
-      async (event) => {
-        if (event.origin !== "http://localhost:3000") return;
-
-        const { accessToken, isNewUser, hasMissingFields } = event.data;
-
-        if (!accessToken) {
-          toast.error("Không nhận được access token");
-          return;
-        }
-
-        localStorage.setItem("hasGoogleLoggedIn", "true");
-
-        await login(accessToken);
-        toast.success("Đăng nhập thành công!", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-
-        if (isNewUser || hasMissingFields) {
-          navigate("/complete-profile");
-        }
-      },
-      { once: true }
-    );
   };
+
+  useEffect(() => {
+    const receiveMessage = async (event) => {
+      if (event.origin !== "http://localhost:3000") return;
+
+      const { accessToken, isNewUser, hasMissingFields } = event.data;
+
+      if (!accessToken) {
+        toast.error("Không nhận được access token");
+        return;
+      }
+
+      localStorage.setItem("hasGoogleLoggedIn", "true");
+
+      await login(accessToken);
+      toast.success("Đăng nhập thành công!", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+
+      if (isNewUser || hasMissingFields) {
+        navigate("/complete-profile");
+      }
+    };
+
+    window.addEventListener("message", receiveMessage);
+    return () => window.removeEventListener("message", receiveMessage);
+  }, [login, navigate]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen w-full">

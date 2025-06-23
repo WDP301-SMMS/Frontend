@@ -1,4 +1,3 @@
-// Register.jsx
 import { useState, useRef } from "react";
 import Stanford from "~assets/images/stanford_2.jpg";
 import TextInput from "~components/input/TextInput";
@@ -17,16 +16,22 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import api from "~/libs/hooks/axiosInstance";
-import { parse, format, isValid } from "date-fns";
 import { Loader } from "lucide-react";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers";
+import {
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  Typography,
+} from "@mui/material";
 
 const Register = () => {
   const navigate = useNavigate();
-  const dateRef = useRef(null);
   const [open, setOpen] = useState(false);
 
   const formik = useFormik({
@@ -37,6 +42,7 @@ const Register = () => {
       password: "",
       confirmPassword: "",
       dob: null,
+      gender: "",
     },
     validationSchema: Yup.object({
       username: Yup.string().required("Họ và tên là bắt buộc"),
@@ -56,6 +62,7 @@ const Register = () => {
         .nullable()
         .required("Ngày sinh là bắt buộc")
         .max(new Date(), "Ngày không hợp lệ hoặc ở tương lai"),
+      gender: Yup.string().required("Giới tính là bắt buộc"),
     }),
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
@@ -66,6 +73,7 @@ const Register = () => {
           email: values.email,
           dob: values.dob ? dayjs(values.dob).format("DD/MM/YYYY") : "",
           phone: values.phoneNumber,
+          gender: values.gender,
         };
 
         await api.post("/auth/register", dataToSubmit);
@@ -112,7 +120,7 @@ const Register = () => {
         <div className="w-full max-w-md text-center">
           <h1 className="text-4xl font-bold mb-2 text-primary">Đăng ký</h1>
           <p className="text-gray-500 mb-6">
-            Đã có tài khoản?{' '}
+            Đã có tài khoản?{" "}
             <button
               onClick={() => navigate("/login")}
               className="text-primary hover:underline"
@@ -153,7 +161,7 @@ const Register = () => {
               error={formik.touched.email && formik.errors.email}
             />
 
-            {/* Custom MUI DatePicker styled with Tailwind */}
+            {/* Ngày sinh */}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 open={open}
@@ -176,17 +184,21 @@ const Register = () => {
                   },
                 }}
               />
-
               <div
                 onClick={() => setOpen(true)}
                 className={`flex items-center border rounded px-3 py-2 w-full cursor-pointer ${formik.touched.dob && formik.errors.dob
-                  ? "border-red-500"
-                  : "border-gray-300"
+                    ? "border-red-500"
+                    : "border-gray-300"
                   }`}
               >
                 <FontAwesomeIcon icon={faCalendarDays} className="mr-2" />
-                <span className={`${formik.values.dob ? "text-black" : "text-gray-400"}`}>
-                  {formik.values.dob ? dayjs(formik.values.dob).format("DD/MM/YYYY") : "dd/mm/yyyy"}
+                <span
+                  className={`${formik.values.dob ? "text-black" : "text-gray-400"
+                    }`}
+                >
+                  {formik.values.dob
+                    ? dayjs(formik.values.dob).format("DD/MM/YYYY")
+                    : "dd/mm/yyyy"}
                 </span>
               </div>
               {formik.touched.dob && formik.errors.dob && (
@@ -195,6 +207,26 @@ const Register = () => {
                 </p>
               )}
             </LocalizationProvider>
+
+            {/* Giới tính */}
+            <FormControl component="fieldset" className="mt-2">
+              <FormLabel component="legend">Giới tính</FormLabel>
+              <RadioGroup
+                row
+                name="gender"
+                value={formik.values.gender}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              >
+                <FormControlLabel value="MALE" control={<Radio />} label="Nam" />
+                <FormControlLabel value="FEMALE" control={<Radio />} label="Nữ" />
+              </RadioGroup>
+              {formik.touched.gender && formik.errors.gender && (
+                <Typography className="text-red-500 text-sm">
+                  {formik.errors.gender}
+                </Typography>
+              )}
+            </FormControl>
 
             <TextInput
               name="password"
