@@ -676,9 +676,9 @@ const ParentHealthProfileForm = () => {
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                     >
-                      <option value="mild">Nhẹ</option>
-                      <option value="medium">Trung bình</option>
-                      <option value="severe">Nghiêm trọng</option>
+                      <option value="Mild">Nhẹ</option>
+                      <option value="Medium">Trung bình</option>
+                      <option value="Severe">Nghiêm trọng</option>
                     </select>
                   </div>
 
