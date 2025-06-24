@@ -17,39 +17,91 @@ import {
   FileText,
   School,
 } from "lucide-react";
-import { useHealthProfiles } from "../../libs/contexts/HealthProfileContext";
+import { getStudentHealthProfile } from "../../libs/api/parentService";
+import { useAuth } from "../../libs/contexts/AuthContext";
 
 const ParentHealthProfileDetail = () => {
   const { profileId } = useParams();
+  console.log("Profile ID from URL:", profileId); // For debugging
+
   const navigate = useNavigate();
-  const { getProfileById, loading } = useHealthProfiles();
+  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("allergies");
   const [error, setError] = useState("");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-
-  // Giả lập dữ liệu người dùng hiện tại
-  const currentUser = {
-    id: "PH001",
-    name: "Nguyễn Văn Bình",
-    children: ["HS001", "HS005"], // ID của học sinh là con của phụ huynh
-  };
-
+  const { user } = useAuth();
   useEffect(() => {
-    if (profileId) {
-      const profileData = getProfileById(profileId);
-      if (profileData) {
-        // Kiểm tra xem hồ sơ có thuộc về con của phụ huynh không
-        if (currentUser.children.includes(profileData.id)) {
-          setProfile(profileData);
+    const fetchProfileData = async () => {
+      if (!profileId) return;
+
+      setLoading(true);
+      try {
+        const response = await getStudentHealthProfile(profileId);
+        console.log("API Response:", response); // For debugging
+        if (response.success) {
+          // Format the API response into our local profile structure
+          const formattedProfile = formatProfileData(response.data);
+          setProfile(formattedProfile);
         } else {
-          setError("Bạn không có quyền xem hồ sơ này");
+          setError(response.message || "Không thể tải hồ sơ sức khỏe");
         }
-      } else {
-        setError("Không tìm thấy hồ sơ với ID đã cung cấp");
+      } catch (error) {
+        console.error("Error fetching health profile:", error);
+        setError(
+          error.response?.data?.message ||
+            "Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau."
+        );
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [profileId, getProfileById]);
+    };
+
+    fetchProfileData();
+  }, [profileId]);
+  // Format API response to match our UI structure
+  const formatProfileData = (apiData) => {
+    // Basic structure for the profile
+    return {
+      id: apiData._id,
+      studentInfo: {
+        studentId:
+          apiData.studentId?._id || apiData.studentId || "Chưa có thông tin",
+        studentName:
+          apiData.studentName ||
+          apiData.studentId?.fullName ||
+          "Chưa có thông tin",
+        class:
+          apiData.className ||
+          apiData.studentId?.class?.name ||
+          "Chưa có thông tin",
+        dateOfBirth:
+          apiData.dateOfBirth ||
+          (apiData.studentId?.dateOfBirth
+            ? new Date(apiData.studentId.dateOfBirth).toLocaleDateString(
+                "vi-VN"
+              )
+            : "Chưa có thông tin"),
+        parentName: user?.username || "Chưa có thông tin",
+        contactNumber: user?.phone || "Chưa có thông tin",
+        relationship: user?.relationship || "parent",
+      },
+      healthInfo: {
+        allergies: apiData.allergies || [],
+        chronicConditions: apiData.chronicConditions || [],
+        medicalHistory: apiData.medicalHistory || [],
+        visionHistory: apiData.visionHistory || [],
+        hearingHistory: apiData.hearingHistory || [],
+        vaccines: apiData.vaccines || [],
+      },
+      status: apiData.status || "complete",
+      lastUpdated: apiData.updatedAt
+        ? new Date(apiData.updatedAt).toLocaleDateString("vi-VN")
+        : "Chưa có thông tin",
+      createdBy:
+        apiData.createdBy?.username || user?.username || "Chưa có thông tin",
+    };
+  };
 
   // Xử lý in hồ sơ
   const handlePrint = () => {
@@ -99,8 +151,9 @@ const ParentHealthProfileDetail = () => {
   if (!profile) {
     return null;
   }
-
   const getTabContent = () => {
+    if (!profile) return null;
+
     switch (activeTab) {
       case "allergies":
         return (
@@ -108,227 +161,292 @@ const ParentHealthProfileDetail = () => {
             <h2 className="text-lg font-semibold border-b pb-2">
               Thông tin dị ứng
             </h2>
-            {profile.healthInfo.allergies.length === 0 ||
-            (profile.healthInfo.allergies.length === 1 &&
-              !profile.healthInfo.allergies[0].type) ? (
+            {!profile.healthInfo.allergies ||
+            profile.healthInfo.allergies.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin dị ứng
               </div>
             ) : (
-              profile.healthInfo.allergies.map(
-                (allergy, index) =>
-                  allergy.type && (
-                    <div key={index} className="p-4 border rounded-md">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-medium">Loại dị ứng</p>
-                          <p>{allergy.type}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Phản ứng</p>
-                          <p>{allergy.reaction || "Không có thông tin"}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Mức độ nghiêm trọng</p>
-                          <p>
-                            {allergy.severity === "mild"
-                              ? "Nhẹ"
-                              : allergy.severity === "medium"
-                              ? "Trung bình"
-                              : allergy.severity === "severe"
-                              ? "Nghiêm trọng"
-                              : allergy.severity}
-                          </p>
-                        </div>
-                        {allergy.notes && (
-                          <div className="md:col-span-2">
-                            <p className="font-medium">Ghi chú</p>
-                            <p>{allergy.notes}</p>
-                          </div>
-                        )}
-                      </div>
+              profile.healthInfo.allergies.map((allergy, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Loại dị ứng</p>
+                      <p>{allergy.type || "Không có thông tin"}</p>
                     </div>
-                  )
-              )
+                    <div>
+                      <p className="font-medium">Phản ứng</p>
+                      <p>{allergy.reaction || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Mức độ nghiêm trọng</p>
+                      <p>
+                        {allergy.severity === "mild" ||
+                        allergy.severity === "Mild"
+                          ? "Nhẹ"
+                          : allergy.severity === "medium" ||
+                            allergy.severity === "Medium"
+                          ? "Trung bình"
+                          : allergy.severity === "severe" ||
+                            allergy.severity === "Severe"
+                          ? "Nghiêm trọng"
+                          : allergy.severity || "Không có thông tin"}
+                      </p>
+                    </div>
+                    {allergy.notes && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{allergy.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         );
-
       case "chronic":
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">
               Thông tin bệnh mãn tính
             </h2>
-            {profile.healthInfo.chronicConditions.length === 0 ||
-            (profile.healthInfo.chronicConditions.length === 1 &&
-              !profile.healthInfo.chronicConditions[0].condition) ? (
+            {!profile.healthInfo.chronicConditions ||
+            profile.healthInfo.chronicConditions.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin bệnh mãn tính
               </div>
             ) : (
-              profile.healthInfo.chronicConditions.map(
-                (condition, index) =>
-                  condition.condition && (
-                    <div key={index} className="p-4 border rounded-md">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-medium">Tên bệnh</p>
-                          <p>{condition.condition}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Thời gian chẩn đoán</p>
-                          <p>{condition.diagnosis || "Không có thông tin"}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Thuốc điều trị</p>
-                          <p>{condition.medication || "Không có thông tin"}</p>
-                        </div>
-                        {condition.notes && (
-                          <div className="md:col-span-2">
-                            <p className="font-medium">Ghi chú</p>
-                            <p>{condition.notes}</p>
-                          </div>
-                        )}
-                      </div>
+              profile.healthInfo.chronicConditions.map((condition, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Tên bệnh</p>
+                      <p>{condition.conditionName || "Không có thông tin"}</p>
                     </div>
-                  )
-              )
+                    <div>
+                      <p className="font-medium">Thời gian chẩn đoán</p>
+                      <p>
+                        {condition.diagnosedDate
+                          ? new Date(
+                              condition.diagnosedDate
+                            ).toLocaleDateString("vi-VN")
+                          : "Không có thông tin"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Thuốc điều trị</p>
+                      <p>{condition.medication || "Không có thông tin"}</p>
+                    </div>
+                    {condition.notes && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{condition.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         );
-
       case "medical":
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">
               Tiền sử điều trị
             </h2>
-            {profile.healthInfo.medicalHistory.length === 0 ||
-            (profile.healthInfo.medicalHistory.length === 1 &&
-              !profile.healthInfo.medicalHistory[0].condition) ? (
+            {!profile.healthInfo.medicalHistory ||
+            profile.healthInfo.medicalHistory.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin tiền sử điều trị
               </div>
             ) : (
-              profile.healthInfo.medicalHistory.map(
-                (history, index) =>
-                  history.condition && (
-                    <div key={index} className="p-4 border rounded-md">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-medium">Tình trạng / Bệnh</p>
-                          <p>{history.condition}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Bệnh viện / Cơ sở y tế</p>
-                          <p>{history.hospital || "Không có thông tin"}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Ngày điều trị</p>
-                          <p>{history.date || "Không có thông tin"}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Phương pháp điều trị</p>
-                          <p>{history.treatment || "Không có thông tin"}</p>
-                        </div>
-                        {history.notes && (
-                          <div className="md:col-span-2">
-                            <p className="font-medium">Ghi chú</p>
-                            <p>{history.notes}</p>
-                          </div>
-                        )}
-                      </div>
+              profile.healthInfo.medicalHistory.map((history, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Tình trạng / Bệnh</p>
+                      <p>{history.condition || "Không có thông tin"}</p>
                     </div>
-                  )
-              )
+                    <div>
+                      <p className="font-medium">Bệnh viện / Cơ sở y tế</p>
+                      <p>{history.facility || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Ngày điều trị</p>
+                      <p>
+                        {history.treatmentDate
+                          ? new Date(history.treatmentDate).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "Không có thông tin"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Phương pháp điều trị</p>
+                      <p>{history.method || "Không có thông tin"}</p>
+                    </div>
+                    {history.notes && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{history.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         );
-
       case "vision":
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">
               Thông tin thị lực
             </h2>
-            <div className="p-4 border rounded-md">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium">Thị lực mắt phải</p>
-                  <p>
-                    {profile.healthInfo.vision.rightEye || "Không có thông tin"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Thị lực mắt trái</p>
-                  <p>
-                    {profile.healthInfo.vision.leftEye || "Không có thông tin"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Đeo kính</p>
-                  <p>
-                    {profile.healthInfo.vision.wearGlasses ? "Có" : "Không"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium">Mù màu</p>
-                  <p>
-                    {profile.healthInfo.vision.colorBlindness ? "Có" : "Không"}
-                  </p>
-                </div>
-                {profile.healthInfo.vision.notes && (
-                  <div className="md:col-span-2">
-                    <p className="font-medium">Ghi chú</p>
-                    <p>{profile.healthInfo.vision.notes}</p>
-                  </div>
-                )}
+            {!profile.healthInfo.visionHistory ||
+            profile.healthInfo.visionHistory.length === 0 ? (
+              <div className="p-4 bg-gray-50 rounded-md text-gray-500">
+                Không có thông tin thị lực
               </div>
-            </div>
+            ) : (
+              profile.healthInfo.visionHistory.map((vision, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Ngày kiểm tra</p>
+                      <p>
+                        {vision.checkupDate
+                          ? new Date(vision.checkupDate).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "Không có thông tin"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Thị lực mắt phải</p>
+                      <p>{vision.rightEyeVision || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Thị lực mắt trái</p>
+                      <p>{vision.leftEyeVision || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Đeo kính</p>
+                      <p>{vision.wearsGlasses ? "Có" : "Không"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Mù màu</p>
+                      <p>{vision.isColorblind ? "Có" : "Không"}</p>
+                    </div>
+                    {vision.notes && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{vision.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         );
-      
+      case "hearing":
+        return (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold border-b pb-2">
+              Thông tin thính lực
+            </h2>
+            {!profile.healthInfo.hearingHistory ||
+            profile.healthInfo.hearingHistory.length === 0 ? (
+              <div className="p-4 bg-gray-50 rounded-md text-gray-500">
+                Không có thông tin thính lực
+              </div>
+            ) : (
+              profile.healthInfo.hearingHistory.map((hearing, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Ngày kiểm tra</p>
+                      <p>
+                        {hearing.checkupDate
+                          ? new Date(hearing.checkupDate).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "Không có thông tin"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Tình trạng tai phải</p>
+                      <p>{hearing.rightEarStatus || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Tình trạng tai trái</p>
+                      <p>{hearing.leftEarStatus || "Không có thông tin"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Sử dụng thiết bị trợ thính</p>
+                      <p>{hearing.usesHearingAid ? "Có" : "Không"}</p>
+                    </div>
+                    {hearing.notes && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{hearing.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        );
       case "vaccination":
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">
               Lịch sử tiêm chủng
             </h2>
-            {profile.healthInfo.vaccinations.length === 0 ||
-            (profile.healthInfo.vaccinations.length === 1 &&
-              !profile.healthInfo.vaccinations[0].name) ? (
+            {!profile.healthInfo.vaccines ||
+            profile.healthInfo.vaccines.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin tiêm chủng
               </div>
             ) : (
-              profile.healthInfo.vaccinations.map(
-                (vaccination, index) =>
-                  vaccination.name && (
-                    <div key={index} className="p-4 border rounded-md">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-medium">Tên vắc-xin</p>
-                          <p>{vaccination.name}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Ngày tiêm</p>
-                          <p>{vaccination.date || "Không có thông tin"}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Địa điểm tiêm</p>
-                          <p>{vaccination.location || "Không có thông tin"}</p>
-                        </div>
-                        {vaccination.notes && (
-                          <div className="md:col-span-2">
-                            <p className="font-medium">Ghi chú</p>
-                            <p>{vaccination.notes}</p>
-                          </div>
-                        )}
-                      </div>
+              profile.healthInfo.vaccines.map((vaccine, index) => (
+                <div key={index} className="p-4 border rounded-md">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Tên vắc-xin</p>
+                      <p>{vaccine.vaccineName || "Không có thông tin"}</p>
                     </div>
-                  )
-              )
+                    <div>
+                      <p className="font-medium">Mũi số</p>
+                      <p>{vaccine.doseNumber || "1"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Ngày tiêm</p>
+                      <p>
+                        {vaccine.dateInjected
+                          ? new Date(vaccine.dateInjected).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "Không có thông tin"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Địa điểm tiêm</p>
+                      <p>{vaccine.locationInjected || "Không có thông tin"}</p>
+                    </div>
+                    {vaccine.note && (
+                      <div className="md:col-span-2">
+                        <p className="font-medium">Ghi chú</p>
+                        <p>{vaccine.note}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         );
@@ -392,7 +510,6 @@ const ParentHealthProfileDetail = () => {
             </button>
           </div>
         </div>
-
         {/* Thông tin học sinh */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-gray-50 p-4 rounded-lg">
@@ -474,8 +591,7 @@ const ParentHealthProfileDetail = () => {
               </div>
             </div>
           </div>
-        </div>
-
+        </div>{" "}
         {/* Tabs điều hướng */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="-mb-px flex space-x-4 overflow-x-auto print:hidden">
@@ -520,6 +636,16 @@ const ParentHealthProfileDetail = () => {
               <Eye className="w-4 h-4 inline mr-1" /> Thị lực
             </button>
             <button
+              onClick={() => setActiveTab("hearing")}
+              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
+                activeTab === "hearing"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              <Ear className="w-4 h-4 inline mr-1" /> Thính lực
+            </button>
+            <button
               onClick={() => setActiveTab("vaccination")}
               className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === "vaccination"
@@ -531,10 +657,8 @@ const ParentHealthProfileDetail = () => {
             </button>
           </nav>
         </div>
-
         {/* Nội dung tab */}
         <div className="mb-6">{getTabContent()}</div>
-
         {/* Chú thích và thông tin bổ sung */}
         <div className="mt-8 p-4 border border-blue-200 rounded-md bg-blue-50">
           <h3 className="font-semibold text-blue-800 mb-2">Lưu ý</h3>

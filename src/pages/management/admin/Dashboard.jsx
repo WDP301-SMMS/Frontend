@@ -9,12 +9,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
-
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await getDashboardData();
-      setDashboardData(data);
+      const response = await getDashboardData();
+      setDashboardData(response.data);
       setError(null);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -43,251 +42,264 @@ const AdminDashboard = () => {
       </div>
     );
   }
-
   // Fallback data for development purposes
   const data = dashboardData || {
-    totalUsers: 245,
-    totalStudents: 1250,
-    totalClasses: 42,
-    totalPartners: 8,
-    inventoryItems: 126,
-    lowStockItems: 12,
-    recentActivities: [
-      {
-        id: 1,
-        type: "user_created",
-        user: "John Doe",
-        timestamp: "2025-06-21T15:30:00",
-      },
-      {
-        id: 2,
-        type: "class_created",
-        class: "Class 5A",
-        timestamp: "2025-06-20T09:15:00",
-      },
-      {
-        id: 3,
-        type: "partner_updated",
-        partner: "Health Corp",
-        timestamp: "2025-06-19T14:45:00",
-      },
-    ],
-    userDistribution: {
-      admins: 5,
-      managers: 15,
-      nurses: 30,
-      parents: 195,
+    quickStats: {
+      totalStudents: 1250,
+      incidentsThisWeek: 8,
+      pendingMedicationRequests: 5,
+      inventoryAlerts: 12,
     },
-    studentsPerClass: [
-      { class: "Class 1A", students: 32 },
-      { class: "Class 2B", students: 28 },
-      { class: "Class 3C", students: 30 },
-      { class: "Class 4D", students: 26 },
-      { class: "Class 5A", students: 29 },
-    ],
+    healthAnalytics: {
+      healthClassification: [
+        { category: "Healthy", count: 850 },
+        { category: "Minor Issues", count: 280 },
+        { category: "Requires Attention", count: 120 },
+      ],
+      commonIssues: [
+        { issue: "Common Cold", count: 48 },
+        { issue: "Allergies", count: 32 },
+        { issue: "Stomach Ache", count: 27 },
+        { issue: "Headache", count: 21 },
+        { issue: "Minor Injuries", count: 18 },
+      ],
+      bmiTrend: [
+        { month: "Jan", normal: 720, overweight: 150, underweight: 200 },
+        { month: "Feb", normal: 740, overweight: 145, underweight: 190 },
+        { month: "Mar", normal: 760, overweight: 140, underweight: 180 },
+      ],
+    },
+    operationalMonitoring: {
+      latestCampaignStatus: {
+        name: "Spring Health Check 2025",
+        total: 1250,
+        approved: 980,
+        declined: 30,
+      },
+      recentIncidents: [
+        {
+          id: 1,
+          studentName: "John Doe",
+          issue: "Minor injury during PE",
+          date: "2025-06-20T10:30:00",
+        },
+        {
+          id: 2,
+          studentName: "Jane Smith",
+          issue: "Fever",
+          date: "2025-06-19T14:15:00",
+        },
+        {
+          id: 3,
+          studentName: "Mike Johnson",
+          issue: "Allergic reaction",
+          date: "2025-06-18T09:45:00",
+        },
+      ],
+    },
   };
-
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Summary Cards */}
+        {/* Quick Stats Cards */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
-          <p className="text-2xl font-bold">{data.totalUsers}</p>
+          <h3 className="text-gray-500 text-sm font-medium">
+            Tổng số học sinh
+          </h3>
+          <p className="text-2xl font-bold">{data.quickStats.totalStudents}</p>
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-gray-500 text-sm font-medium">Total Students</h3>
-          <p className="text-2xl font-bold">{data.totalStudents}</p>
+          <h3 className="text-gray-500 text-sm font-medium">
+            Sự cố trong tuần
+          </h3>
+          <p className="text-2xl font-bold">
+            {data.quickStats.incidentsThisWeek}
+          </p>
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-gray-500 text-sm font-medium">Classes</h3>
-          <p className="text-2xl font-bold">{data.totalClasses}</p>
+          <h3 className="text-gray-500 text-sm font-medium">
+            Yêu cầu thuốc chờ xử lý
+          </h3>
+          <p className="text-2xl font-bold">
+            {data.quickStats.pendingMedicationRequests}
+          </p>
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-gray-500 text-sm font-medium">Partners</h3>
-          <p className="text-2xl font-bold">{data.totalPartners}</p>
+          <h3 className="text-gray-500 text-sm font-medium">Cảnh báo kho</h3>
+          <p className="text-2xl font-bold">
+            {data.quickStats.inventoryAlerts}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        {/* User Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        {/* Health Classification */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="font-medium mb-4">User Distribution</h3>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>Admins</span>
-                <span>{data.userDistribution.admins}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (data.userDistribution.admins / data.totalUsers) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>Managers</span>
-                <span>{data.userDistribution.managers}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-green-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (data.userDistribution.managers / data.totalUsers) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>Nurses</span>
-                <span>{data.userDistribution.nurses}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-yellow-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (data.userDistribution.nurses / data.totalUsers) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>Parents</span>
-                <span>{data.userDistribution.parents}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-purple-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (data.userDistribution.parents / data.totalUsers) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Students Per Class Top 5 */}
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="font-medium mb-4">Students per Class (Top 5)</h3>
+          <h3 className="font-medium mb-4">Phân loại sức khỏe</h3>
           <div className="space-y-4">
-            {data.studentsPerClass.map((item, index) => (
-              <div key={index}>
-                <div className="flex justify-between mb-1">
-                  <span>{item.class}</span>
-                  <span>{item.students} students</span>
+            {data.healthAnalytics.healthClassification.length > 0 ? (
+              data.healthAnalytics.healthClassification.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span>{item.category}</span>
+                    <span>{item.count} học sinh</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${
+                        index === 0
+                          ? "bg-green-600"
+                          : index === 1
+                          ? "bg-yellow-600"
+                          : "bg-red-600"
+                      }`}
+                      style={{
+                        width: `${
+                          (item.count / data.quickStats.totalStudents || 1) *
+                          100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${(item.students / 40) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500">
+                Không có dữ liệu phân loại sức khỏe
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Inventory Summary */}
+        {/* Common Health Issues */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="font-medium mb-4">Inventory Summary</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-100 p-3 rounded-lg text-center">
-              <p className="text-gray-500 text-sm">Total Items</p>
-              <p className="text-xl font-bold">{data.inventoryItems}</p>
+          <h3 className="font-medium mb-4">Vấn đề sức khỏe phổ biến</h3>
+          {data.healthAnalytics.commonIssues.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vấn đề
+                    </th>
+                    <th className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số lượng
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {data.healthAnalytics.commonIssues.map((issue, index) => (
+                    <tr key={index}>
+                      <td className="py-2 px-4">{issue.issue}</td>
+                      <td className="py-2 px-4">{issue.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            <div className="bg-yellow-100 p-3 rounded-lg text-center">
-              <p className="text-yellow-800 text-sm">Low Stock Items</p>
-              <p className="text-xl font-bold text-yellow-800">
-                {data.lowStockItems}
-              </p>
-            </div>
-          </div>
-
-          {data.lowStockItems > 0 && (
-            <div className="mt-4">
-              <p className="text-sm text-yellow-800 bg-yellow-50 p-2 rounded">
-                {data.lowStockItems} items need attention. Check inventory.
-              </p>
-            </div>
+          ) : (
+            <p className="text-gray-500">Không có dữ liệu vấn đề sức khỏe</p>
           )}
         </div>
       </div>
 
-      {/* Recent Activities */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <h3 className="font-medium mb-4">Recent Activities</h3>
-        {data.recentActivities.length === 0 ? (
-          <p>No recent activities</p>
-        ) : (
-          <div className="space-y-4">
-            {data.recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start border-b pb-3">
-                <div
-                  className={`p-2 rounded-full mr-3 ${
-                    activity.type.includes("user")
-                      ? "bg-blue-100"
-                      : activity.type.includes("class")
-                      ? "bg-green-100"
-                      : "bg-purple-100"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-medium">
-                    {activity.type === "user_created" &&
-                      `New user registered: ${activity.user}`}
-                    {activity.type === "class_created" &&
-                      `New class created: ${activity.class}`}
-                    {activity.type === "partner_updated" &&
-                      `Partner updated: ${activity.partner}`}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        {/* Latest Campaign Status */}
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h3 className="font-medium mb-4">Trạng thái chiến dịch mới nhất</h3>
+          <div className="mb-2">
+            <h4 className="font-medium">
+              {data.operationalMonitoring.latestCampaignStatus.name}
+            </h4>
+          </div>
+          {data.operationalMonitoring.latestCampaignStatus.total > 0 ? (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">Tổng</p>
+                  <p className="font-bold">
+                    {data.operationalMonitoring.latestCampaignStatus.total}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(activity.timestamp).toLocaleString()}
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">Đã duyệt</p>
+                  <p className="font-bold text-green-600">
+                    {data.operationalMonitoring.latestCampaignStatus.approved}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">Từ chối</p>
+                  <p className="font-bold text-red-600">
+                    {data.operationalMonitoring.latestCampaignStatus.declined}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                {/* Approved bar */}
+                <div
+                  className="bg-green-600 h-3 float-left"
+                  style={{
+                    width: `${
+                      (data.operationalMonitoring.latestCampaignStatus
+                        .approved /
+                        data.operationalMonitoring.latestCampaignStatus.total) *
+                      100
+                    }%`,
+                  }}
+                ></div>
+                {/* Declined bar */}
+                <div
+                  className="bg-red-600 h-3 float-left"
+                  style={{
+                    width: `${
+                      (data.operationalMonitoring.latestCampaignStatus
+                        .declined /
+                        data.operationalMonitoring.latestCampaignStatus.total) *
+                      100
+                    }%`,
+                  }}
+                ></div>
+                {/* Pending bar (remaining) is gray by default */}
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                {data.operationalMonitoring.latestCampaignStatus.total -
+                  data.operationalMonitoring.latestCampaignStatus.approved -
+                  data.operationalMonitoring.latestCampaignStatus.declined}{" "}
+                đang chờ phản hồi
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-500">Chưa có chiến dịch nào</p>
+          )}
+        </div>
+
+        {/* Recent Incidents */}
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h3 className="font-medium mb-4">Sự cố gần đây</h3>
+          {data.operationalMonitoring.recentIncidents.length > 0 ? (
+            <div className="space-y-4">
+              {data.operationalMonitoring.recentIncidents.map((incident) => (
+                <div key={incident.id} className="border-b pb-3">
+                  <div className="flex justify-between">
+                    <p className="font-medium">{incident.studentName}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(incident.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <p className="text-sm">{incident.issue}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">Không có sự cố nào gần đây</p>
+          )}
+        </div>
       </div>
     </div>
   );

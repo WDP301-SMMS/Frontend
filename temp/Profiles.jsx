@@ -13,10 +13,7 @@ import {
 } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useHealthProfiles } from "../../libs/contexts/HealthProfileContext";
-import {
-  getMyChildren,
-  claimStudentByCode,
-} from "../../libs/api/parentService";
+import { getMyChildren, claimStudentByCode } from "../../libs/api/parentService";
 
 const ParentHealthProfiles = () => {
   const {
@@ -29,7 +26,7 @@ const ParentHealthProfiles = () => {
   const [loading, setLoading] = useState(false);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState(null);
-
+  
   // Dialog states
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [invitedCode, setInvitedCode] = useState("");
@@ -79,30 +76,25 @@ const ParentHealthProfiles = () => {
     try {
       setIsSubmitting(true);
       setDialogError("");
-
+      
       const response = await claimStudentByCode(invitedCode);
-
+      
       if (response.success && response.data) {
         setClaimedStudent(response.data);
         setIsDialogOpen(false);
-
+        
         // Navigate to the profile form with the claimed student data
-        navigate("/health-profile/new", {
-          state: {
-            claimedStudent: response.data,
-          },
+        navigate("/health-profile/new", { 
+          state: { 
+            claimedStudent: response.data 
+          } 
         });
       } else {
-        setDialogError(
-          response.message ||
-            "Không thể liên kết học sinh. Vui lòng kiểm tra lại mã."
-        );
+        setDialogError(response.message || "Không thể liên kết học sinh. Vui lòng kiểm tra lại mã.");
       }
     } catch (err) {
       console.error("Error claiming student:", err);
-      setDialogError(
-        err.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại sau."
-      );
+      setDialogError(err.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +136,7 @@ const ParentHealthProfiles = () => {
               {currentParent
                 ? `Xin chào, ${currentParent.name}. Quản lý hồ sơ sức khỏe của ${myChildrenProfiles.length} học sinh.`
                 : "Xem và quản lý hồ sơ sức khỏe của con bạn"}
-            </p>{" "}
+            </p>
           </div>
           <button
             onClick={handleOpenDialog}
@@ -303,121 +295,113 @@ const ParentHealthProfiles = () => {
           </p>
         </div>
       </div>
-
-      {/* Dialog for entering invitation code */}
-      <Transition appear show={isDialogOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-10"
-          onClose={() => setIsDialogOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <div className="flex justify-between items-center mb-4">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      Nhập mã liên kết học sinh
-                    </Dialog.Title>
-                    <button
-                      type="button"
-                      className="text-gray-400 hover:text-gray-500"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      <X className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                  </div>
-
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500 mb-4">
-                      Vui lòng nhập mã liên kết được cung cấp bởi nhà trường để
-                      kết nối với hồ sơ học sinh của con bạn.
-                    </p>
-
-                    <div className="mb-4">
-                      <label
-                        htmlFor="invitedCode"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Mã liên kết
-                      </label>
-                      <input
-                        type="text"
-                        id="invitedCode"
-                        value={invitedCode}
-                        onChange={(e) => setInvitedCode(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                        placeholder="Nhập mã 6 chữ số"
-                      />
-                    </div>
-
-                    {dialogError && (
-                      <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
-                        <AlertCircle className="inline-block h-4 w-4 mr-1" />
-                        {dialogError}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center ${
-                        isSubmitting ? "opacity-75 cursor-not-allowed" : ""
-                      }`}
-                      onClick={handleClaimStudent}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                          Đang xử lý...
-                        </>
-                      ) : (
-                        <>
-                          <Check className="w-4 h-4 mr-1" />
-                          Xác nhận
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
     </div>
+    
+    {/* Dialog for entering invitation code */}
+    <Transition appear show={isDialogOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={() => setIsDialogOpen(false)}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <div className="flex justify-between items-center mb-4">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    Nhập mã liên kết học sinh
+                  </Dialog.Title>
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-500"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </div>
+                
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Vui lòng nhập mã liên kết được cung cấp bởi nhà trường để kết nối với hồ sơ học sinh của con bạn.
+                  </p>
+                  
+                  <div className="mb-4">
+                    <label htmlFor="invitedCode" className="block text-sm font-medium text-gray-700 mb-1">
+                      Mã liên kết
+                    </label>
+                    <input
+                      type="text"
+                      id="invitedCode"
+                      value={invitedCode}
+                      onChange={(e) => setInvitedCode(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                      placeholder="Nhập mã 6 chữ số"
+                    />
+                  </div>
+                  
+                  {dialogError && (
+                    <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                      <AlertCircle className="inline-block h-4 w-4 mr-1" />
+                      {dialogError}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center ${
+                      isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
+                    onClick={handleClaimStudent}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 mr-1" />
+                        Xác nhận
+                      </>
+                    )}
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
   );
 };
 

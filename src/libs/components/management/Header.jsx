@@ -8,6 +8,7 @@ import {
     Transition
 } from "@headlessui/react";
 import { Fragment, useState } from "react";
+import { useAuth } from "~/libs/contexts/AuthContext";
 
 const Header = ({ onMenuClick }) => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -16,6 +17,12 @@ const Header = ({ onMenuClick }) => {
         setSearchQuery(e.target.value);
         console.log("Searching for:", e.target.value);
     };
+
+    const { logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+    }
 
     return (
         <header className="flex items-center justify-between p-4 border-b shadow-sm bg-white">
@@ -91,7 +98,7 @@ const Header = ({ onMenuClick }) => {
                                 <MenuItem>
                                     {({ focus }) => (
                                         <button
-                                            onClick={() => console.log("Đăng xuất")}
+                                            onClick={handleLogout}
                                             className={`group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm duration-200 ${focus ? "bg-gray-100 text-gray-900" : "text-gray-700"
                                                 }`}
                                         >

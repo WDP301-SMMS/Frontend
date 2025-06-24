@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { getMyChildren } from "../api/parentService";
 
 // Dữ liệu mẫu
 const SAMPLE_HEALTH_PROFILES = [
@@ -151,7 +152,7 @@ const SAMPLE_PARENTS = [
     name: "Nguyễn Văn Bình",
     contactNumber: "0912345678",
     email: "binh.nguyen@example.com",
-    children: ["HS001", "HS002"], 
+    children: ["HS001", "HS002"],
   },
 ];
 
@@ -163,12 +164,11 @@ export const HealthProfileProvider = ({ children }) => {
   const [parents, setParents] = useState([]);
   const [currentParent, setCurrentParent] = useState(null);
   const [loading, setLoading] = useState(true);
-
   // Giả lập việc lấy dữ liệu từ API
   useEffect(() => {
     // Trong một ứng dụng thực tế, đây sẽ là một API call
-    const fetchData = () => {
-      setTimeout(() => {
+    const fetchData = async () => {
+      try {
         // Kiểm tra localStorage trước
         const savedProfiles = localStorage.getItem("healthProfiles");
         const savedParents = localStorage.getItem("parents");
@@ -190,9 +190,7 @@ export const HealthProfileProvider = ({ children }) => {
         } else {
           setParents(SAMPLE_PARENTS);
           localStorage.setItem("parents", JSON.stringify(SAMPLE_PARENTS));
-        }
-
-        // Giả lập người dùng đăng nhập (phụ huynh)
+        } // Giả lập người dùng đăng nhập (phụ huynh)
         const savedCurrentParent = localStorage.getItem("currentParent");
         if (savedCurrentParent) {
           setCurrentParent(JSON.parse(savedCurrentParent));
@@ -205,8 +203,76 @@ export const HealthProfileProvider = ({ children }) => {
           );
         }
 
+        // Fetch real student data from API
+        try {
+          const response = await getMyChildren();
+          if (
+            response.success &&
+            response.students &&
+            response.students.length > 0
+          ) {
+            // Transform API data to match the expected format in the app
+            const formattedProfiles = response.students.map((student) => ({
+              id: student._id,
+              studentInfo: {
+                studentId: student._id,
+                studentName: student.fullName,
+                class: student.classId ? student.classId.className : "N/A",
+                dateOfBirth: new Date(student.dateOfBirth).toLocaleDateString(
+                  "vi-VN"
+                ),
+                parentName: SAMPLE_PARENTS[0].name,
+                parentId: student.parentId,
+                contactNumber: SAMPLE_PARENTS[0].contactNumber,
+                relationship: "parent",
+              },
+              // Default empty health info since it might be filled in later
+              healthInfo: {
+                allergies: [],
+                chronicConditions: [],
+                medicalHistory: [],
+                vision: { rightEye: "", leftEye: "" },
+                hearing: "normal",
+                height: "",
+                weight: "",
+                bloodType: "",
+                emergencyContact: {
+                  name: "",
+                  relationship: "",
+                  phone: "",
+                },
+              },
+              hasAllergies: false,
+              hasChronicConditions: false,
+              status: student.status,
+            }));
+
+            // Update the health profiles with the actual student data
+            setHealthProfiles(formattedProfiles);
+
+            // Update current parent's children list
+            if (currentParent) {
+              const updatedParent = {
+                ...currentParent,
+                children: formattedProfiles.map((profile) => profile.id),
+              };
+              setCurrentParent(updatedParent);
+              localStorage.setItem(
+                "currentParent",
+                JSON.stringify(updatedParent)
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching students from API:", error);
+          // Keep using the local data if API fails
+        }
+
         setLoading(false);
-      }, 500); // Giả lập độ trễ 500ms
+      } catch (error) {
+        console.error("Error initializing data:", error);
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -259,9 +325,7 @@ export const HealthProfileProvider = ({ children }) => {
   // Lấy thông tin phụ huynh theo ID
   const getParentById = (parentId) => {
     return parents.find((parent) => parent.id === parentId) || null;
-  };
-
-  // Lấy danh sách hồ sơ của con của phụ huynh hiện tại
+  }; // Lấy danh sách hồ sơ của con của phụ huynh hiện tại
   const getCurrentParentProfiles = () => {
     if (!currentParent) return [];
     return healthProfiles.filter((profile) =>

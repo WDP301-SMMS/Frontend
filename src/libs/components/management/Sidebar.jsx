@@ -176,7 +176,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <SidebarItem
             to="/management/admin/blogs"
             icon={faBell}
-            label="Quản lý nội dung"
+            label="Quản lý bài viết"
             collapsed={isCollapsed}
             active={path === "/management/admin/blogs"}
           />
