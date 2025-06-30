@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -23,15 +23,17 @@ import {
   TextField,
   InputAdornment,
   Chip,
-  Avatar,
   Container,
   Alert,
+  Avatar,
 } from "@mui/material";
 import { Download, CheckCircle, Save, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
-import { students } from "~/mock/mock";
-import { vaccinationCampaigns, classes } from "~/mock/mock";
+import campaignService from "~/libs/api/services/campaignService";
 import { Visibility, Warning } from "@mui/icons-material";
+
+// Reusable constants (for mock consistency, adjust as needed)
+const classes = []; // Will be populated from API if needed
 
 function VaccinateRecord() {
   const [selectedCampaign, setSelectedCampaign] = useState("");
@@ -39,11 +41,12 @@ function VaccinateRecord() {
   const [searchQuery, setSearchQuery] = useState("");
   const [vaccinationStatusFilter, setVaccinationStatusFilter] = useState("");
   const [vaccinationRecords, setVaccinationRecords] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [openVaccinationDialog, setOpenVaccinationDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-  const [openDetailDialog, setOpenDetailDialog] = useState(false); // New state for detail dialog
+  const [openDetailDialog, setOpenDetailDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [thirdPartyProvider, setThirdPartyProvider] = useState("");
   const [batchNumber, setBatchNumber] = useState("");
@@ -51,15 +54,12 @@ function VaccinateRecord() {
   const [dosage, setDosage] = useState("0.5ml");
   const [injectionSite, setInjectionSite] = useState("Cánh tay trái");
   const [administrationDateTime, setAdministrationDateTime] = useState(() => {
-    const now = new Date();
-    const vietnamTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-    );
-    const year = vietnamTime.getFullYear();
-    const month = String(vietnamTime.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-    const day = String(vietnamTime.getDate()).padStart(2, "0");
-    const hours = String(vietnamTime.getHours()).padStart(2, "0");
-    const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
+    const now = new Date("2025-06-24T13:47:00+07:00"); // Updated to 01:47 PM +07, June 24, 2025
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   });
   const [administeredBy, setAdministeredBy] = useState("");
@@ -67,88 +67,138 @@ function VaccinateRecord() {
   const [healthCheckNote, setHealthCheckNote] = useState("");
   const [observationPeriod, setObservationPeriod] = useState("15 phút");
   const [immediateReactions, setImmediateReactions] = useState("");
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [immunizationHistory, setImmunizationHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const itemsPerPage = 10;
 
-  // Load eligible students for vaccination
-  const loadVaccinationRecords = (campaignId, classId, query, statusFilter) => {
-    setLoading(true);
-    setTimeout(() => {
-      const campaign = vaccinationCampaigns.find((c) => c.id === campaignId);
-      if (!campaign) {
-        setVaccinationRecords([]);
+  // Load campaigns on mount
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+        const response = await campaignService.getCampaignsByStatus("IN_PROGRESS", 1, 100);
+        if (response.success) {
+          console.log(response.data);
+          setCampaigns(response.data || []);
+        } else {
+          throw new Error(response.message || "Không thể tải danh sách chiến dịch.");
+        }
+      } catch (error) {
+        console.error("Failed to load campaigns:", error);
+      } finally {
         setLoading(false);
-        return;
+      }
+    };
+    fetchCampaigns();
+  }, []);
+
+  // Load vaccination records
+  const loadVaccinationRecords = async (campaignId, classId, query, statusFilter) => {
+    if (!campaignId) {
+      setVaccinationRecords([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await campaignService.getListVaccination(campaignId);
+      if (!response.success) {
+        throw new Error(response.message || "Không thể tải danh sách tiêm chủng.");
       }
 
-      let filteredStudents = students
-        .filter(
-          (student) =>
-            campaign.targetClasses.includes(student.class_id) &&
-            !student.health_notes.includes("Sốt cao") &&
-            Math.random() > 0.2 // Simulate 80% consent rate
-        )
-        .filter((student) =>
-          student.full_name.toLowerCase().includes(query.toLowerCase())
-        );
+      let filteredRecords = response.data.filter((record) =>
+        record.fullName.toLowerCase().includes(query.toLowerCase())
+      );
 
       if (classId) {
-        filteredStudents = filteredStudents.filter(
-          (student) => student.class_id === classId
-        );
+        filteredRecords = filteredRecords.filter((record) => record.className === classId);
       }
 
-      const mappedRecords = filteredStudents
-        .map((student, index) => {
-          const doseNumber =
-            student.vaccination_history.find(
-              (v) => v.vaccine_id === campaign.id
-            )?.dose + 1 || 1;
-
-          const existingRecord = student.vaccination_history.find(
-            (v) => v.vaccine_id === campaign.id && v.dose === doseNumber
-          );
-
-          return {
-            stt: index + 1,
-            student_id: student.student_id,
-            full_name: student.full_name,
-            class_name:
-              classes.find((c) => c.id === student.class_id)?.name || "",
-            date_of_birth: student.date_of_birth,
-            health_notes: student.health_notes || "Không có",
-            consent_status:
-              !student.health_notes.includes("Sốt cao") && Math.random() > 0.2
-                ? "Đã đồng ý"
-                : "Chưa đồng ý",
-            vaccination_status: existingRecord ? "Đã tiêm" : "Chưa tiêm",
-            dose_number: doseNumber,
-            vaccine_name: campaign.vaccineName,
-            batch_number: existingRecord?.batch_number || "",
-            expiry_date: existingRecord?.expiry_date || "",
-            administration_date: existingRecord?.administration_date || "",
-            adverse_reactions: existingRecord?.adverse_reactions || "",
-            third_party_provider: campaign.thirdPartyProvider.name,
-            manufacturer: campaign.manufacturer,
-            health_check_note: existingRecord?.health_check_note || "",
-            observation_period: existingRecord?.observation_period || "",
-            administered_by: existingRecord?.administered_by || "",
-            dosage: existingRecord?.dosage || "",
-            injection_site: existingRecord?.injection_site || "",
+      if (statusFilter) {
+        filteredRecords = filteredRecords.filter((record) => {
+          const statusMap = {
+            "Chưa tiêm": "PENDING_VACCINATION",
+            "Đã tiêm": ["COMPLETED", "IN_PROCESS"], // Adjust based on API if "Đã tiêm" is defined
           };
-        })
-        .filter((record) =>
-          statusFilter ? record.vaccination_status === statusFilter : true
-        )
-        .sort((a, b) => {
-          const classCompare = a.class_name.localeCompare(b.class_name, "vi");
-          if (classCompare !== 0) return classCompare;
-          return a.full_name.localeCompare(b.full_name, "vi");
+          return statusMap[statusFilter]
+            ? Array.isArray(statusMap[statusFilter])
+              ? statusMap[statusFilter].includes(record.vaccinationStatus)
+              : record.vaccinationStatus === statusMap[statusFilter]
+            : true;
         });
+      }
 
+      const mappedRecords = filteredRecords.map((record, index) => ({
+        stt: index + 1,
+        student_id: record.studentId,
+        consentId: record.consentId, // Use consentId from API response
+        fullName: record.fullName,
+        className: record.className,
+        dateOfBirth: record.dateOfBirth,
+        allergies: record.allergies,
+        chronicConditions: record.chronicConditions,
+        vaccinationStatus: record.vaccinationStatus === "PENDING_VACCINATION" ? "Chưa tiêm" : "Đã tiêm",
+      })).sort((a, b) => {
+        const classCompare = a.className.localeCompare(b.className, "vi");
+        if (classCompare !== 0) return classCompare;
+        return a.fullName.localeCompare(b.fullName, "vi");
+      });
+      console.log(mappedRecords)
       setVaccinationRecords(mappedRecords);
+    } catch (error) {
+      console.error("Failed to load vaccination records:", error);
+      setVaccinationRecords([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
+
+  // Load partner data by ID
+  const loadPartnerByID = async (partnerId) => {
+    if (!partnerId) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await campaignService.getPartnerByID(partnerId);
+      if (!response) {
+        throw new Error(response.message || "Không thể tải thông tin bên thứ ba.");
+      }
+      const partnerData = response.data;
+      setThirdPartyProvider(partnerData.name || "");
+      setStaffMembers(partnerData.staffMembers || []);
+    } catch (error) {
+      console.error("Failed to load partner data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load immunization history when opening detail dialog
+  useEffect(() => {
+    const fetchImmunizationHistory = async () => {
+      if (openDetailDialog && selectedStudent?.consentId) {
+        setHistoryLoading(true);
+        try {
+          const response = await campaignService.getStudentImmunizationHistory(selectedStudent.student_id);
+          if (response.success) {
+            const matchedHistory = response.data.find((record) => record.consentId === selectedStudent.consentId);
+            setImmunizationHistory(matchedHistory || null);
+          } else {
+            throw new Error(response.message || "Không thể tải lịch sử tiêm chủng.");
+          }
+        } catch (error) {
+          console.error("Failed to load immunization history:", error);
+          setImmunizationHistory(null);
+        } finally {
+          setHistoryLoading(false);
+        }
+      } else {
+        setImmunizationHistory(null);
+      }
+    };
+    fetchImmunizationHistory();
+  }, [openDetailDialog, selectedStudent]);
 
   // Handle campaign selection
   const handleCampaignChange = (e) => {
@@ -158,7 +208,12 @@ function VaccinateRecord() {
     setVaccinationStatusFilter("");
     setCurrentPage(1);
     setSearchQuery("");
+    setStaffMembers([]);
     loadVaccinationRecords(campaignId, "", "", "");
+    const campaign = campaigns.find((c) => c._id === campaignId);
+    if (campaign?.partnerId?._id) {
+      loadPartnerByID(campaign.partnerId._id);
+    }
   };
 
   // Handle class selection
@@ -166,12 +221,7 @@ function VaccinateRecord() {
     const classId = e.target.value;
     setSelectedClass(classId);
     setCurrentPage(1);
-    loadVaccinationRecords(
-      selectedCampaign,
-      classId,
-      searchQuery,
-      vaccinationStatusFilter
-    );
+    loadVaccinationRecords(selectedCampaign, classId, searchQuery, vaccinationStatusFilter);
   };
 
   // Handle search
@@ -179,12 +229,7 @@ function VaccinateRecord() {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
-    loadVaccinationRecords(
-      selectedCampaign,
-      selectedClass,
-      query,
-      vaccinationStatusFilter
-    );
+    loadVaccinationRecords(selectedCampaign, selectedClass, query, vaccinationStatusFilter);
   };
 
   // Handle vaccination status filter
@@ -192,37 +237,17 @@ function VaccinateRecord() {
     const status = e.target.value;
     setVaccinationStatusFilter(status);
     setCurrentPage(1);
-    loadVaccinationRecords(
-      selectedCampaign,
-      selectedClass,
-      searchQuery,
-      status
-    );
+    loadVaccinationRecords(selectedCampaign, selectedClass, searchQuery, status);
   };
 
   // Open vaccination dialog
   const handleOpenVaccinationDialog = (student) => {
-    const campaign = vaccinationCampaigns.find(
-      (c) => c.id === selectedCampaign
-    );
+    const campaign = campaigns.find((c) => c._id === selectedCampaign);
     setSelectedStudent(student);
-    setThirdPartyProvider(campaign?.thirdPartyProvider.name || "");
-    setBatchNumber(campaign?.batchNumber || "");
+    setThirdPartyProvider(campaign?.partnerId?.name || "");
     setExpiryDate(campaign?.expiryDate || "");
     setDosage("0.5ml");
     setInjectionSite("Cánh tay trái");
-    setAdministrationDateTime(() => {
-    const now = new Date();
-    const vietnamTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-    );
-    const year = vietnamTime.getFullYear();
-    const month = String(vietnamTime.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-    const day = String(vietnamTime.getDate()).padStart(2, "0");
-    const hours = String(vietnamTime.getHours()).padStart(2, "0");
-    const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  });
     setAdministeredBy("");
     setManufacturer(campaign?.manufacturer || "");
     setHealthCheckNote("");
@@ -238,15 +263,26 @@ function VaccinateRecord() {
   };
 
   // Save vaccination record
-  const handleSaveVaccination = () => {
+  const handleSaveVaccination = async () => {
+    if (!selectedStudent || !administeredBy) {
+      return; // Already handled by disabled button
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const staffMember = staffMembers.find((staff) => staff.fullName === administeredBy);
+      if (!staffMember) {
+        throw new Error("Không tìm thấy thông tin nhân viên.");
+      }
+      console.log(selectedStudent)
+      await campaignService.injectionRecord(selectedStudent.consentId, staffMember._id);
+
       setVaccinationRecords((prev) =>
         prev.map((record) =>
           record.student_id === selectedStudent.student_id
             ? {
                 ...record,
-                vaccination_status: "Đã tiêm",
+                vaccinationStatus: "Đã tiêm",
                 batch_number: batchNumber,
                 expiry_date: expiryDate,
                 administration_date: administrationDateTime,
@@ -264,8 +300,12 @@ function VaccinateRecord() {
       );
       setOpenVaccinationDialog(false);
       setOpenSuccessDialog(true);
+    } catch (error) {
+      console.error("Failed to save vaccination record:", error);
+      // Add UI feedback (e.g., Snackbar) if needed
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   // Export to Excel
@@ -273,27 +313,16 @@ function VaccinateRecord() {
     setLoading(true);
     const exportData = vaccinationRecords.map((record) => ({
       stt: record.stt,
-      full_name: record.full_name,
-      class_name: record.class_name,
-      date_of_birth: new Date(record.date_of_birth).toLocaleDateString("vi-VN"),
-      health_notes: record.health_notes,
-      consent_status: record.consent_status,
-      vaccine_name: record.vaccine_name,
-      dose_number: record.dose_number,
-      batch_number: record.batch_number || "Chưa ghi nhận",
-      expiry_date: record.expiry_date || "Chưa ghi nhận",
-      administration_date: record.administration_date
-        ? new Date(record.administration_date).toLocaleDateString("vi-VN")
-        : "Chưa ghi nhận",
-      adverse_reactions: record.adverse_reactions || "Không có",
-      vaccination_status: record.vaccination_status,
-      third_party_provider: record.third_party_provider,
-      manufacturer: record.manufacturer,
-      health_check_note: record.health_check_note || "Không có",
-      observation_period: record.observation_period || "Không có",
-      administered_by: record.administered_by || "Chưa ghi nhận",
-      dosage: record.dosage || "Chưa ghi nhận",
-      injection_site: record.injection_site || "Chưa ghi nhận",
+      full_name: record.fullName,
+      class_name: record.className,
+      date_of_birth: new Date(record.dateOfBirth).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      allergies: record.allergies,
+      chronic_conditions: record.chronicConditions,
+      vaccination_status: record.vaccinationStatus,
     }));
 
     const worksheet = utils.json_to_sheet(exportData, {
@@ -302,22 +331,9 @@ function VaccinateRecord() {
         "full_name",
         "class_name",
         "date_of_birth",
-        "health_notes",
-        "consent_status",
-        "vaccine_name",
-        "dose_number",
-        "batch_number",
-        "expiry_date",
-        "administration_date",
-        "adverse_reactions",
+        "allergies",
+        "chronic_conditions",
         "vaccination_status",
-        "third_party_provider",
-        "manufacturer",
-        "health_check_note",
-        "observation_period",
-        "administered_by",
-        "dosage",
-        "injection_site",
       ],
       skipHeader: false,
     });
@@ -328,42 +344,16 @@ function VaccinateRecord() {
       { wch: 10 },
       { wch: 15 },
       { wch: 30 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 10 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
       { wch: 30 },
-      { wch: 15 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 20 },
-      { wch: 10 },
       { wch: 15 },
     ];
     worksheet["A1"].v = "STT";
     worksheet["B1"].v = "Họ và Tên";
     worksheet["C1"].v = "Lớp";
     worksheet["D1"].v = "Ngày Sinh";
-    worksheet["E1"].v = "Ghi Chú Sức Khỏe";
-    worksheet["F1"].v = "Trạng Thái Đồng Ý";
-    worksheet["G1"].v = "Tên Vắc-xin";
-    worksheet["H1"].v = "Mũi Số";
-    worksheet["I1"].v = "Số Lô Vắc-xin";
-    worksheet["J1"].v = "Hạn Sử Dụng";
-    worksheet["K1"].v = "Ngày Tiêm";
-    worksheet["L1"].v = "Phản Ứng Phụ";
-    worksheet["M1"].v = "Trạng Thái Tiêm";
-    worksheet["N1"].v = "Bên Thứ Ba";
-    worksheet["O1"].v = "Nhà Sản Xuất";
-    worksheet["P1"].v = "Kiểm Tra Sức Khỏe";
-    worksheet["Q1"].v = "Thời Gian Quan Sát";
-    worksheet["R1"].v = "Người Thực Hiện";
-    worksheet["S1"].v = "Liều Lượng";
-    worksheet["T1"].v = "Vị Trí Tiêm";
+    worksheet["E1"].v = "Dị Ứng";
+    worksheet["F1"].v = "Bệnh Mãn Tính";
+    worksheet["G1"].v = "Trạng Thái Tiêm";
 
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, "VaccinationResults");
@@ -400,7 +390,7 @@ function VaccinateRecord() {
   };
 
   return (
-     <Container
+    <Container
       maxWidth="xl"
       sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
     >
@@ -408,7 +398,7 @@ function VaccinateRecord() {
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-       Tiêm Chủng và Ghi Nhận Kết Quả
+        Tiêm Chủng và Ghi Nhận Kết Quả
       </Typography>
 
       <Alert
@@ -425,16 +415,17 @@ function VaccinateRecord() {
             value={selectedCampaign}
             onChange={handleCampaignChange}
             label="Chọn chiến dịch"
+            disabled={loading}
           >
             <MenuItem value="">Chọn chiến dịch</MenuItem>
-            {vaccinationCampaigns.map((campaign) => (
-              <MenuItem key={campaign.id} value={campaign.id}>
-                {campaign.campaignName}
+            {campaigns.map((campaign) => (
+              <MenuItem key={campaign._id} value={campaign._id}>
+                {campaign.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth disabled={!selectedCampaign}>
+        <FormControl fullWidth disabled={!selectedCampaign || loading}>
           <InputLabel>Chọn lớp</InputLabel>
           <Select
             value={selectedClass}
@@ -442,19 +433,11 @@ function VaccinateRecord() {
             label="Chọn lớp"
           >
             <MenuItem value="">Tất cả các lớp</MenuItem>
-            {classes
-              .filter(
-                (cls) =>
-                  selectedCampaign &&
-                  vaccinationCampaigns
-                    .find((c) => c.id === selectedCampaign)
-                    ?.targetClasses.includes(cls.id)
-              )
-              .map((cls) => (
-                <MenuItem key={cls.id} value={cls.id}>
-                  {cls.name}
-                </MenuItem>
-              ))}
+            {selectedCampaign && [...new Set(vaccinationRecords.map((r) => r.className))].sort().map((className) => (
+              <MenuItem key={className} value={className}>
+                {className}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <FormControl fullWidth>
@@ -481,6 +464,7 @@ function VaccinateRecord() {
             ),
           }}
           fullWidth
+          disabled={loading}
         />
       </Box>
 
@@ -514,10 +498,10 @@ function VaccinateRecord() {
                     Ngày Sinh
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Tình Trạng Sức Khỏe
+                    Dị Ứng
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Đồng Ý Tiêm
+                    Bệnh Mãn Tính
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
                     Trạng Thái Tiêm
@@ -532,39 +516,34 @@ function VaccinateRecord() {
                   paginatedList.map((record) => (
                     <TableRow key={record.stt}>
                       <TableCell>{record.stt}</TableCell>
-                      <TableCell>{record.full_name}</TableCell>
-                      <TableCell>{record.class_name}</TableCell>
+                      <TableCell>{record.fullName}</TableCell>
+                      <TableCell>{record.className}</TableCell>
                       <TableCell>
-                        {new Date(record.date_of_birth).toLocaleDateString(
-                          "vi-VN"
-                        )}
+                        {new Date(record.dateOfBirth).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
                       </TableCell>
                       <TableCell
                         sx={{
-                          color:
-                            record.health_notes !== "Không có"
-                              ? "red"
-                              : "inherit",
+                          color: record.allergies !== "Không có" ? "red" : "inherit",
                         }}
                       >
-                        {record.health_notes}
+                        {record.allergies}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: record.chronicConditions !== "Chưa có thông tin" ? "red" : "inherit",
+                        }}
+                      >
+                        {record.chronicConditions}
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={record.consent_status}
+                          label={record.vaccinationStatus}
                           color={
-                            record.consent_status === "Đã đồng ý"
-                              ? "success"
-                              : "error"
-                          }
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={record.vaccination_status}
-                          color={
-                            record.vaccination_status === "Đã tiêm"
+                            record.vaccinationStatus === "Đã tiêm"
                               ? "success"
                               : "warning"
                           }
@@ -572,7 +551,17 @@ function VaccinateRecord() {
                         />
                       </TableCell>
                       <TableCell>
-                        {record.vaccination_status === "Đã tiêm" ? (
+                        {record.vaccinationStatus === "Chưa tiêm" ? (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Save size={16} />}
+                            onClick={() => handleOpenVaccinationDialog(record)}
+                            sx={{ textTransform: "none" }}
+                          >
+                            Tiêm chủng
+                          </Button>
+                        ) : (
                           <Button
                             variant="outlined"
                             color="primary"
@@ -581,17 +570,6 @@ function VaccinateRecord() {
                             sx={{ textTransform: "none" }}
                           >
                             Xem chi tiết
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<Save size={16} />}
-                            onClick={() => handleOpenVaccinationDialog(record)}
-                            disabled={record.consent_status !== "Đã đồng ý"}
-                            sx={{ textTransform: "none" }}
-                          >
-                            Tiêm chủng
                           </Button>
                         )}
                       </TableCell>
@@ -659,70 +637,71 @@ function VaccinateRecord() {
             <Box display="flex" flexDirection="column" gap={3}>
               <Box display="flex" gap={2}>
                 <Avatar sx={{ width: 60, height: 60 }}>
-                  {selectedStudent.full_name.charAt(0).toUpperCase()}
+                  {selectedStudent.fullName.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">
-                    {selectedStudent.full_name}
-                  </Typography>
+                  <Typography variant="h6">{selectedStudent.fullName}</Typography>
                   <Typography>Mã HS: {selectedStudent.student_id}</Typography>
-                  <Typography>Lớp: {selectedStudent.class_name}</Typography>
+                  <Typography>Lớp: {selectedStudent.className}</Typography>
                   <Typography>
                     Ngày sinh:{" "}
-                    {new Date(selectedStudent.date_of_birth).toLocaleDateString(
-                      "vi-VN"
-                    )}
+                    {new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
                   </Typography>
                 </Box>
               </Box>
 
               <Box>
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                  Tiền sử sức khỏe
+                  Tiền sử dị ứng
                 </Typography>
                 <Typography
-                  color={
-                    selectedStudent.health_notes !== "Không có"
-                      ? "red"
-                      : "inherit"
-                  }
+                  color={selectedStudent.allergies !== "Không có" ? "red" : "inherit"}
                 >
-                  {selectedStudent.health_notes}
+                  {selectedStudent.allergies}
                 </Typography>
               </Box>
 
               <Box>
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                  Lịch sử tiêm chủng
+                  Bệnh mãn tính
                 </Typography>
-                <Typography>
-                  Mũi {selectedStudent.dose_number} -{" "}
-                  {selectedStudent.vaccine_name}
+                <Typography
+                  color={
+                    selectedStudent.chronicConditions !== "Chưa có thông tin"
+                      ? "red"
+                      : "inherit"
+                  }
+                >
+                  {selectedStudent.chronicConditions}
                 </Typography>
               </Box>
 
               <Box display="flex" flexDirection="column" gap={2}>
                 <TextField
-                  label="Tên vắc-xin"
-                  value={selectedStudent.vaccine_name}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Loại vắc-xin"
+                  label="Tên chiến dịch"
                   value={
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
-                      ?.vaccineType ||
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
-                      ?.customVaccineType ||
-                    ""
+                    campaigns.find((c) => c._id === selectedCampaign)?.name || ""
                   }
                   disabled
                   fullWidth
                 />
                 <TextField
-                  label="Nhà sản xuất"
-                  value={manufacturer}
+                  label="Tên vắc-xin"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.vaccineName || ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Số mũi"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.doseNumber || ""
+                  }
                   disabled
                   fullWidth
                 />
@@ -733,83 +712,90 @@ function VaccinateRecord() {
                   fullWidth
                 />
                 <TextField
-                  label="Số lô vắc-xin"
-                  value={batchNumber}
-                  onChange={(e) => setBatchNumber(e.target.value)}
-                  fullWidth
-                  required
+                  label="Ngày bắt đầu"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.startDate
+                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.startDate).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : ""
+                  }
                   disabled
+                  fullWidth
                 />
                 <TextField
-                  label="Hạn sử dụng"
-                  type="date"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  required
+                  label="Ngày kết thúc"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.endDate
+                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.endDate).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : ""
+                  }
                   disabled
-                />
-
-                <FormControl fullWidth>
-                  <InputLabel>Vị trí tiêm</InputLabel>
-                  <Select
-                    value={injectionSite}
-                    onChange={(e) => setInjectionSite(e.target.value)}
-                    label="Vị trí tiêm"
-                  >
-                    <MenuItem value="Cánh tay trái">Cánh tay trái</MenuItem>
-                    <MenuItem value="Cánh tay phải">Cánh tay phải</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Ngày giờ tiêm"
-                  type="datetime-local"
-                  value={administrationDateTime}
-                  onChange={(e) => setAdministrationDateTime(e.target.value)}
                   fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  required
                 />
                 <TextField
-                  label="Người thực hiện"
-                  value={administeredBy}
-                  onChange={(e) => setAdministeredBy(e.target.value)}
+                  label="Ngày bắt đầu thực tế"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.actualStartDate
+                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.actualStartDate).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : ""
+                  }
+                  disabled
                   fullWidth
-                  required
                 />
                 <TextField
-                  label="Kiểm tra sức khỏe trước tiêm"
-                  value={healthCheckNote}
-                  onChange={(e) => setHealthCheckNote(e.target.value)}
+                  label="Mô tả"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.description || ""
+                  }
+                  disabled
                   fullWidth
                   multiline
                   rows={2}
-                  placeholder="Nhập ghi chú (ví dụ: Nhiệt độ 36.5°C, không sốt)"
                 />
-                <FormControl fullWidth>
-                  <InputLabel>Thời gian quan sát sau tiêm</InputLabel>
+                <TextField
+                  label="Địa điểm"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.destination || ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Người tạo"
+                  value={
+                    campaigns.find((c) => c._id === selectedCampaign)?.createdBy?.username || ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <FormControl fullWidth required>
+                  <InputLabel>Người thực hiện</InputLabel>
                   <Select
-                    value={observationPeriod}
-                    onChange={(e) => setObservationPeriod(e.target.value)}
-                    label="Thời gian quan sát sau tiêm"
+                    value={administeredBy}
+                    onChange={(e) => setAdministeredBy(e.target.value)}
+                    label="Người thực hiện"
                   >
-                    <MenuItem value="15 phút">15 phút</MenuItem>
-                    <MenuItem value="30 phút">30 phút</MenuItem>
+                    {staffMembers.map((staff) => (
+                      <MenuItem key={staff._id} value={staff.fullName}>
+                        {staff.fullName} ({staff.position})
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
-                <TextField
-                  label="Phản ứng tức thì"
-                  value={immediateReactions}
-                  onChange={(e) => setImmediateReactions(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder="Nhập phản ứng nếu có (ví dụ: Không có dấu hiệu bất thường)"
-                />
               </Box>
-            </Box>
-          )}
+            </Box>)
+          }
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseVaccinationDialog} color="inherit">
@@ -819,169 +805,175 @@ function VaccinateRecord() {
             onClick={handleSaveVaccination}
             color="primary"
             variant="contained"
-            disabled={
-              !batchNumber ||
-              !expiryDate ||
-              !administrationDateTime ||
-              !administeredBy
-            }
+            disabled={!administeredBy || loading}
           >
-            Lưu và Hoàn thành
+            {loading ? "Đang lưu..." : "Lưu và Hoàn thành"}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Detail Dialog */}
       <Dialog
-        open={openDetailDialog}
-        onClose={handleCloseDetailDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Chi Tiết Tiêm Chủng</DialogTitle>
-        <DialogContent>
-          {selectedStudent && (
-            <Box display="flex" flexDirection="column" gap={3}>
-              <Box display="flex" gap={2}>
-                <Avatar sx={{ width: 60, height: 60 }}>
-                  {selectedStudent.full_name.charAt(0).toUpperCase()}
-                </Avatar>
-                <Box>
-                  <Typography variant="h6">
-                    {selectedStudent.full_name}
-                  </Typography>
-                  <Typography>Mã HS: {selectedStudent.student_id}</Typography>
-                  <Typography>Lớp: {selectedStudent.class_name}</Typography>
-                  <Typography>
-                    Ngày sinh:{" "}
-                    {new Date(selectedStudent.date_of_birth).toLocaleDateString(
-                      "vi-VN"
-                    )}
-                  </Typography>
-                </Box>
-              </Box>
+  open={openDetailDialog}
+  onClose={handleCloseDetailDialog}
+  maxWidth="md"
+  fullWidth
+>
+  <DialogTitle>Chi Tiết Tiêm Chủng</DialogTitle>
+  <DialogContent>
+    {historyLoading ? (
+      <Box display="flex" justifyContent="center" my={4}>
+        <CircularProgress />
+      </Box>
+    ) : selectedStudent?.consentId && immunizationHistory ? (
+      <Box display="flex" flexDirection="column" gap={3}>
+        <Box display="flex" gap={2}>
+          <Avatar sx={{ width: 60, height: 60 }}>
+            {selectedStudent.fullName.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box>
+            <Typography variant="h6">{selectedStudent.fullName}</Typography>
+            <Typography>Mã HS: {selectedStudent.student_id}</Typography>
+            <Typography>Lớp: {selectedStudent.className}</Typography>
+            <Typography>
+              Ngày sinh:{" "}
+              {new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </Typography>
+          </Box>
+        </Box>
 
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                  Tiền sử sức khỏe
-                </Typography>
-                <Typography
-                  color={
-                    selectedStudent.health_notes !== "Không có"
-                      ? "red"
-                      : "inherit"
-                  }
-                >
-                  {selectedStudent.health_notes}
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                  Lịch sử tiêm chủng
-                </Typography>
-                <Typography>
-                  Mũi {selectedStudent.dose_number} -{" "}
-                  {selectedStudent.vaccine_name}
-                </Typography>
-              </Box>
-
-              <Box display="flex" flexDirection="column" gap={2}>
-                <TextField
-                  label="Tên vắc-xin"
-                  value={selectedStudent.vaccine_name}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Loại vắc-xin"
-                  value={
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
-                      ?.vaccineType ||
-                    vaccinationCampaigns.find((c) => c.id === selectedCampaign)
-                      ?.customVaccineType ||
-                    ""
-                  }
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Nhà sản xuất"
-                  value={selectedStudent.manufacturer}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Bên thứ ba"
-                  value={selectedStudent.third_party_provider}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Số lô vắc-xin"
-                  value={batchNumber}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Hạn sử dụng"
-                  type="date"
-                  value={expiryDate}
-                  disabled
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  label="Ngày giờ tiêm"
-                  type="datetime-local"
-                  value={administrationDateTime}
-                  onChange={(e) => setAdministrationDateTime(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  required
-                />
-                <TextField
-                  label="Người thực hiện"
-                  value={selectedStudent.administered_by}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Kiểm tra sức khỏe trước tiêm"
-                  value={selectedStudent.health_check_note}
-                  disabled
-                  fullWidth
-                  multiline
-                  rows={2}
-                />
-                <TextField
-                  label="Thời gian quan sát sau tiêm"
-                  value={selectedStudent.observation_period}
-                  disabled
-                  fullWidth
-                />
-                <TextField
-                  label="Phản ứng tức thì"
-                  value={selectedStudent.adverse_reactions}
-                  disabled
-                  fullWidth
-                  multiline
-                  rows={4}
-                />
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDetailDialog}
-            color="primary"
-            variant="contained"
+        <Box>
+          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+            Tiền sử dị ứng
+          </Typography>
+          <Typography
+            color={selectedStudent.allergies !== "Không có" ? "red" : "inherit"}
           >
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {selectedStudent.allergies}
+          </Typography>
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+            Bệnh mãn tính
+          </Typography>
+          <Typography
+            color={
+              selectedStudent.chronicConditions !== "Chưa có thông tin"
+                ? "red"
+                : "inherit"
+            }
+          >
+            {selectedStudent.chronicConditions}
+          </Typography>
+        </Box>
+
+        <Box display="flex" flexDirection="column" gap={2}>
+          <TextField
+            label="Bên thứ ba"
+            value={immunizationHistory.partnerId?.name || ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Người thực hiện"
+            value={immunizationHistory.administeredByStaffId?.fullName || ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Mã học sinh"
+            value={immunizationHistory.studentId || ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Thời gian tiêm"
+            value={immunizationHistory.administeredAt
+              ? new Date(immunizationHistory.administeredAt).toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "Asia/Ho_Chi_Minh",
+                })
+              : ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Tên vắc-xin"
+            value={immunizationHistory.vaccineName || ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Số mũi"
+            value={immunizationHistory.doseNumber || ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Kiểm tra sau tiêm"
+            value={immunizationHistory.postVaccinationChecks.length > 0
+              ? immunizationHistory.postVaccinationChecks.join(", ")
+              : "Không có"}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Thời gian tạo"
+            value={immunizationHistory.createdAt
+              ? new Date(immunizationHistory.createdAt).toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "Asia/Ho_Chi_Minh",
+                })
+              : ""}
+            disabled
+            fullWidth
+          />
+          <TextField
+            label="Thời gian cập nhật"
+            value={immunizationHistory.updatedAt
+              ? new Date(immunizationHistory.updatedAt).toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "Asia/Ho_Chi_Minh",
+                })
+              : ""}
+            disabled
+            fullWidth
+          />
+        </Box>
+      </Box>
+    ) : (
+      <Typography color="textSecondary" align="center" py={4}>
+        Không có thông tin tiêm chủng để hiển thị.
+      </Typography>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button
+      onClick={handleCloseDetailDialog}
+      color="primary"
+      variant="contained"
+    >
+      Đóng
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* Success Dialog */}
       <Dialog
@@ -996,7 +988,7 @@ function VaccinateRecord() {
             <CheckCircle size={24} className="text-green-500" />
             <Typography>
               {selectedStudent
-                ? `Đã ghi nhận tiêm chủng cho ${selectedStudent.full_name}.`
+                ? `Đã ghi nhận tiêm chủng cho ${selectedStudent.fullName}.`
                 : "File kết quả đã được tải xuống."}
             </Typography>
           </Box>

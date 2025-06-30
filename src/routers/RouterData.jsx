@@ -42,7 +42,6 @@ import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement
 const ManageSupplies = () => <div>Quản lý vật tư</div>;
 const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
 const PrepareList = () => <div>Chuẩn bị danh sách</div>;
-const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
 const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
 const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
@@ -54,6 +53,7 @@ import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagem
 
 //ProtectedRoute
 import ProtectedRoute from "./ProtectedRoute";
+import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
 
 const basicRoutes = [
   {
@@ -129,6 +129,8 @@ const nurseRoutes = [
       <ProtectedRoute allowedRoles={["Nurse"]}>
         <NurseDashboard />
       </ProtectedRoute>
+        // <NurseDashboard />
+
     ),
     children: [
       { path: "", element: <DashboardHome /> },
