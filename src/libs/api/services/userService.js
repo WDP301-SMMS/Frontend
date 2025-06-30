@@ -29,7 +29,7 @@ export const userService = {
    * PUT /user/me - Cập nhật thông tin profile
    * Body: { username, dob, phone }
    */
-  updateProfile: async (profileData) => {
+ updateProfile: async (profileData) => {
     try {
       // Validate dữ liệu đầu vào
       if (!profileData || typeof profileData !== 'object') {
@@ -70,6 +70,14 @@ export const userService = {
         const phoneRegex = /^[+]?[\d\s\-()]{10,15}$/;
         if (!phoneRegex.test(profileData.phone.replace(/\s/g, ''))) {
           errors.push("Số điện thoại không hợp lệ");
+        }
+      }
+
+      if (profileData.gender) {
+        // Validate gender
+        const validGenders = ['Male', 'Female', 'Other'];
+        if (typeof profileData.gender !== 'string' || !validGenders.includes(profileData.gender)) {
+          errors.push("Giới tính phải là một trong các giá trị: Male, Female, Other");
         }
       }
 

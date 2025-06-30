@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -22,91 +22,179 @@ import {
   Pagination,
   Container,
   Alert,
+  Fade,
 } from "@mui/material";
-import { Download, CheckCircle } from "lucide-react";
+import { Download, CheckCircle, AlertTriangle, RefreshCw } from "lucide-react";
 import { utils, writeFile } from "xlsx";
-import { classes, notifications, students } from "~/mock/mock";
+import campaignService from "~/libs/api/services/campaignService";
 import { Warning } from "@mui/icons-material";
+import { userService } from "~/libs/api";
+
+// Reusable Alert Dialog Component
+const AlertDialog = ({ open, onClose, message, type }) => {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>{type === "success" ? "Thành công" : "Lỗi"}</DialogTitle>
+      <DialogContent>
+        <Box display="flex" alignItems="center" gap={2}>
+          {type === "success" ? (
+            <CheckCircle size={24} className="text-green-500" />
+          ) : (
+            <AlertTriangle size={24} className="text-red-500" />
+          )}
+          <Typography>{message}</Typography>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" variant="contained">
+          Đóng
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 function PrepareVaccinationList() {
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [vaccinationList, setVaccinationList] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [openExportDialog, setOpenExportDialog] = useState(false);
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+  const [nurseID, setNurseID] = useState([]);
+  const [error, setError] = useState(null);
+  const [alertDialog, setAlertDialog] = useState({
+    open: false,
+    message: "",
+    type: "error",
+  });
   const itemsPerPage = 10;
 
+  // Load campaigns on mount
+  useEffect(() => {
+    loadCampaigns();
+    loadProfile();
+  }, []);
+  const loadProfile = async () => {
+    try {
+      const result = await userService.getProfile();
+      if (result.success) {
+        const data = result.data.data;
+        const nurseID = localStorage.getItem("nurseID");
+        if (nurseID != data._id) {
+          localStorage.setItem("nurseID", data._id);
+          setNurseID(data._id);
+        } else {
+          setNurseID(data._id);
+        }
+        console.log(data._id);
+        console.log(nurseID);
+      } else {
+        setError(result.message || "Không thể tải thông tin Nurse");
+      }
+    } catch (err) {
+      setError("Có lỗi xảy ra khi tải hồ sơ");
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Load announced campaigns
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true);
+      const response = await campaignService.getAnnouncedCampaigns(1, 100);
+      if (response.success) {
+        console.log(response.data)
+        setCampaigns(response.data || []);
+      } else {
+        throw new Error(
+          response.message || "Không thể tải danh sách chiến dịch."
+        );
+      }
+    } catch (error) {
+      console.error("Failed to load campaigns:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải danh sách chiến dịch. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle campaign selection
-  const handleCampaignChange = (e) => {
+  const handleCampaignChange = async (e) => {
     const campaignId = e.target.value;
     setSelectedCampaign(campaignId);
-    setSelectedClass(""); // Reset class filter when campaign changes
+    setSelectedClass(""); // Reset class filter
     setCurrentPage(1); // Reset to first page
-    filterStudents(campaignId, "");
+    setClasses([]); // Reset classes
+    if (campaignId) {
+      await fetchVaccinationList(campaignId, "");
+    } else {
+      setVaccinationList([]);
+    }
   };
 
   // Handle class selection
-  const handleClassChange = (e) => {
-    const classId = e.target.value;
-    setSelectedClass(classId);
+  const handleClassChange = async (e) => {
+    const className = e.target.value;
+    setSelectedClass(className);
     setCurrentPage(1); // Reset to first page
-    filterStudents(selectedCampaign, classId);
+    await fetchVaccinationList(selectedCampaign, className);
   };
 
-  // Filter students based on campaign and class
-  const filterStudents = (campaignId, classId) => {
-    setLoading(true);
-    setTimeout(() => {
-      const campaign = notifications.find((n) => n.campaign_id === campaignId);
+  // Fetch vaccination list from API
+  const fetchVaccinationList = async (campaignId, className) => {
+    if (!campaignId) {
+      setVaccinationList([]);
+      return;
+    }
+    try {
+      setLoading(true);
+      const campaign = campaigns.find((c) => c._id === campaignId);
       if (!campaign) {
         setVaccinationList([]);
-        setLoading(false);
+        setAlertDialog({
+          open: true,
+          message: "Không tìm thấy chiến dịch.",
+          type: "error",
+        });
         return;
       }
 
-      let filteredStudents = students
-        .filter((student) => {
-          // Check if student is in target classes and has parental consent
-          return (
-            campaign.targetClasses.includes(student.class_id) &&
-            campaign.status.agreed.includes(student.student_id)
-          );
-        })
-        .filter((student) => {
-          // Mock contraindication check (exclude if health_notes indicate issues)
-          return !student.health_notes.includes("Sốt cao");
-        })
-        .filter((student) => {
-          // Mock age check (assuming all students are in age group)
-          return true;
-        });
-
-      // Apply class filter if selected
-      if (classId) {
-        filteredStudents = filteredStudents.filter(
-          (student) => student.class_id === classId
-        );
+      const response = await campaignService.getListRegistrants(campaignId);
+      if (!response.success) {
+        throw new Error(response.message || "Không thể tải danh sách đăng ký.");
       }
 
-      const mappedStudents = filteredStudents
-        .map((student, index) => {
-          // Determine dose number based on vaccination history
-          const doseNumber =
-            student.vaccination_history.find(
-              (v) => v.vaccine_id === campaign.vaccine_id
-            )?.dose + 1 || 1;
+      // Extract unique class names for class filter
+      const uniqueClasses = [
+        ...new Set(response.data.map((r) => r.className)),
+      ].sort();
+      setClasses(uniqueClasses);
+
+      let filteredRegistrants = response.data.filter((registrant) => {
+        // Apply class filter if selected
+        return className ? registrant.className === className : true;
+      });
+
+      const mappedStudents = filteredRegistrants
+        .map((registrant, index) => {
+          // Default dose number to 1 (no vaccination_history available)
+          const doseNumber = 1; // Adjust if API provides doseNumber
 
           return {
             stt: index + 1,
-            full_name: student.full_name,
-            class_name:
-              classes.find((c) => c.id === student.class_id)?.name || "",
-            date_of_birth: student.date_of_birth,
+            full_name: registrant.fullName,
+            class_name: registrant.className,
+            date_of_birth: registrant.dateOfBirth,
             vaccine_name: campaign.vaccineName,
             dose_number: doseNumber,
-            health_notes: student.health_notes || "Không có",
           };
         })
         // Sort by class and then by name
@@ -117,66 +205,157 @@ function PrepareVaccinationList() {
         });
 
       setVaccinationList(mappedStudents);
+    } catch (error) {
+      console.error("Failed to fetch registrants:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải danh sách học sinh. Vui lòng thử lại.",
+        type: "error",
+      });
+      setVaccinationList([]);
+    } finally {
       setLoading(false);
-    }, 500); // Simulate API delay
+    }
   };
 
-  // Handle Excel export
-  const handleExportExcel = (exportType) => {
-    setLoading(true);
-    let exportData = vaccinationList;
+  // Handle refresh (only refresh vaccination list)
+  const handleRefresh = async () => {
+    if (!selectedCampaign) {
+      setAlertDialog({
+        open: true,
+        message: "Vui lòng chọn chiến dịch trước khi làm mới danh sách.",
+        type: "error",
+      });
+      return;
+    }
+    try {
+      setLoading(true);
+      await fetchVaccinationList(selectedCampaign, selectedClass);
+      setAlertDialog({
+        open: true,
+        message: "Danh sách đã được làm mới thành công!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to refresh vaccination list:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể làm mới danh sách học sinh. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Filter by selected class if exportType is "class"
-    if (exportType === "class" && selectedClass) {
-      exportData = vaccinationList.filter(
-        (student) =>
-          student.class_name ===
-          classes.find((c) => c.id === selectedClass)?.name
+  // Handle Excel export with status update
+const handleExportExcel = async () => {
+  setLoading(true);
+  try {
+    // Update campaign status to IN_PROCESS
+    const statusResponse = await campaignService.updateCampaignStatus(
+      selectedCampaign,
+      `${nurseID}`,
+      "IN_PROGRESS"
+    );
+    if (!statusResponse.success) {
+      throw new Error(
+        statusResponse.message || "Không thể cập nhật trạng thái chiến dịch."
       );
     }
 
-    const worksheet = utils.json_to_sheet(exportData, {
-      header: [
-        "stt",
-        "full_name",
-        "class_name",
-        "date_of_birth",
-        "vaccine_name",
-        "dose_number",
-        "health_notes",
-      ],
-      skipHeader: false,
+    // Group students by class for separate sheets
+    const classGroups = {};
+    vaccinationList.forEach((student) => {
+      const className = student.class_name;
+      if (!classGroups[className]) {
+        classGroups[className] = [];
+      }
+      // Transform date_of_birth to dd/mm/yyyy format
+      const formattedStudent = {
+        ...student,
+        date_of_birth: new Date(student.date_of_birth).toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }),
+      };
+      classGroups[className].push(formattedStudent);
     });
 
-    // Set column headers
-    worksheet["!cols"] = [
-      { wch: 5 }, // STT
-      { wch: 20 }, // Full Name
-      { wch: 10 }, // Class
-      { wch: 15 }, // Date of Birth
-      { wch: 15 }, // Vaccine Name
-      { wch: 10 }, // Dose Number
-      { wch: 30 }, // Health Notes
-    ];
-    worksheet["A1"].v = "STT";
-    worksheet["B1"].v = "Họ và Tên";
-    worksheet["C1"].v = "Lớp";
-    worksheet["D1"].v = "Ngày Sinh";
-    worksheet["E1"].v = "Tên Vaccine";
-    worksheet["F1"].v = "Mũi Số";
-    worksheet["G1"].v = "Ghi Chú Sức Khỏe";
-
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Vaccination List");
-    const fileName =
-      exportType === "class" && selectedClass
-        ? `Danh_sach_tiem_chung_${selectedCampaign}_${selectedClass}.xlsx`
-        : `Danh_sach_tiem_chung_${selectedCampaign}.xlsx`;
+    Object.keys(classGroups).forEach((className, index) => {
+      const classData = classGroups[className];
+      const worksheet = utils.json_to_sheet(classData, {
+        header: [
+          "stt",
+          "full_name",
+          "class_name",
+          "date_of_birth",
+          "vaccine_name",
+          "dose_number",
+        ],
+        skipHeader: false,
+      });
+
+      // Set column headers
+      worksheet["!cols"] = [
+        { wch: 5 }, // STT
+        { wch: 20 }, // Full Name
+        { wch: 10 }, // Class
+        { wch: 15 }, // Date of Birth
+        { wch: 15 }, // Vaccine Name
+        { wch: 10 }, // Dose Number
+      ];
+      worksheet["A1"].v = "STT";
+      worksheet["B1"].v = "Họ và Tên";
+      worksheet["C1"].v = "Lớp";
+      worksheet["D1"].v = "Ngày Sinh";
+      worksheet["E1"].v = "Tên Vaccine";
+      worksheet["F1"].v = "Mũi Số";
+
+      // Sanitize sheet name (max 31 chars, no invalid chars)
+      const safeClassName = className
+        .replace(/[\\\/:*?"<>|]/g, "_")
+        .substring(0, 31);
+      utils.book_append_sheet(
+        workbook,
+        worksheet,
+        safeClassName || `Lớp ${index + 1}`
+      );
+    });
+    // Write Excel file
+    const fileName = `Danh_sach_tiem_chung_${selectedCampaign}.xlsx`;
     writeFile(workbook, fileName);
+
+    // Reload campaigns to reflect status change
+    await loadCampaigns();
+    setSelectedCampaign("");
+    setSelectedClass("");
+    setVaccinationList([]);
+    setClasses([]);
+    setCurrentPage(1);
+
+    setAlertDialog({
+      open: true,
+      message:
+        "Danh sách đã được xuất và chiến dịch đã chuyển sang trạng thái 'Đang thực hiện'.",
+      type: "success",
+    });
+  } catch (error) {
+    console.error("Failed to export Excel or update status:", error);
+    setAlertDialog({
+      open: true,
+      message:
+        "Không thể xuất danh sách hoặc cập nhật trạng thái chiến dịch. Vui lòng thử lại.",
+      type: "error",
+    });
+  } finally {
     setLoading(false);
     setOpenExportDialog(false);
-    setOpenSuccessDialog(true);
-  };
+    setOpenSuccessDialog(false);
+  }
+};
 
   // Handle pagination
   const totalPages = Math.ceil(vaccinationList.length / itemsPerPage);
@@ -198,6 +377,15 @@ function PrepareVaccinationList() {
     setOpenSuccessDialog(false);
   };
 
+  const handleCloseAlertDialog = () => {
+    setAlertDialog((prev) => ({ ...prev, open: false }));
+  };
+
+  // Get selected campaign details
+  const selectedCampaignDetails = campaigns.find(
+    (c) => c._id === selectedCampaign
+  );
+
   return (
     <Container
       maxWidth="xl"
@@ -205,218 +393,369 @@ function PrepareVaccinationList() {
     >
       <Typography
         variant="h4"
-        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+        sx={{
+          mb: 4,
+          fontWeight: "bold",
+          color: "#1e3a8a",
+          fontSize: { xs: "1.8rem", md: "2.2rem" },
+        }}
       >
         Chuẩn Bị Danh Sách Tiêm Chủng
       </Typography>
       <Alert
         severity="info"
         icon={<Warning />}
-        sx={{ mb: 3, fontWeight: "medium" }}
+        sx={{ mb: 4, fontWeight: "medium", borderRadius: 2 }}
       >
         Chuẩn bị danh sách tiêm chủng cho chiến dịch tiêm vaccine. Vui lòng chọn
         chiến dịch và lớp học để xem danh sách học sinh.
       </Alert>
 
-      <Box display="flex" gap={2} mb={4}>
-        <FormControl fullWidth>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
+        mb={4}
+        sx={{ alignItems: { xs: "stretch", sm: "center" } }}
+      >
+        <FormControl fullWidth sx={{ minWidth: { sm: 200 } }}>
           <InputLabel>Chọn chiến dịch</InputLabel>
           <Select
             value={selectedCampaign}
             onChange={handleCampaignChange}
             label="Chọn chiến dịch"
+            disabled={loading}
+            sx={{ borderRadius: 1 }}
           >
             <MenuItem value="">Chọn chiến dịch</MenuItem>
-            {notifications.map((campaign) => (
-              <MenuItem key={campaign.campaign_id} value={campaign.campaign_id}>
-                {campaign.campaignName}
+            {campaigns.map((campaign) => (
+              <MenuItem key={campaign._id} value={campaign._id}>
+                {campaign.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth disabled={!selectedCampaign}>
+        <FormControl
+          fullWidth
+          sx={{ minWidth: { sm: 200 } }}
+          disabled={!selectedCampaign || loading}
+        >
           <InputLabel>Chọn lớp</InputLabel>
           <Select
             value={selectedClass}
             onChange={handleClassChange}
             label="Chọn lớp"
+            sx={{ borderRadius: 1 }}
           >
             <MenuItem value="">Tất cả các lớp</MenuItem>
-            {classes
-              .filter(
-                (cls) =>
-                  selectedCampaign &&
-                  notifications
-                    .find((n) => n.campaign_id === selectedCampaign)
-                    ?.targetClasses.includes(cls.id)
-              )
-              .map((cls) => (
-                <MenuItem key={cls.id} value={cls.id}>
-                  {cls.name}
-                </MenuItem>
-              ))}
+            {classes.map((cls) => (
+              <MenuItem key={cls} value={cls}>
+                {cls}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#2563eb",
+            "&:hover": { backgroundColor: "#1d4ed8" },
+            color: "white",
+            fontWeight: "bold",
+            borderRadius: 1,
+            px: 3,
+            py: 1.5,
+            textTransform: "none",
+            minWidth: { xs: "auto", sm: 120 },
+          }}
+          startIcon={<RefreshCw size={20} />}
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          Làm mới
+        </Button>
       </Box>
+
+      {/* Campaign Details Section */}
+      <Fade in={!!selectedCampaign} timeout={500}>
+        <Box>
+          {selectedCampaignDetails && (
+            <Paper
+              elevation={2}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 2,
+                bgcolor: "#f9fafb",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ mb: 2, fontWeight: "bold", color: "#1e3a8a" }}
+              >
+                Thông tin chiến dịch
+              </Typography>
+              <Box
+                display="grid"
+                gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+                gap={2}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "medium", color: "#4b5563" }}
+                  >
+                    Tên chiến dịch:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#111827" }}>
+                    {selectedCampaignDetails.name || "Chưa xác định"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "medium", color: "#4b5563" }}
+                  >
+                    Tên vaccine:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#111827" }}>
+                    {selectedCampaignDetails.vaccineName || "Chưa xác định"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "medium", color: "#4b5563" }}
+                  >
+                    Ngày tiêm:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#111827" }}>
+                    {selectedCampaignDetails.actualStartDate
+                      ? new Date(
+                          selectedCampaignDetails.actualStartDate
+                        ).toLocaleDateString("vi-VN")
+                      : "Chưa xác định"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "medium", color: "#4b5563" }}
+                  >
+                    Địa điểm:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#111827" }}>
+                    {selectedCampaignDetails.destination || "Chưa xác định"}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          )}
+        </Box>
+      </Fade>
 
       {loading ? (
         <Box display="flex" justifyContent="center" my={4}>
           <CircularProgress />
         </Box>
       ) : (
-        <>
-          <TableContainer
-            component={Paper}
-            sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
-          >
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    STT
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Họ và Tên
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Lớp
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Ngày Sinh
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Tên Vaccine
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Mũi Số
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
-                    Ghi Chú Sức Khỏe
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedList.length > 0 ? (
-                  paginatedList.map((student) => (
-                    <TableRow key={student.stt}>
-                      <TableCell>{student.stt}</TableCell>
-                      <TableCell>{student.full_name}</TableCell>
-                      <TableCell>{student.class_name}</TableCell>
-                      <TableCell>
-                        {new Date(student.date_of_birth).toLocaleDateString(
-                          "vi-VN"
-                        )}
-                      </TableCell>
-                      <TableCell>{student.vaccine_name}</TableCell>
-                      <TableCell>{student.dose_number}</TableCell>
-                      <TableCell
-                        sx={{
-                          color:
-                            student.health_notes !== "Không có"
-                              ? "red"
-                              : "inherit",
-                        }}
-                      >
-                        {student.health_notes}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography color="textSecondary" py={4}>
-                        Chưa có danh sách học sinh hoặc chưa chọn chiến dịch.
-                      </Typography>
+        <Fade in timeout={500}>
+          <Box>
+            {/* Total Students Count */}
+            {vaccinationList.length > 0 && (
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  fontWeight: "bold",
+                  color: "#1a202c",
+                  fontSize: "1.1rem",
+                }}
+              >
+                Tổng số học sinh: {vaccinationList.length}
+              </Typography>
+            )}
+
+            <TableContainer
+              component={Paper}
+              sx={{
+                boxShadow: "0 4px 6px -2px rgba(0, 0, 0, 0.1)",
+                borderRadius: 2,
+                overflow: "hidden",
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      STT
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      Họ và Tên
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      Lớp
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      Ngày Sinh
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      Tên Vaccine
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", color: "#1a202c", py: 2 }}
+                    >
+                      Mũi Số
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {paginatedList.length > 0 ? (
+                    paginatedList.map((student, index) => (
+                      <TableRow
+                        key={student.stt}
+                        sx={{
+                          backgroundColor:
+                            index % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          "&:hover": { backgroundColor: "#f1f5f9" },
+                        }}
+                      >
+                        <TableCell>{student.stt}</TableCell>
+                        <TableCell>{student.full_name}</TableCell>
+                        <TableCell>{student.class_name}</TableCell>
+                        <TableCell>
+                          {new Date(student.date_of_birth).toLocaleDateString(
+                            "vi-VN"
+                          )}
+                        </TableCell>
+                        <TableCell>{student.vaccine_name}</TableCell>
+                        <TableCell>{student.dose_number}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        <Typography color="textSecondary" py={4}>
+                          Chưa có danh sách học sinh hoặc chưa chọn chiến dịch.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          {vaccinationList.length > 0 && (
-            <>
-              <Box display="flex" justifyContent="center" mt={4}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  sx={{ "& .MuiPaginationItem-root": { fontSize: "1rem" } }}
-                />
-              </Box>
-              <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Download size={20} />}
-                  onClick={() => setOpenExportDialog(true)}
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: "#2563eb",
-                    "&:hover": { backgroundColor: "#1d4ed8" },
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: "8px",
-                    padding: "12px 24px",
-                    textTransform: "none",
-                  }}
-                >
-                  Xuất Excel
-                </Button>
-              </Box>
-            </>
-          )}
-        </>
+            {vaccinationList.length > 0 && (
+              <>
+                <Box display="flex" justifyContent="center" mt={4}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    sx={{
+                      "& .MuiPaginationItem-root": {
+                        fontSize: "1rem",
+                        fontWeight: "medium",
+                      },
+                    }}
+                  />
+                </Box>
+                <Box mt={3}>
+                  <Alert
+                    severity="warning"
+                    icon={<Warning />}
+                    sx={{ mb: 2, fontWeight: "medium", borderRadius: 2 }}
+                  >
+                    Xuất danh sách sẽ chuyển chiến dịch sang trạng thái 'Đang
+                    thực hiện'.
+                  </Alert>
+                  <Box display="flex" justifyContent="flex-end">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<Download size={20} />}
+                      onClick={() => setOpenExportDialog(true)}
+                      disabled={loading}
+                      sx={{
+                        backgroundColor: "#2563eb",
+                        "&:hover": { backgroundColor: "#1d4ed8" },
+                        color: "white",
+                        fontWeight: "bold",
+                        borderRadius: 1,
+                        px: 4,
+                        py: 1.5,
+                        textTransform: "none",
+                      }}
+                    >
+                      Xuất Excel
+                    </Button>
+                  </Box>
+                </Box>
+              </>
+            )}
+          </Box>
+        </Fade>
       )}
 
-      {/* Export Options Dialog */}
+      {/* Export Confirmation Dialog */}
       <Dialog
         open={openExportDialog}
         onClose={handleCloseExportDialog}
         maxWidth="xs"
         fullWidth
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2 } }}
       >
-        <DialogTitle>Chọn tùy chọn xuất Excel</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold" }}>
+          Xác nhận xuất danh sách
+        </DialogTitle>
         <DialogContent>
-          <Typography>Chọn phạm vi xuất danh sách:</Typography>
-          <Box display="flex" flexDirection="column" gap={2} mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleExportExcel("all")}
-              sx={{ textTransform: "none" }}
-            >
-              Tất cả học sinh
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleExportExcel("class")}
-              disabled={!selectedClass}
-              sx={{ textTransform: "none" }}
-            >
-              Theo lớp đã chọn (
-              {classes.find((c) => c.id === selectedClass)?.name || "Chưa chọn"}
-              )
-            </Button>
-          </Box>
+          <Typography>
+            Xuất danh sách sẽ chuyển chiến dịch sang trạng thái 'Đang thực
+            hiện'. Bạn có muốn tiếp tục?
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExportDialog} color="inherit">
+          <Button
+            onClick={handleCloseExportDialog}
+            color="inherit"
+            sx={{ textTransform: "none" }}
+          >
             Hủy
+          </Button>
+          <Button
+            onClick={handleExportExcel}
+            color="primary"
+            variant="contained"
+            sx={{ textTransform: "none", borderRadius: 1 }}
+          >
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Export Success Dialog */}
+      {/* Export Success Dialog (unused, kept for consistency) */}
       <Dialog
         open={openSuccessDialog}
         onClose={handleCloseSuccessDialog}
         maxWidth="xs"
         fullWidth
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2 } }}
       >
-        <DialogTitle>Xuất Excel Thành Công</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold" }}>
+          Xuất Excel Thành Công
+        </DialogTitle>
         <DialogContent>
           <Box display="flex" alignItems="center" gap={2}>
             <CheckCircle size={24} className="text-green-500" />
@@ -430,11 +769,20 @@ function PrepareVaccinationList() {
             onClick={handleCloseSuccessDialog}
             color="primary"
             variant="contained"
+            sx={{ textTransform: "none", borderRadius: 1 }}
           >
             Đóng
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        open={alertDialog.open}
+        onClose={handleCloseAlertDialog}
+        message={alertDialog.message}
+        type={alertDialog.type}
+      />
     </Container>
   );
 }

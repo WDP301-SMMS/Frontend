@@ -243,6 +243,8 @@ const nurseRoutes = [
       <ProtectedRoute allowedRoles={["Nurse"]}>
         <NurseDashboard />
       </ProtectedRoute>
+        // <NurseDashboard />
+
     ),
     children: [
       { path: "", element: <DashboardHome /> },

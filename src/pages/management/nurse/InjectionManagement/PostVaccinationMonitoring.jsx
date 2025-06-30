@@ -426,6 +426,7 @@ const handleConfirmComplete = async () => {
   const handleOpenDetailsDialog = (record) => {
     setSelectedStudent(record);
     setOpenDetailsDialog(true);
+    fetchImmunizationHistory(record); // Use record directly to fetch history
   };
 
   // Save reaction
