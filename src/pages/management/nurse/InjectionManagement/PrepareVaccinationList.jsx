@@ -63,7 +63,7 @@ function PrepareVaccinationList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [openExportDialog, setOpenExportDialog] = useState(false);
-  const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+  const [openProceedDialog, setOpenProceedDialog] = useState(false);
   const [nurseID, setNurseID] = useState([]);
   const [error, setError] = useState(null);
   const [alertDialog, setAlertDialog] = useState({
@@ -78,6 +78,7 @@ function PrepareVaccinationList() {
     loadCampaigns();
     loadProfile();
   }, []);
+
   const loadProfile = async () => {
     try {
       const result = await userService.getProfile();
@@ -90,8 +91,6 @@ function PrepareVaccinationList() {
         } else {
           setNurseID(data._id);
         }
-        console.log(data._id);
-        console.log(nurseID);
       } else {
         setError(result.message || "Không thể tải thông tin Nurse");
       }
@@ -101,13 +100,13 @@ function PrepareVaccinationList() {
       setLoading(false);
     }
   };
+
   // Load announced campaigns
   const loadCampaigns = async () => {
     try {
       setLoading(true);
       const response = await campaignService.getAnnouncedCampaigns(1, 100);
       if (response.success) {
-        console.log(response.data)
         setCampaigns(response.data || []);
       } else {
         throw new Error(
@@ -179,15 +178,12 @@ function PrepareVaccinationList() {
       setClasses(uniqueClasses);
 
       let filteredRegistrants = response.data.filter((registrant) => {
-        // Apply class filter if selected
         return className ? registrant.className === className : true;
       });
 
       const mappedStudents = filteredRegistrants
         .map((registrant, index) => {
-          // Default dose number to 1 (no vaccination_history available)
           const doseNumber = 1; // Adjust if API provides doseNumber
-
           return {
             stt: index + 1,
             full_name: registrant.fullName,
@@ -197,7 +193,6 @@ function PrepareVaccinationList() {
             dose_number: doseNumber,
           };
         })
-        // Sort by class and then by name
         .sort((a, b) => {
           const classCompare = a.class_name.localeCompare(b.class_name, "vi");
           if (classCompare !== 0) return classCompare;
@@ -218,7 +213,7 @@ function PrepareVaccinationList() {
     }
   };
 
-  // Handle refresh (only refresh vaccination list)
+  // Handle refresh
   const handleRefresh = async () => {
     if (!selectedCampaign) {
       setAlertDialog({
@@ -248,114 +243,128 @@ function PrepareVaccinationList() {
     }
   };
 
-  // Handle Excel export with status update
-const handleExportExcel = async () => {
-  setLoading(true);
-  try {
-    // Update campaign status to IN_PROCESS
-    const statusResponse = await campaignService.updateCampaignStatus(
-      selectedCampaign,
-      `${nurseID}`,
-      "IN_PROGRESS"
-    );
-    if (!statusResponse.success) {
-      throw new Error(
-        statusResponse.message || "Không thể cập nhật trạng thái chiến dịch."
-      );
-    }
-
-    // Group students by class for separate sheets
-    const classGroups = {};
-    vaccinationList.forEach((student) => {
-      const className = student.class_name;
-      if (!classGroups[className]) {
-        classGroups[className] = [];
-      }
-      // Transform date_of_birth to dd/mm/yyyy format
-      const formattedStudent = {
-        ...student,
-        date_of_birth: new Date(student.date_of_birth).toLocaleDateString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }),
-      };
-      classGroups[className].push(formattedStudent);
-    });
-
-    const workbook = utils.book_new();
-    Object.keys(classGroups).forEach((className, index) => {
-      const classData = classGroups[className];
-      const worksheet = utils.json_to_sheet(classData, {
-        header: [
-          "stt",
-          "full_name",
-          "class_name",
-          "date_of_birth",
-          "vaccine_name",
-          "dose_number",
-        ],
-        skipHeader: false,
+  // Handle Excel export
+  const handleExportExcel = async () => {
+    setLoading(true);
+    try {
+      // Group students by class for separate sheets
+      const classGroups = {};
+      vaccinationList.forEach((student) => {
+        const className = student.class_name;
+        if (!classGroups[className]) {
+          classGroups[className] = [];
+        }
+        const formattedStudent = {
+          ...student,
+          date_of_birth: new Date(student.date_of_birth).toLocaleDateString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+        };
+        classGroups[className].push(formattedStudent);
       });
 
-      // Set column headers
-      worksheet["!cols"] = [
-        { wch: 5 }, // STT
-        { wch: 20 }, // Full Name
-        { wch: 10 }, // Class
-        { wch: 15 }, // Date of Birth
-        { wch: 15 }, // Vaccine Name
-        { wch: 10 }, // Dose Number
-      ];
-      worksheet["A1"].v = "STT";
-      worksheet["B1"].v = "Họ và Tên";
-      worksheet["C1"].v = "Lớp";
-      worksheet["D1"].v = "Ngày Sinh";
-      worksheet["E1"].v = "Tên Vaccine";
-      worksheet["F1"].v = "Mũi Số";
+      const workbook = utils.book_new();
+      Object.keys(classGroups).forEach((className, index) => {
+        const classData = classGroups[className];
+        const worksheet = utils.json_to_sheet(classData, {
+          header: [
+            "stt",
+            "full_name",
+            "class_name",
+            "date_of_birth",
+            "vaccine_name",
+            "dose_number",
+          ],
+          skipHeader: false,
+        });
 
-      // Sanitize sheet name (max 31 chars, no invalid chars)
-      const safeClassName = className
-        .replace(/[\\\/:*?"<>|]/g, "_")
-        .substring(0, 31);
-      utils.book_append_sheet(
-        workbook,
-        worksheet,
-        safeClassName || `Lớp ${index + 1}`
+        // Set column headers
+        worksheet["!cols"] = [
+          { wch: 5 }, // STT
+          { wch: 20 }, // Full Name
+          { wch: 10 }, // Class
+          { wch: 15 }, // Date of Birth
+          { wch: 15 }, // Vaccine Name
+          { wch: 10 }, // Dose Number
+        ];
+        worksheet["A1"].v = "STT";
+        worksheet["B1"].v = "Họ và Tên";
+        worksheet["C1"].v = "Lớp";
+        worksheet["D1"].v = "Ngày Sinh";
+        worksheet["E1"].v = "Tên Vaccine";
+        worksheet["F1"].v = "Mũi Số";
+
+        const safeClassName = className
+          .replace(/[\\\/:*?"<>|]/g, "_")
+          .substring(0, 31);
+        utils.book_append_sheet(
+          workbook,
+          worksheet,
+          safeClassName || `Lớp ${index + 1}`
+        );
+      });
+      const fileName = `Danh_sach_tiem_chung_${selectedCampaign}.xlsx`;
+      writeFile(workbook, fileName);
+
+      setAlertDialog({
+        open: true,
+        message: "Danh sách đã được xuất thành công!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to export Excel:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể xuất danh sách. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+      setOpenExportDialog(false);
+    }
+  };
+
+  // Handle proceed vaccination (status update)
+  const handleProceedVaccination = async () => {
+    setLoading(true);
+    try {
+      const statusResponse = await campaignService.updateCampaignStatus(
+        selectedCampaign,
+        `${nurseID}`,
+        "IN_PROGRESS"
       );
-    });
-    // Write Excel file
-    const fileName = `Danh_sach_tiem_chung_${selectedCampaign}.xlsx`;
-    writeFile(workbook, fileName);
+      if (!statusResponse.success) {
+        throw new Error(
+          statusResponse.message || "Không thể cập nhật trạng thái chiến dịch."
+        );
+      }
 
-    // Reload campaigns to reflect status change
-    await loadCampaigns();
-    setSelectedCampaign("");
-    setSelectedClass("");
-    setVaccinationList([]);
-    setClasses([]);
-    setCurrentPage(1);
+      await loadCampaigns();
+      setSelectedCampaign("");
+      setSelectedClass("");
+      setVaccinationList([]);
+      setClasses([]);
+      setCurrentPage(1);
 
-    setAlertDialog({
-      open: true,
-      message:
-        "Danh sách đã được xuất và chiến dịch đã chuyển sang trạng thái 'Đang thực hiện'.",
-      type: "success",
-    });
-  } catch (error) {
-    console.error("Failed to export Excel or update status:", error);
-    setAlertDialog({
-      open: true,
-      message:
-        "Không thể xuất danh sách hoặc cập nhật trạng thái chiến dịch. Vui lòng thử lại.",
-      type: "error",
-    });
-  } finally {
-    setLoading(false);
-    setOpenExportDialog(false);
-    setOpenSuccessDialog(false);
-  }
-};
+      setAlertDialog({
+        open: true,
+        message: "Chiến dịch đã chuyển sang trạng thái 'Đang thực hiện'.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to update campaign status:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể cập nhật trạng thái chiến dịch. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+      setOpenProceedDialog(false);
+    }
+  };
 
   // Handle pagination
   const totalPages = Math.ceil(vaccinationList.length / itemsPerPage);
@@ -373,8 +382,8 @@ const handleExportExcel = async () => {
     setOpenExportDialog(false);
   };
 
-  const handleCloseSuccessDialog = () => {
-    setOpenSuccessDialog(false);
+  const handleCloseProceedDialog = () => {
+    setOpenProceedDialog(false);
   };
 
   const handleCloseAlertDialog = () => {
@@ -562,7 +571,6 @@ const handleExportExcel = async () => {
       ) : (
         <Fade in timeout={500}>
           <Box>
-            {/* Total Students Count */}
             {vaccinationList.length > 0 && (
               <Typography
                 variant="h6"
@@ -678,10 +686,9 @@ const handleExportExcel = async () => {
                     icon={<Warning />}
                     sx={{ mb: 2, fontWeight: "medium", borderRadius: 2 }}
                   >
-                    Xuất danh sách sẽ chuyển chiến dịch sang trạng thái 'Đang
-                    thực hiện'.
+                    Hành động "Tiến hành tiêm chủng" sẽ chuyển chiến dịch sang trạng thái 'Đang thực hiện'.
                   </Alert>
-                  <Box display="flex" justifyContent="flex-end">
+                  <Box display="flex" justifyContent="flex-end" gap={2}>
                     <Button
                       variant="contained"
                       color="primary"
@@ -700,6 +707,25 @@ const handleExportExcel = async () => {
                       }}
                     >
                       Xuất Excel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<CheckCircle size={20} />}
+                      onClick={() => setOpenProceedDialog(true)}
+                      disabled={loading}
+                      sx={{
+                        backgroundColor: "#16a34a",
+                        "&:hover": { backgroundColor: "#15803d" },
+                        color: "white",
+                        fontWeight: "bold",
+                        borderRadius: 1,
+                        px: 4,
+                        py: 1.5,
+                        textTransform: "none",
+                      }}
+                    >
+                      Tiến hành tiêm chủng
                     </Button>
                   </Box>
                 </Box>
@@ -722,8 +748,7 @@ const handleExportExcel = async () => {
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Xuất danh sách sẽ chuyển chiến dịch sang trạng thái 'Đang thực
-            hiện'. Bạn có muốn tiếp tục?
+            Bạn có muốn xuất danh sách tiêm chủng ra file Excel?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -745,33 +770,37 @@ const handleExportExcel = async () => {
         </DialogActions>
       </Dialog>
 
-      {/* Export Success Dialog (unused, kept for consistency) */}
+      {/* Proceed Vaccination Confirmation Dialog */}
       <Dialog
-        open={openSuccessDialog}
-        onClose={handleCloseSuccessDialog}
+        open={openProceedDialog}
+        onClose={handleCloseProceedDialog}
         maxWidth="xs"
         fullWidth
         sx={{ "& .MuiDialog-paper": { borderRadius: 2 } }}
       >
         <DialogTitle sx={{ fontWeight: "bold" }}>
-          Xuất Excel Thành Công
+          Xác nhận tiến hành tiêm chủng
         </DialogTitle>
         <DialogContent>
-          <Box display="flex" alignItems="center" gap={2}>
-            <CheckCircle size={24} className="text-green-500" />
-            <Typography>
-              File danh sách tiêm chủng đã được tải xuống.
-            </Typography>
-          </Box>
+          <Typography>
+            Hành động này sẽ chuyển chiến dịch sang trạng thái 'Đang thực hiện'. Bạn có muốn tiếp tục?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={handleCloseSuccessDialog}
+            onClick={handleCloseProceedDialog}
+            color="inherit"
+            sx={{ textTransform: "none" }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleProceedVaccination}
             color="primary"
             variant="contained"
             sx={{ textTransform: "none", borderRadius: 1 }}
           >
-            Đóng
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>
