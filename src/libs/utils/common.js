@@ -159,7 +159,7 @@ export const mockData = {
       active: false,
     },
   ],
-   menuItemsNurse: [
+  menuItemsNurse: [
     {
       id: 'home',
       label: 'Trang chủ',
@@ -273,4 +273,79 @@ export const mockData = {
       route: '/management/nurse/settings',
     },
   ],
+
+
+  menuItemsManager: [
+    {
+      id: 'home',
+      label: 'Trang chủ',
+      icon: 'Home',
+      route: '/management/manager',
+    },
+    {
+      id: 'nurse-management',
+      label: 'Quản lý y tá',
+      icon: 'Bell',
+      subItems: [
+        {
+          id: 'manage-nurse-records',
+          label: 'Quản lý hồ sơ y tá',
+          icon: 'FileBarChart',
+          route: '/management/manager/nurse-management',
+        },
+      ],
+    },
+    {
+      id: 'medication-supply-management',
+      label: 'Quản lý thuốc & vật tư',
+      icon: 'Syringe',
+      subItems: [
+        {
+          id: 'manage-medications',
+          label: 'Quản lý thuốc',
+          icon: 'Pill',
+          route: '/management/manager/manage-medications',
+        },
+        {
+          id: 'manage-supplies',
+          label: 'Quản lý vật tư',
+          icon: 'PillBottle',
+          route: '/management/manager/manage-supplies',
+        },
+      ],
+    },
+    {
+      id: 'vaccination-campaign-management',
+      label: 'Quản lý chiến dịch tiêm chủng',
+      icon: 'Syringe',
+      subItems: [
+        {
+          id: 'manage-vaccination-campaigns',
+          label: 'Quản lý chiến dịch',
+          icon: 'Syringe',
+          route: '/management/manager/campaigns-management',
+        },
+      ],
+    },
+    {
+      id: 'periodic-checkup-management',
+      label: 'Quản lý khám định kỳ',
+      icon: 'Shield',
+      subItems: [
+        {
+          id: 'manage-consent-forms',
+          label: 'Quản lý phiếu đồng thuận',
+          icon: 'UserCheck',
+          route: '/management/manager/medical-check-up-management',
+        },
+      ],
+    },
+    {
+      id: 'settings',
+      label: 'Cài đặt',
+      icon: 'Settings',
+      route: '/management/manager/settings',
+    },
+  ]
+
 };

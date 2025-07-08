@@ -2,7 +2,9 @@ import React from 'react'
 
 const ManagerDashboard = () => {
     return (
-        <div>Dashboard</div>
+        <div>Dashboard
+            ddddddddddddddddddddddddddddd</div>
+
     )
 }
 

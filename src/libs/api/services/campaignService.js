@@ -2,6 +2,56 @@ import api from "~/libs/hooks/axiosInstance";
 import { endpoints } from "../endpoints";
 // CampaignService class (unchanged)
 class CampaignService {
+
+
+  async createVaccinationCampaigns({
+    name,
+    vaccineName,
+    doseNumber,
+    partnerId,
+    targetGradeLevels,
+    startDate,
+    endDate,
+    description,
+    schoolYear,
+    actualStartDate,
+    destination,
+    createdBy,
+  }) {
+    try {
+      const url = endpoints.campaign.addCampaign;
+      const body = {
+        name,
+        vaccineName,
+        doseNumber,
+        partnerId,
+        targetGradeLevels,
+        startDate,
+        endDate,
+        description,
+        schoolYear,
+        actualStartDate,
+        destination,
+        createdBy,
+      };
+      console.log(body)
+
+      // Kiểm tra các trường bắt buộc (tùy chọn, có thể bỏ nếu API xử lý)
+      if (!name || !startDate || !endDate) {
+        throw new Error('Name, startDate, and endDate are required fields.');
+      }
+
+      const response = await api.post(url, body);
+      return response.data;
+    } catch (error) {
+      console.error('Create vaccination campaign failed:', error);
+      throw error;
+    }
+  }
+
+
+
+
   async getListCampaign(params = {}) {
     try {
       const queryParams = {
@@ -63,7 +113,7 @@ class CampaignService {
     }
   }
 
-  async updateCampaignStatus(campaignId,createdBy, status, cancellationReason = null) {
+  async updateCampaignStatus(campaignId, createdBy, status, cancellationReason = null) {
     if (!campaignId || !status) {
       throw new Error('Campaign ID and status are required');
     }
@@ -90,7 +140,7 @@ class CampaignService {
     }
     try {
       const url = endpoints.campaign.cancelCampaign.replace('{campaignId}', campaignId);
-      
+
       console.log(url)
       console.log(data)
 
@@ -136,8 +186,8 @@ class CampaignService {
   }
 
 
-   async getListRegistrants(campaignId) {
-    if (!campaignId ) {
+  async getListRegistrants(campaignId) {
+    if (!campaignId) {
       throw new Error('Campaign ID are required');
     }
     try {
@@ -152,8 +202,8 @@ class CampaignService {
   }
 
 
-   async getListVaccination(campaignId) {
-    if (!campaignId ) {
+  async getListVaccination(campaignId) {
+    if (!campaignId) {
       throw new Error('Campaign ID are required');
     }
     try {
@@ -169,7 +219,7 @@ class CampaignService {
 
 
   async getPartnerByID(partnerId) {
-    if (!partnerId ) {
+    if (!partnerId) {
       throw new Error('Partner ID are required');
     }
     try {
@@ -182,7 +232,7 @@ class CampaignService {
     }
   }
 
-   async injectionRecord(consentIdToRecord, staffId) {
+  async injectionRecord(consentIdToRecord, staffId) {
     try {
       const url = endpoints.campaign.injectionRecord;
       const response = await api.post(url, {
@@ -199,8 +249,8 @@ class CampaignService {
 
 
 
-   async getStudentImmunizationHistory(studentId_ToRecord) {
-    if (!studentId_ToRecord ) {
+  async getStudentImmunizationHistory(studentId_ToRecord) {
+    if (!studentId_ToRecord) {
       throw new Error('studentIdTo Record ID are required');
     }
     try {
