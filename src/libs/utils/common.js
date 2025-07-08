@@ -159,7 +159,7 @@ export const mockData = {
       active: false,
     },
   ],
-   menuItemsNurse: [
+  menuItemsNurse: [
     {
       id: 'home',
       label: 'Trang chủ',

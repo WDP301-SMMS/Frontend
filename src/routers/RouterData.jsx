@@ -243,8 +243,7 @@ const nurseRoutes = [
       <ProtectedRoute allowedRoles={["Nurse"]}>
         <NurseDashboard />
       </ProtectedRoute>
-        // <NurseDashboard />
-
+      // <NurseDashboard />
     ),
     children: [
       { path: "", element: <DashboardHome /> },
@@ -256,7 +255,10 @@ const nurseRoutes = [
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
       { path: "vaccinate-record", element: <VaccinateRecord /> },
-      { path: "post-vaccination-monitoring", element: <PostVaccinationMonitoring /> },
+      {
+        path: "post-vaccination-monitoring",
+        element: <PostVaccinationMonitoring />,
+      },
       { path: "send-checkup-notice", element: <SendCheckupNotice /> },
       { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "perform-checkup", element: <PerformCheckup /> },
@@ -271,14 +273,22 @@ const managerRoutes = [
     path: "/management/manager",
     element: (
       <ProtectedRoute allowedRoles={["Manager"]}>
-        <NurseDashboard />
+        <div className="flex h-screen bg-gray-100 font-sans text-gray-800">
+          <SidebarManager />
+          <Outlet />
+        </div>
       </ProtectedRoute>
     ),
     children: [
       { path: "", element: <ManagerDashboard /> },
-      { path: "medicine", element: <MedicineInventory /> },
-      { path: "nurse", element: <NurseManagement /> },
-      { path: "student", element: <StudentManagement /> },
+      { path: "campaigns-management", element: <CampaignsManagement /> },
+      {
+        path: "medical-check-up-management",
+        element: <MedicalCheckupManagement />,
+      },
+      { path: "nurse-management", element: <NursesManagement /> },
+      { path: "manage-medications", element: <MedicineCRUD /> },
+      { path: "manage-supplies", element: <SuppliesCRUD /> },
     ],
   },
 ];
