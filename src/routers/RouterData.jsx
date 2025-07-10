@@ -15,7 +15,6 @@ import {
   ResetPassword,
   CompleteProfile,
   VaccinHistoryManagement,
-
   Message,
   ManagerDashboard,
   MedicineInventory,
@@ -42,7 +41,6 @@ import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement
 const ManageSupplies = () => <div>Quản lý vật tư</div>;
 const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
 const PrepareList = () => <div>Chuẩn bị danh sách</div>;
-const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
 const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
 const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
@@ -54,6 +52,15 @@ import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagem
 
 //ProtectedRoute
 import ProtectedRoute from "./ProtectedRoute";
+import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
+import { SidebarManager } from "~/pages/management/manager/SideBar";
+import CampaignsManagement from "~/pages/management/manager/CampaignsManagement";
+import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpManagement";
+import { Outlet } from "react-router";
+import NursesManagement from "~/pages/management/manager/NursesManagement";
+import MedicalSupplyCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/MedicalSupplyCRUD";
+import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
+import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/SuppliesCRUD";
 
 const basicRoutes = [
   {
@@ -107,8 +114,14 @@ export const parentRoutes = [
         children: [
           { path: "health-profiles", element: <ParentHealthProfiles /> },
           { path: "health-profile/new", element: <ParentHealthProfileForm /> },
-          { path: "health-profile/:profileId", element: <ParentHealthProfileDetail /> },
-          { path: "health-profile/:profileId/edit", element: <ParentHealthProfileForm /> },
+          {
+            path: "health-profile/:profileId",
+            element: <ParentHealthProfileDetail />,
+          },
+          {
+            path: "health-profile/:profileId/edit",
+            element: <ParentHealthProfileForm />,
+          },
         ],
       },
     ],
@@ -117,8 +130,15 @@ export const parentRoutes = [
 
 const vaccinHistoryManagementRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Parent", "Nurse", "Manager", "Admin"]} />,
-    children: [{ path: "/vaccination-history-management", element: <VaccinHistoryManagement /> }],
+    element: (
+      <ProtectedRoute allowedRoles={["Parent", "Nurse", "Manager", "Admin"]} />
+    ),
+    children: [
+      {
+        path: "/vaccination-history-management",
+        element: <VaccinHistoryManagement />,
+      },
+    ],
   },
 ];
 
@@ -129,6 +149,7 @@ const nurseRoutes = [
       <ProtectedRoute allowedRoles={["Nurse"]}>
         <NurseDashboard />
       </ProtectedRoute>
+      // <NurseDashboard />
     ),
     children: [
       { path: "", element: <DashboardHome /> },
@@ -140,7 +161,10 @@ const nurseRoutes = [
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
       { path: "vaccinate-record", element: <VaccinateRecord /> },
-      { path: "post-vaccination-monitoring", element: <PostVaccinationMonitoring /> },
+      {
+        path: "post-vaccination-monitoring",
+        element: <PostVaccinationMonitoring />,
+      },
       { path: "send-checkup-notice", element: <SendCheckupNotice /> },
       { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "perform-checkup", element: <PerformCheckup /> },
@@ -155,14 +179,22 @@ const managerRoutes = [
     path: "/management/manager",
     element: (
       <ProtectedRoute allowedRoles={["Manager"]}>
-        <NurseDashboard />
+        <div className="flex h-screen bg-gray-100 font-sans text-gray-800">
+          <SidebarManager />
+          <Outlet />
+        </div>
       </ProtectedRoute>
     ),
     children: [
       { path: "", element: <ManagerDashboard /> },
-      { path: "medicine", element: <MedicineInventory /> },
-      { path: "nurse", element: <NurseManagement /> },
-      { path: "student", element: <StudentManagement /> },
+      { path: "campaigns-management", element: <CampaignsManagement /> },
+      {
+        path: "medical-check-up-management",
+        element: <MedicalCheckupManagement />,
+      },
+      { path: "nurse-management", element: <NursesManagement /> },
+      { path: "manage-medications", element: <MedicineCRUD /> },
+      { path: "manage-supplies", element: <SuppliesCRUD /> },
     ],
   },
 ];

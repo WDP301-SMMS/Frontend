@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Send,
-  Plus,
-  Eye,
-  AlertTriangle,
-  CheckCircle,
-  X,
-} from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Send, Plus, Eye, AlertTriangle, CheckCircle, X, RefreshCw } from "lucide-react";
 import {
   Dialog,
   DialogActions,
@@ -38,26 +31,48 @@ import {
 import { Warning } from "@mui/icons-material";
 import ReactMarkdown from "react-markdown";
 import campaignService from "~/libs/api/services/campaignService";
+import { userService } from "~/libs/api";
 
 // Reusable Alert Dialog Component
 const AlertDialog = ({ open, onClose, message, type, onConfirm }) => {
+  const [cancellationReason, setCancellationReason] = useState("");
+
+  const handleConfirm = () => {
+    if (type === "confirm" && !cancellationReason.trim()) {
+      alert("Vui lòng nhập lý do hủy chiến dịch.");
+      return;
+    }
+    onConfirm(cancellationReason);
+    setCancellationReason("");
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>
-        {type === "success"
-          ? "Thành công"
-          : type === "error"
-          ? "Lỗi"
-          : "Xác nhận"}
+        {type === "success" ? "Thành công" : type === "error" ? "Lỗi" : "Xác nhận hủy chiến dịch"}
       </DialogTitle>
       <DialogContent>
-        <Box display="flex" alignItems="center" gap={2}>
-          {type === "success" ? (
-            <CheckCircle size={24} className="text-green-500" />
-          ) : (
-            <AlertTriangle size={24} className="text-red-500" />
+        <Box display="flex" flexDirection="column" gap={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            {type === "success" ? (
+              <CheckCircle size={24} className="text-green-500" />
+            ) : (
+              <AlertTriangle size={24} className="text-red-500" />
+            )}
+            <Typography>{message}</Typography>
+          </Box>
+          {type === "confirm" && (
+            <TextField
+              label="Lý do hủy"
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              required
+              placeholder="Nhập lý do hủy chiến dịch"
+            />
           )}
-          <Typography>{message}</Typography>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -66,7 +81,7 @@ const AlertDialog = ({ open, onClose, message, type, onConfirm }) => {
             <Button onClick={onClose} color="inherit">
               Hủy
             </Button>
-            <Button onClick={onConfirm} color="primary" variant="contained">
+            <Button onClick={handleConfirm} color="primary" variant="contained">
               Xác nhận
             </Button>
           </>
@@ -94,6 +109,8 @@ function SendVaccinationConsent() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [nurseID, setNurseID] = useState([]);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
@@ -114,7 +131,32 @@ function SendVaccinationConsent() {
   useEffect(() => {
     loadAnnouncedCampaigns();
     loadDraftCampaigns();
+    loadProfile();
   }, []);
+
+  const loadProfile = async () => {
+    try {
+      const result = await userService.getProfile();
+      if (result.success) {
+        const data = result.data.data;
+        const nurseID = localStorage.getItem("nurseID");
+        if (nurseID != data._id) {
+          localStorage.setItem("nurseID", data._id);
+          setNurseID(data._id);
+        } else {
+          setNurseID(data._id);
+        }
+        console.log(data._id);
+        console.log(nurseID);
+      } else {
+        setError(result.message || "Không thể tải thông tin Nurse");
+      }
+    } catch (err) {
+      setError("Có lỗi xảy ra khi tải hồ sơ");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadAnnouncedCampaigns = async () => {
     try {
@@ -188,36 +230,47 @@ function SendVaccinationConsent() {
     }
   };
 
+  const handleRefresh = async () => {
+    try {
+      setCampaignsLoading(true);
+      await Promise.all([loadAnnouncedCampaigns(), loadDraftCampaigns()]);
+      setAlertDialog({
+        open: true,
+        message: "Dữ liệu đã được làm mới thành công!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+      setAlertDialog({
+        open: true,
+        message: "Không thể làm mới dữ liệu. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setCampaignsLoading(false);
+    }
+  };
+
   const generateNotificationContentFromCampaign = (campaign) => {
     return `
 # THÔNG BÁO TIÊM CHỦNG
 
 Kính gửi quý phụ huynh,
 
-Trường học tổ chức tiêm chủng vaccine **${
-      campaign.vaccineName || "N/A"
-    }** cho học sinh khối lớp ${
-      campaign.targetGradeLevels?.join(", ") || "N/A"
-    }.
+Trường học tổ chức tiêm chủng vaccine **${campaign.vaccineName || "N/A"}** cho học sinh khối lớp ${campaign.targetGradeLevels?.join(", ") || "N/A"}.
 
 ## Thông tin chi tiết
 - **Tên chiến dịch**: ${campaign.name || "N/A"}
 - **Mũi tiêm thứ**: ${campaign.doseNumber || "N/A"}
-- **Ngày tiêm dự kiến**: ${new Date(
-      campaign.actualStartDate
-    ).toLocaleDateString("vi-VN")}
+- **Ngày tiêm dự kiến**: ${new Date(campaign.actualStartDate).toLocaleDateString("vi-VN")}
 - **Địa điểm**: ${campaign.destination || "Phòng y tế trường"}
-- **Thông tin vaccine**: ${
-      campaign.description || "Thông tin chi tiết sẽ được cung cấp"
-    }
+- **Thông tin vaccine**: ${campaign.description || "Thông tin chi tiết sẽ được cung cấp"}
 
 ## Lưu ý
 - **Chống chỉ định**: Không tiêm nếu trẻ đang sốt, mắc bệnh cấp tính, hoặc dị ứng với thành phần vaccine.
 - **Liên hệ**: Y tá trường - SĐT: 0123 456 789, Email: nurse@school.edu.vn
 
-Vui lòng phản hồi trước ngày **${new Date(
-      campaign.actualStartDate
-    ).toLocaleDateString("vi-VN")}**.
+Vui lòng phản hồi trước ngày **${new Date(campaign.actualStartDate).toLocaleDateString("vi-VN")}**.
 
 Trân trọng,  
 **Ban Y tế Trường học**
@@ -232,30 +285,20 @@ Trân trọng,
 
 Kính gửi quý phụ huynh,
 
-Trường học tổ chức tiêm chủng vaccine **${
-      selectedCampaign.vaccineName || "N/A"
-    }** cho học sinh khối lớp ${
-      selectedCampaign.targetGradeLevels?.join(", ") || "N/A"
-    }.
+Trường học tổ chức tiêm chủng vaccine **${selectedCampaign.vaccineName || "N/A"}** cho học sinh khối lớp ${selectedCampaign.targetGradeLevels?.join(", ") || "N/A"}.
 
 ## Thông tin chi tiết
 - **Tên chiến dịch**: ${selectedCampaign.name || "N/A"}
 - **Mũi tiêm thứ**: ${selectedCampaign.doseNumber || "N/A"}
-- **Ngày tiêm dự kiến**: ${new Date(form.scheduledDate).toLocaleDateString(
-      "vi-VN"
-    )}
+- **Ngày tiêm dự kiến**: ${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}
 - **Địa điểm**: ${form.location}
-- **Thông tin vaccine**: ${
-      selectedCampaign.description || "Thông tin chi tiết sẽ được cung cấp"
-    }
+- **Thông tin vaccine**: ${selectedCampaign.description || "Thông tin chi tiết sẽ được cung cấp"}
 
 ## Lưu ý
 - **Chống chỉ định**: Không tiêm nếu trẻ đang sốt, mắc bệnh cấp tính, hoặc dị ứng với thành phần vaccine.
 - **Liên hệ**: Y tá trường - SĐT: 0123 456 789, Email: nurse@school.edu.vn
 
-Vui lòng phản hồi trước ngày **${new Date(
-      form.scheduledDate
-    ).toLocaleDateString("vi-VN")}**.
+Vui lòng phản hồi trước ngày **${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}**.
 
 Trân trọng,  
 **Ban Y tế Trường học**
@@ -288,12 +331,9 @@ Trân trọng,
       setForm((prevForm) => ({
         ...prevForm,
         selectedCampaignId: campaignId,
-        scheduledDate:
-          campaignData.data.actualStartDate
-            ? new Date(campaignData.data.actualStartDate)
-                .toISOString()
-                .substring(0, 10)
-            : new Date().toISOString().substring(0, 10),
+        scheduledDate: campaignData.data.actualStartDate
+          ? new Date(campaignData.data.actualStartDate).toISOString().substring(0, 10)
+          : new Date().toISOString().substring(0, 10),
         location: campaignData.data.destination || "",
       }));
     } catch (error) {
@@ -357,10 +397,8 @@ Trân trọng,
       return;
     }
     if (
-      new Date(selectedCampaign.actualStartDate).toISOString().substring(0, 10) <=
-        currentDate &&
-      currentDate <=
-        new Date(selectedCampaign.endDate).toISOString().substring(0, 10) &&
+      new Date(selectedCampaign.actualStartDate).toISOString().substring(0, 10) <= currentDate &&
+      currentDate <= new Date(selectedCampaign.endDate).toISOString().substring(0, 10) &&
       form.scheduledDate === currentDate
     ) {
       setAlertDialog({
@@ -376,33 +414,31 @@ Trân trọng,
 
       // Convert scheduledDate to ISO format for API
       const isoScheduledDate = new Date(form.scheduledDate).toISOString();
-      console.log(form.location)
-      console.log(selectedCampaign.destination)
-
+      console.log(form.location);
+      console.log(selectedCampaign.destination);
 
       // Check for updates compared to selected campaign
       if (selectedCampaign) {
         // Update actualStartDate if scheduledDate changed
         if (
-          isoScheduledDate !==
-          new Date(selectedCampaign.actualStartDate).toISOString()
+          isoScheduledDate !== new Date(selectedCampaign.actualStartDate).toISOString()
         ) {
-          console.log("a")
+          console.log("a");
           await campaignService.updateCampaign(form.selectedCampaignId, {
+            createdBy: nurseID,
             actualStartDate: isoScheduledDate,
           });
           updatesMade = true;
         }
         // Update destination if location changed
         if (form.location !== selectedCampaign.destination) {
-          console.log("b")
-
+          console.log("b");
           await campaignService.updateCampaign(form.selectedCampaignId, {
+            createdBy: nurseID,
             destination: form.location,
           });
           updatesMade = true;
         }
-        
       }
 
       // Activate campaign
@@ -450,13 +486,15 @@ Trân trọng,
       open: true,
       message: "Bạn có chắc chắn muốn hủy chiến dịch này?",
       type: "confirm",
-      onConfirm: async () => {
+      onConfirm: async (reason) => {
         try {
           setLoading(true);
+          console.log(nurseID);
           await campaignService.updateCampaignStatus(
             notification.campaignId,
+            `${nurseID}`,
             "CANCELED",
-            "Chiến dịch bị hủy theo yêu cầu."
+            reason
           );
           await loadAnnouncedCampaigns();
           await loadDraftCampaigns();
@@ -516,7 +554,24 @@ Trân trọng,
       >
         Kích hoạt chiến dịch và gửi thông báo tiêm chủng đến phụ huynh học sinh.
       </Alert>
-      <Box display="flex" justifyContent="flex-end" mb={6}>
+      <Box display="flex" justifyContent="flex-end" gap={2} mb={6}>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#2563eb",
+            "&:hover": { backgroundColor: "#1d4ed8" },
+            color: "white",
+            fontWeight: "bold",
+            borderRadius: "8px",
+            padding: "12px 24px",
+            textTransform: "none",
+          }}
+          startIcon={<RefreshCw size={20} />}
+          onClick={handleRefresh}
+          disabled={campaignsLoading}
+        >
+          Làm mới
+        </Button>
         <Button
           variant="contained"
           sx={{
@@ -602,11 +657,9 @@ Trân trọng,
                         }}
                       >
                         {notification.status === "ANNOUNCED" && "Đã công bố"}
-                        {notification.status === "IN_PROGRESS" &&
-                          "Đang thực hiện"}
+                        {notification.status === "IN_PROGRESS" && "Đang thực hiện"}
                         {notification.status === "COMPLETED" && "Hoàn thành"}
-                        {notification.status === "CANCELED" &&
-                          `Đã hủy - ${notification.cancellationReason || ""}`}
+                        {notification.status === "CANCELED" && `Đã hủy - ${notification.cancellationReason || ""}`}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -645,9 +698,7 @@ Trân trọng,
                         >
                           <X
                             size={20}
-                            className={
-                              isCanceled ? "text-gray-400" : "text-red-600"
-                            }
+                            className={isCanceled ? "text-gray-400" : "text-red-600"}
                           />
                         </Button>
                       </Box>
@@ -719,20 +770,16 @@ Trân trọng,
                   <strong>Thông tin chiến dịch:</strong>
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Tên chiến dịch:</strong>{" "}
-                  {selectedCampaign.name || "N/A"}
+                  <strong>Tên chiến dịch:</strong> {selectedCampaign.name || "N/A"}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Vaccine:</strong>{" "}
-                  {selectedCampaign.vaccineName || "N/A"}
+                  <strong>Vaccine:</strong> {selectedCampaign.vaccineName || "N/A"}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Mũi tiêm thứ:</strong>{" "}
-                  {selectedCampaign.doseNumber || "N/A"}
+                  <strong>Mũi tiêm thứ:</strong> {selectedCampaign.doseNumber || "N/A"}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Mô tả:</strong>{" "}
-                  {selectedCampaign.description || "N/A"}
+                  <strong>Mô tả:</strong> {selectedCampaign.description || "N/A"}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Khối lớp mục tiêu:</strong>{" "}
@@ -740,15 +787,11 @@ Trân trọng,
                 </Typography>
                 <Typography variant="body2">
                   <strong>Ngày bắt đầu:</strong>{" "}
-                  {new Date(selectedCampaign.actualStartDate).toLocaleDateString(
-                    "vi-VN"
-                  ) || "N/A"}
+                  {new Date(selectedCampaign.actualStartDate).toLocaleDateString("vi-VN") || "N/A"}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Ngày kết thúc:</strong>{" "}
-                  {new Date(selectedCampaign.endDate).toLocaleDateString(
-                    "vi-VN"
-                  ) || "N/A"}
+                  {new Date(selectedCampaign.endDate).toLocaleDateString("vi-VN") || "N/A"}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Đơn vị hợp tác:</strong>{" "}
@@ -769,9 +812,7 @@ Trân trọng,
               InputLabelProps={{ shrink: true }}
               inputProps={{
                 min: selectedCampaign
-                  ? new Date(selectedCampaign.actualStartDate)
-                      .toISOString()
-                      .substring(0, 10)
+                  ? new Date(selectedCampaign.actualStartDate).toISOString().substring(0, 10)
                   : undefined,
                 max: selectedCampaign
                   ? new Date(selectedCampaign.endDate).toISOString().substring(0, 10)
@@ -906,8 +947,7 @@ Trân trọng,
           {selectedNotification && (
             <Box>
               <Typography variant="body1" gutterBottom>
-                <strong>Tên chiến dịch:</strong>{" "}
-                {selectedNotification.campaignName}
+                <strong>Tên chiến dịch:</strong> {selectedNotification.campaignName}
               </Typography>
               <Typography variant="body1" gutterBottom>
                 <strong>Vaccine:</strong> {selectedNotification.vaccineName}

@@ -16,6 +16,10 @@ import {
   Typography,
   Divider,
   CircularProgress,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import {
   LocalHospital as LocalHospitalIcon,
@@ -293,6 +297,9 @@ const NurseInfoCard = React.memo(({ nurseInfo, onEditClick, loading }) => (
               <DateRangeIcon sx={{ fontSize: 20, opacity: 0.8 }} />
               <Typography variant="body2">{nurseInfo.dob || "N/A"}</Typography>
             </Box>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="body2">{nurseInfo.gender || ""}</Typography>
+            </Box>
           </Box>
           <Button
             variant="contained"
@@ -332,7 +339,7 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
           bgcolor: "background.paper",
           borderRadius: 16,
           boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-          width: { xs: "90%", sm: 500 },
+          width: { xs: "90%", sm: 600 },
           maxWidth: "100%",
           p: 3,
           display: "flex",
@@ -346,7 +353,6 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            key="username"
             label="Tên người dùng"
             name="username"
             value={formData.username || ""}
@@ -357,7 +363,6 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
             disabled={loading}
           />
           <TextField
-            key="email"
             label="Email"
             name="email"
             type="email"
@@ -369,7 +374,6 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
             disabled={loading}
           />
           <TextField
-            key="phone"
             label="Số điện thoại"
             name="phone"
             value={formData.phone || ""}
@@ -380,7 +384,6 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
             disabled={loading}
           />
           <TextField
-            key="dob"
             label="Ngày sinh"
             name="dob"
             type="date"
@@ -392,6 +395,20 @@ const CustomProfileEditDialog = React.memo(({ open, onClose, formData, formError
             fullWidth
             disabled={loading}
           />
+          <FormControl fullWidth error={!!formErrors.gender} disabled={loading}>
+            <InputLabel>Giới tính</InputLabel>
+            <Select
+              name="gender"
+              value={formData.gender || ""}
+              onChange={onInputChange}
+              label="Giới tính"
+            >
+              <MenuItem value="Male">Nam</MenuItem>
+              <MenuItem value="Female">Nữ</MenuItem>
+              <MenuItem value="Other">Khác</MenuItem>
+            </Select>
+            {formErrors.gender && <Typography variant="body2" color="error">{formErrors.gender}</Typography>}
+          </FormControl>
           {error && <Typography color="error" variant="body2">{error}</Typography>}
         </Box>
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
@@ -416,19 +433,22 @@ const DashboardHome = () => {
     email: "",
     dob: "",
     phone: "",
+    gender: "",
     _id: "",
   });
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    dob: "",
     phone: "",
+    dob: "",
+    gender: "",
   });
   const [formErrors, setFormErrors] = useState({
     username: "",
     email: "",
     dob: "",
     phone: "",
+    gender: "",
   });
 
   const loadProfile = useCallback(async () => {
@@ -438,7 +458,11 @@ const DashboardHome = () => {
       setError(null);
       const result = await userService.getProfile();
       if (result.success) {
-        const data = result.data.data;
+        const data = result.data.data || {};
+        const nurseID = localStorage.getItem("nurseID");
+        if (nurseID !== data._id) {
+          localStorage.setItem("nurseID", data._id || "");
+        }
         const formattedDob = data.dob ? new Date(data.dob).toLocaleDateString("en-GB") : "";
         const formDob = data.dob ? new Date(data.dob).toISOString().split("T")[0] : "";
         const profileData = {
@@ -446,14 +470,17 @@ const DashboardHome = () => {
           email: data.email || "",
           phone: data.phone || "",
           dob: formattedDob,
+          gender: data.gender || "",
           _id: data._id || "",
         };
         setNurseInfo(profileData);
+        console.log(profileData)
         setFormData({
           username: data.username || "",
           email: data.email || "",
           phone: data.phone || "",
           dob: formDob,
+          gender: data.gender || "",
         });
       } else {
         setError(result.message || "Không thể tải thông tin hồ sơ");
@@ -470,7 +497,7 @@ const DashboardHome = () => {
   }, [loadProfile]);
 
   const validateForm = useCallback(() => {
-    const errors = { username: "", email: "", dob: "", phone: "" };
+    const errors = { username: "", email: "", dob: "", phone: "", gender: "" };
     let isValid = true;
 
     if (!formData.username.trim()) {
@@ -489,6 +516,10 @@ const DashboardHome = () => {
       errors.dob = "Ngày sinh không hợp lệ";
       isValid = false;
     }
+    if (!formData.gender || !['Male', 'Female', 'Other'].includes(formData.gender)) {
+      errors.gender = "Vui lòng chọn giới tính hợp lệ";
+      isValid = false;
+    }
 
     setFormErrors(errors);
     return isValid;
@@ -498,7 +529,7 @@ const DashboardHome = () => {
     debounce((name, value) => {
       setFormData((prev) => {
         const newData = { ...prev, [name]: value };
-        console.log("New formData:", newData); // Temporary log for debugging
+        console.log("New formData:", newData); // Debug log
         return newData;
       });
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
@@ -524,7 +555,7 @@ const DashboardHome = () => {
         await loadProfile();
         setEditDialogOpen(false);
       } else {
-        setError(result.message || "Cập nhật hồ sơ thất bại");
+        setError(result.error || "Cập nhật hồ sơ thất bại");
       }
     } catch (err) {
       setError("Có lỗi xảy ra khi cập nhật hồ sơ");
@@ -539,15 +570,16 @@ const DashboardHome = () => {
       email: nurseInfo.email || "",
       phone: nurseInfo.phone || "",
       dob: nurseInfo.dob ? new Date(nurseInfo.dob.split("/").reverse().join("-")).toISOString().split("T")[0] : "",
+      gender: nurseInfo.gender || "",
     });
-    setFormErrors({ username: "", email: "", dob: "", phone: "" });
+    setFormErrors({ username: "", email: "", dob: "", phone: "", gender: "" });
     setError(null);
     setEditDialogOpen(true);
   }, [nurseInfo]);
 
   const handleCloseEditDialog = useCallback(() => {
     setEditDialogOpen(false);
-    setFormErrors({ username: "", email: "", dob: "", phone: "" });
+    setFormErrors({ username: "", email: "", dob: "", phone: "", gender: "" });
     setError(null);
   }, []);
 
