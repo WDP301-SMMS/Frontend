@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
 
   const checkLoginStatus = useCallback(async () => {
     try {
-      console.log(role)
       const response = await api.get('/user/me');
       setUser(response.data.data);
       setRole(response.data.data.role);
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
       switch (userData.role) {
         case "Parent":
-          navigate("/");
+          navigate("/health-profiles");
           break;
         case "Nurse":
           navigate("/management/nurse");
@@ -70,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.get("/auth/logout");
+      await api.post("/auth/logout");
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {

@@ -179,7 +179,7 @@ export const mockData = {
         },
         {
           id: 'view-medical-records',
-          label: 'Xem hồ sơ y tế',
+          label: 'Lịch sử sự cố',
           icon: 'Eye',
           route: '/management/nurse/view-medical-records',
         },
@@ -187,18 +187,18 @@ export const mockData = {
     },
     {
       id: 'medication-supply-management',
-      label: 'Quản lý thuốc & vật tư',
+      label: 'Cấp phát thuốc & vật tư',
       icon: 'Syringe',
       subItems: [
         {
           id: 'manage-medications',
-          label: 'Quản lý thuốc',
+          label: 'Cấp phát',
           icon: 'Syringe',
           route: '/management/nurse/manage-medications',
         },
         {
           id: 'manage-supplies',
-          label: 'Quản lý vật tư',
+          label: 'Lịch sử cấp phát',
           icon: 'Settings',
           route: '/management/nurse/manage-supplies',
         },
@@ -273,4 +273,98 @@ export const mockData = {
       route: '/management/nurse/settings',
     },
   ],
+
+
+  menuItemsManager: [
+    {
+      id: 'home',
+      label: 'Trang chủ',
+      icon: 'Home',
+      route: '/management/manager',
+    },
+    {
+      id: 'nurse-management',
+      label: 'Quản lý y tá',
+      icon: 'Bell',
+      subItems: [
+        {
+          id: 'manage-nurse-records',
+          label: 'Quản lý hồ sơ y tá',
+          icon: 'FileBarChart',
+          route: '/management/manager/nurse-management',
+        },
+      ],
+    },
+    {
+      id: 'medication-supply-management',
+      label: 'Quản lý thuốc & vật tư',
+      icon: 'Syringe',
+      subItems: [
+        {
+          id: 'manage-medications',
+          label: 'Quản lý thuốc',
+          icon: 'Pill',
+          route: '/management/manager/manage-medications',
+        },
+        {
+          id: 'manage-supplies',
+          label: 'Quản lý vật tư',
+          icon: 'PillBottle',
+          route: '/management/manager/manage-supplies',
+        },
+      ],
+    },
+    {
+      id: 'vaccination-campaign-management',
+      label: 'Quản lý chiến dịch tiêm chủng',
+      icon: 'Syringe',
+      subItems: [
+        {
+          id: 'manage-vaccination-campaigns',
+          label: 'Quản lý chiến dịch',
+          icon: 'Syringe',
+          route: '/management/manager/campaigns-management',
+        },
+      ],
+    },
+    {
+      id: 'periodic-checkup-management',
+      label: 'Quản lý khám định kỳ',
+      icon: 'Shield',
+      subItems: [
+        {
+          id: 'manage-consent-forms',
+          label: 'Quản lý phiếu đồng thuận',
+          icon: 'UserCheck',
+          route: '/management/manager/medical-check-up-management',
+        },
+        {
+          id: 'manage-health-check-campaigns',
+          label: 'Quản lý chiến dịch kiểm tra sức khỏe',
+          icon: 'UserCheck',
+          route: '/management/manager/manage-health-check-campaigns',
+        },
+      ],
+    },
+    {
+      id: 'partner-management',
+      label: 'Quản lý đối tác',
+      icon: 'Shield',
+      subItems: [
+        {
+          id: 'manage-partner',
+          label: 'Quản lý đối tác',
+          icon: 'UserCheck',
+          route: '/management/manager/manage-partner',
+        },
+      ],
+    },
+    {
+      id: 'settings',
+      label: 'Cài đặt',
+      icon: 'Settings',
+      route: '/management/manager/settings',
+    },
+  ]
+
 };

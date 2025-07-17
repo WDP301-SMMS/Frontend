@@ -88,7 +88,7 @@ export const Header = () => {
       default:
         return [
           {
-            label: "Hồ sơ của con",
+            label: "Danh sách hồ sơ của con",
             to: "/health-profiles",
             icon: <FileText className="w-4 h-4 inline mr-2" />,
           },

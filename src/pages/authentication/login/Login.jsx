@@ -1,18 +1,16 @@
 import React from "react";
 import Stanford from "~assets/images/stanford.jpg";
-import Google from "~/assets/images/google.svg"
+import Google from "~/assets/images/google.svg";
 import TextInput from "~components/input/TextInput";
-import Button from "~/libs/components/button/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { faLock, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faLock, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "~/libs/contexts/AuthContext";
-import api from '~/libs/hooks/axiosInstance';
-import { Loader } from 'lucide-react';
-import { toast } from 'react-toastify';
+import api from "~/libs/hooks/axiosInstance";
+import { Loader } from "lucide-react";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,24 +27,17 @@ const Login = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const response = await api.post('/auth/login', values);
+        const response = await api.post("/auth/login", values);
         login(response.data.data.accessToken);
         toast.success("Đăng nhập thành công!", {
           position: "bottom-right",
           autoClose: 3000,
         });
       } catch (error) {
-        if (error.response?.status === 401) {
-          toast.error("Email hoặc mật khẩu không đúng.", {
-            position: "bottom-right",
-            autoClose: 3000,
-          });
-        } else {
-          toast.error("Đã xảy ra lỗi. Vui lòng thử lại.", {
-            position: "bottom-right",
-            autoClose: 3000,
-          });
-        }
+        toast.error(error.response.data.message, {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
       } finally {
         setSubmitting(false);
       }
@@ -54,13 +45,19 @@ const Login = () => {
   });
 
   const handleGoogle = () => {
+    const hasLoggedInBefore = localStorage.getItem("hasGoogleLoggedIn") === "true";
+
     const width = 500;
     const height = 600;
     const left = (window.screen.width - width) / 2;
     const top = (window.screen.height - height) / 2;
 
+    const url = hasLoggedInBefore
+      ? "http://localhost:3000/api/auth/google?silent=true"
+      : "http://localhost:3000/api/auth/google";
+
     const authWindow = window.open(
-      "http://localhost:3000/api/auth/google",
+      url,
       "_blank",
       `width=${width},height=${height},left=${left},top=${top},resizable=no`
     );
@@ -70,90 +67,107 @@ const Login = () => {
       return;
     }
 
-    window.addEventListener("message", async (event) => {
-      if (event.origin !== "http://localhost:3000") return;
+    window.addEventListener(
+      "message",
+      async (event) => {
+        if (event.origin !== "http://localhost:3000") return;
 
-      const { accessToken } = event.data;
-      login(accessToken);
+        const { accessToken, isNewUser, hasMissingFields } = event.data;
 
-      if (!accessToken) {
-        toast.error("Không nhận được access token");
-        return;
-      }
-    });
+        if (!accessToken) {
+          toast.error("Không nhận được access token");
+          return;
+        }
+
+        localStorage.setItem("hasGoogleLoggedIn", "true");
+
+        await login(accessToken);
+        toast.success("Đăng nhập thành công!", {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+
+        if (isNewUser || hasMissingFields) {
+          navigate("/complete-profile");
+        }
+      },
+      { once: true }
+    );
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <img src={Stanford} style={{ height: "100vh", objectFit: "cover" }} alt="Stanford University" />
+    <div className="grid grid-cols-1 md:grid-cols-2 h-screen w-full">
+      {/* Left Image */}
+      <div className="hidden md:block">
+        <img
+          src={Stanford}
+          alt="Stanford University"
+          className="w-full h-full object-cover"
+        />
       </div>
-      <div className="flex items-center justify-center bg-white p-8 relative">
-        <div className="w-full max-w-md text-center">
-          <div className="mb-15">
-            <h1 className="text-4xl font-bold mb-2">Đăng nhập</h1>
-            <p className="text-gray-500">
-              Vui lòng nhập thông tin đăng nhập để truy cập tài khoản của bạn.
-            </p>
-          </div>
 
-          <form onSubmit={formik.handleSubmit}>
-            <div className="flex w-full flex-col justify-center items-center space-y-4">
-              <TextInput
-                name="email"
-                placeholder="Nhập địa chỉ email của bạn"
-                leftIcon={<FontAwesomeIcon icon={faEnvelope} />}
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.email && formik.errors.email}
-              />
-              <TextInput
-                name="password"
-                type="password"
-                placeholder="Nhập mật khẩu của bạn"
-                leftIcon={<FontAwesomeIcon icon={faLock} />}
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.password && formik.errors.password}
-              />
+      {/* Right Form */}
+      <div className="flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md text-center">
+          <h1 className="text-4xl font-bold mb-2 text-primary">Đăng nhập</h1>
+          <p className="text-gray-500 mb-6">
+            Vui lòng nhập thông tin đăng nhập để truy cập tài khoản của bạn.
+          </p>
+
+          <form onSubmit={formik.handleSubmit} className="space-y-4">
+            <TextInput
+              name="email"
+              placeholder="Nhập địa chỉ email của bạn"
+              leftIcon={<FontAwesomeIcon icon={faEnvelope} />}
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.email && formik.errors.email}
+            />
+            <TextInput
+              name="password"
+              type="password"
+              placeholder="Nhập mật khẩu của bạn"
+              leftIcon={<FontAwesomeIcon icon={faLock} />}
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.password && formik.errors.password}
+            />
+
+            <div className="text-end">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-gray-500 hover:text-primary"
+              >
+                Quên mật khẩu?
+              </button>
             </div>
 
             <button
-              type="button"
-              onClick={() => navigate("/forgot-password")}
-              className="block"
+              type="submit"
+              className="w-full py-3 rounded-md bg-primary text-white font-semibold hover:bg-primary/90 transition duration-300"
+              disabled={loading}
             >
-              <p
-                className="text-gray-500 text-end hover:text-primary cursor-pointer"
-                style={{ fontSize: "14px", marginTop: "8px" }}
-              >
-                Quên mật khẩu?
-              </p>
+              {loading ? (
+                <Loader className="animate-spin w-5 h-5 mx-auto" />
+              ) : (
+                "Đăng nhập"
+              )}
             </button>
 
-            <Button type="submit" className="mt-15 w-full">
-              {loading ? <Loader className="animate-spin w-5 h-5 mx-auto" /> : 'Đăng nhập'}
-            </Button>
-
-            <Button
+            <button
               type="button"
-              className="mt-5 w-full bg-white border border-primary text-primary hover:bg-blue-50"
               onClick={handleGoogle}
+              className="w-full py-3 border border-primary text-primary rounded-md flex items-center justify-center gap-3 hover:bg-blue-50 transition duration-300"
             >
-              <div className="flex justify-center items-center gap-x-5">
-                <img
-                  src={Google}
-                  alt="Google"
-                  className="w-5 h-5"
-                />
-                <span>Đăng nhập bằng Google</span>
-              </div>
-            </Button>
+              <img src={Google} alt="Google" className="w-5 h-5" />
+              <span>Đăng nhập bằng Google</span>
+            </button>
           </form>
 
-          <p className="text-gray-500 mt-4">
+          <p className="text-sm text-gray-500 mt-4">
             Bạn chưa có tài khoản?{" "}
             <button
               onClick={() => navigate("/register")}
@@ -166,7 +180,7 @@ const Login = () => {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center px-4 py-2 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 rounded-full transition-all duration-300 text-sm font-medium shadow-sm hover:shadow-lg border border-gray-200 hover:border-primary transform hover:scale-105"
+              className="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm font-medium shadow-sm transform hover:scale-105"
             >
               <FontAwesomeIcon icon={faHome} className="mr-2" />
               Quay lại Trang chủ

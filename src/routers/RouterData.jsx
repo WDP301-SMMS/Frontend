@@ -31,6 +31,8 @@ import {
   ClassManagement,
   InventoryManagement,
   PartnerManagement,
+  RecordIncident,
+  IncidentHistory,
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
 import Layout from "../pages/layout/Layout";
@@ -84,53 +86,113 @@ const basicRoutes = [
         path: "blog-detail",
         element: <BlogDetail />,
       },
-      {
-        path: "health-profiles",
-        element: <ParentHealthProfiles />,
-      },
-      {
-        path: "health-profile/new",
-        element: <ParentHealthProfileForm />,
-      },
-      {
-        path: "health-profile/:profileId",
-        element: <ParentHealthProfileDetail />,
-      },
-      {
-        path: "health-profile/:profileId/edit",
-        element: <ParentHealthProfileForm />,
-      },
     ],
   },
 ];
 
 const authenticatedRoutes = [
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/verify-otp", element: <VerifyOTP /> },
+  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/complete-profile", element: <CompleteProfile /> },
+];
+
+export const parentRoutes = [
   {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/verify-otp",
-    element: <VerifyOTP />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        element: <ProtectedRoute allowedRoles={["Parent"]} />,
+        children: [
+          { path: "health-profiles", element: <ParentHealthProfiles /> },
+          { path: "health-profile/new", element: <ParentHealthProfileForm /> },
+          {
+            path: "health-profile/:profileId",
+            element: <ParentHealthProfileDetail />,
+          },
+          {
+            path: "health-profile/:profileId/edit",
+            element: <ParentHealthProfileForm />,
+          },
+        ],
+      },
+    ],
   },
 ];
 
 const vaccinHistoryManagementRoutes = [
   {
-    path: "/vaccination-history-management",
-    element: <VaccinHistoryManagement />,
+    element: (
+      <ProtectedRoute allowedRoles={["Parent", "Nurse", "Manager", "Admin"]} />
+    ),
+    children: [
+      {
+        path: "/vaccination-history-management",
+        element: <VaccinHistoryManagement />,
+      },
+    ],
+  },
+];
+
+const nurseRoutes = [
+  {
+    path: "/management/nurse",
+    element: (
+      <ProtectedRoute allowedRoles={["Nurse"]}>
+        <NurseDashboard />
+      </ProtectedRoute>
+      // <NurseDashboard />
+    ),
+    children: [
+      { path: "", element: <DashboardHome /> },
+      { path: "record-incidents", element: <RecordIncident /> },
+      { path: "view-medical-records", element: <IncidentHistory /> },
+      { path: "message", element: <Message /> },
+      { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
+      { path: "manage-supplies", element: <ManageMedicalSupplies /> },
+      { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
+      { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
+      { path: "vaccinate-record", element: <VaccinateRecord /> },
+      {
+        path: "post-vaccination-monitoring",
+        element: <PostVaccinationMonitoring />,
+      },
+      { path: "send-checkup-notice", element: <SendCheckupNotice /> },
+      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
+      { path: "perform-checkup", element: <PerformCheckup /> },
+      { path: "send-results-consult", element: <SendResultsConsult /> },
+      { path: "settings", element: <Settings /> },
+    ],
+  },
+];
+
+const managerRoutes = [
+  {
+    path: "/management/manager",
+    element: (
+      <ProtectedRoute allowedRoles={["Manager"]}>
+        <div className="flex h-screen bg-gray-100 font-sans text-gray-800">
+          <SidebarManager />
+          <Outlet />
+        </div>
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "", element: <ManagerDashboard /> },
+      { path: "campaigns-management", element: <CampaignsManagement /> },
+      {
+        path: "medical-check-up-management",
+        element: <MedicalCheckupManagement />,
+      },
+      { path: "nurse-management", element: <NursesManagement /> },
+      { path: "manage-medications", element: <MedicineCRUD /> },
+      { path: "manage-supplies", element: <SuppliesCRUD /> },
+      {path: "manage-partner", element: <PartnerManagement /> },
+      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
+    ],
   },
 ];
 
