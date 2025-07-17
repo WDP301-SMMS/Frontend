@@ -377,9 +377,12 @@ console.log("Update Data:", updateData);
                             {new Date(record.incidentTime).toLocaleString("vi-VN")}
                           </Typography>
                         </Box>
+                        <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                          {record.description}
+                        </Typography>
                       </Box>
 
-                      {/* Divider */}
+                      {/* Actions */}
                       <Box
                         sx={{
                           height: 1,

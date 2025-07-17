@@ -252,7 +252,12 @@ function VaccinateRecord() {
     const classId = e.target.value;
     setSelectedClass(classId);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, classId, searchQuery, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      classId,
+      searchQuery,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle search
@@ -260,7 +265,12 @@ function VaccinateRecord() {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, query, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      query,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle vaccination status filter
@@ -268,7 +278,12 @@ function VaccinateRecord() {
     const status = e.target.value;
     setVaccinationStatusFilter(status);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, searchQuery, status);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      searchQuery,
+      status
+    );
   };
 
   // Open vaccination dialog
@@ -885,8 +900,8 @@ function VaccinateRecord() {
                   </Select>
                 </FormControl>
               </Box>
-            </Box>)
-          }
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseVaccinationDialog} color="inherit">

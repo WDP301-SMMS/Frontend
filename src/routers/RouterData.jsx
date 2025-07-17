@@ -289,6 +289,8 @@ const managerRoutes = [
       { path: "nurse-management", element: <NursesManagement /> },
       { path: "manage-medications", element: <MedicineCRUD /> },
       { path: "manage-supplies", element: <SuppliesCRUD /> },
+      {path: "manage-partner", element: <PartnerManagement /> },
+      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
     ],
   },
 ];

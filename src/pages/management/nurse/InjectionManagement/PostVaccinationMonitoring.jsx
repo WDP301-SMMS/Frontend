@@ -568,13 +568,7 @@ const handleConfirmComplete = async () => {
       <Alert
         severity="info"
         icon={<Warning />}
-        sx={{
-          mb: 3,
-          fontWeight: "medium",
-          bgcolor: "info.light",
-          color: "info.contrastText",
-          borderRadius: 2,
-        }}
+        sx={{ mb: 3, fontWeight: "medium" }}
       >
      Theo dõi sau tiêm là quá trình quan trọng để đảm bảo sức khỏe của học sinh sau khi tiêm chủng. Vui lòng chọn chiến dịch tiêm chủng và theo dõi tình trạng sức khỏe của học sinh.
       </Alert>
@@ -603,7 +597,9 @@ const handleConfirmComplete = async () => {
                   </MenuItem>
                   {campaigns.map((campaign) => (
                     <MenuItem key={campaign._id} value={campaign._id}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <LocalHospital fontSize="small" />
                         {`${campaign.name} (${campaign.vaccineName})`}
                       </Box>
@@ -636,7 +632,9 @@ const handleConfirmComplete = async () => {
                     )
                     .map((className) => (
                       <MenuItem key={className} value={className}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           <LocalHospital fontSize="small" />
                           {className}
                         </Box>
@@ -1222,7 +1220,7 @@ const handleConfirmComplete = async () => {
             Hủy
           </Button>
           <Button
-            onClick={() => handleSaveReaction(false)}
+            onClick={handleSaveReaction}
             variant="contained"
             color="warning"
             startIcon={loading ? <CircularProgress size={20} /> : <Save />}
@@ -1230,16 +1228,6 @@ const handleConfirmComplete = async () => {
             sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
           >
             {loading ? "Đang lưu..." : "Lưu phản ứng"}
-          </Button>
-          <Button
-            onClick={() => handleSaveReaction(true)}
-            variant="contained"
-            color="success"
-            startIcon={loading ? <CircularProgress size={20} /> : <CheckCircle />}
-            disabled={loading}
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
-          >
-            {loading ? "Đang lưu..." : "Hoàn tất theo dõi"}
           </Button>
         </DialogActions>
       </Dialog>
