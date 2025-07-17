@@ -20,11 +20,11 @@ import {
   MedicineInventory,
   NurseManagement,
   StudentManagement,
-  AdminDashboard,
+  // AdminDashboard,
   BlogManagement,
   UserManagement,
   Notification,
-  ManagementProfile,
+  // ManagementProfile,
   Vaccination,
   HealthCheck,
   RecordIncident,
@@ -212,7 +212,7 @@ const adminRoutes = [
       </ProtectedRoute>
     ),
     children: [
-      { path: "", element: <AdminDashboard /> },
+      // { path: "", element: <AdminDashboard /> },
       { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
     ],
@@ -229,104 +229,13 @@ const sharedManagementRoutes = [
     ),
     children: [
       { path: "notification", element: <Notification /> },
-      { path: "profile", element: <ManagementProfile /> },
+      // { path: "profile", element: <ManagementProfile /> },
       { path: "vaccination", element: <Vaccination /> },
       { path: "health-check", element: <HealthCheck /> },
     ],
   },
 ];
 
-const nurseRoutes = [
-  {
-    path: "/management/nurse",
-    element: (
-      <ProtectedRoute allowedRoles={["Nurse"]}>
-        <NurseDashboard />
-      </ProtectedRoute>
-      // <NurseDashboard />
-    ),
-    children: [
-      { path: "", element: <DashboardHome /> },
-      { path: "record-incidents", element: <RecordIncident /> },
-      { path: "view-medical-records", element: <IncidentHistory /> },
-      { path: "message", element: <Message /> },
-      { path: "manage-medications", element: <ManageMedications /> },
-      { path: "manage-supplies", element: <ManageMedicalSupplies /> },
-      { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
-      { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
-      { path: "vaccinate-record", element: <VaccinateRecord /> },
-      {
-        path: "post-vaccination-monitoring",
-        element: <PostVaccinationMonitoring />,
-      },
-      { path: "send-checkup-notice", element: <SendCheckupNotice /> },
-      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
-      { path: "perform-checkup", element: <PerformCheckup /> },
-      { path: "send-results-consult", element: <SendResultsConsult /> },
-      { path: "settings", element: <Settings /> },
-    ],
-  },
-];
-
-const managerRoutes = [
-  {
-    path: "/management/manager",
-    element: (
-      <ProtectedRoute allowedRoles={["Manager"]}>
-        <div className="flex h-screen bg-gray-100 font-sans text-gray-800">
-          <SidebarManager />
-          <Outlet />
-        </div>
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: "", element: <ManagerDashboard /> },
-      { path: "campaigns-management", element: <CampaignsManagement /> },
-      {
-        path: "medical-check-up-management",
-        element: <MedicalCheckupManagement />,
-      },
-      { path: "nurse-management", element: <NursesManagement /> },
-      { path: "manage-medications", element: <MedicineCRUD /> },
-      { path: "manage-supplies", element: <SuppliesCRUD /> },
-      {path: "manage-partner", element: <PartnerManagement /> },
-      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
-    ],
-  },
-];
-
-const adminRoutes = [
-  {
-    path: "/management/admin",
-    element: (
-      <ProtectedRoute allowedRoles={["Admin"]}>
-        <NurseDashboard />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: "", element: <AdminDashboard /> },
-      { path: "blogs", element: <BlogManagement /> },
-      { path: "users", element: <UserManagement /> },
-    ],
-  },
-];
-
-const sharedManagementRoutes = [
-  {
-    path: "/management",
-    element: (
-      <ProtectedRoute allowedRoles={["Nurse, Manager, Admin"]}>
-        <NurseDashboard />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: "notification", element: <Notification /> },
-      { path: "profile", element: <ManagementProfile /> },
-      { path: "vaccination", element: <Vaccination /> },
-      { path: "health-check", element: <HealthCheck /> },
-    ],
-  },
-];
 
 export const mainRoutes = [
   ...basicRoutes,

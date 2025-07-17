@@ -73,9 +73,9 @@ const StudentManagement = React.lazy(() =>
 );
 
 // Admin Routes
-const AdminDashboard = React.lazy(() =>
-  import("../pages/management/admin/Dashboard")
-);
+// const AdminDashboard = React.lazy(() =>
+//   import("../pages/management/admin/Dashboard")
+// );
 const BlogManagement = React.lazy(() =>
   import("../pages/management/admin/BlogManagement")
 );
@@ -87,9 +87,9 @@ const UserManagement = React.lazy(() =>
 const Notification = React.lazy(() =>
   import("../pages/management/shared-page/Notification")
 );
-const ManagementProfile = React.lazy(() =>
-  import("../pages/management/shared-page/Profile")
-);
+// const ManagementProfile = React.lazy(() =>
+//   import("../pages/management/shared-page/Profile")
+// );
 const Vaccination = React.lazy(() =>
   import("../pages/management/shared-page/Vaccination")
 );
@@ -120,11 +120,11 @@ export {
   MedicineInventory,
   NurseManagement,
   StudentManagement,
-  AdminDashboard,
+  // AdminDashboard,
   BlogManagement,
   UserManagement,
   Notification,
-  ManagementProfile,
+  // ManagementProfile,
   Vaccination,
   HealthCheck,
   RecordIncident,
