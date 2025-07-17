@@ -64,6 +64,7 @@ import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManageme
 import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/SuppliesCRUD";
 import ClassManagement from "~/pages/management/admin/ClassManagement";
 import PartnerManagement from "~/pages/management/admin/PartnerManagement";
+import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/DispenseMedicationAndSupplies";
 
 const basicRoutes = [
   {
@@ -159,7 +160,7 @@ const nurseRoutes = [
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
       { path: "message", element: <Message /> },
-      { path: "manage-medications", element: <ManageMedications /> },
+      { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
       { path: "manage-supplies", element: <ManageMedicalSupplies /> },
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
