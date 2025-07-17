@@ -13,8 +13,8 @@ import {
   ForgotPassword,
   VerifyOTP,
   ResetPassword,
+  CompleteProfile,
   VaccinHistoryManagement,
-  NurseDashboard,
   Message,
   ManagerDashboard,
   MedicineInventory,
@@ -27,17 +27,11 @@ import {
   ManagementProfile,
   Vaccination,
   HealthCheck,
-  StudentManagementAdmin,
-  ClassManagement,
-  InventoryManagement,
-  PartnerManagement,
   RecordIncident,
   IncidentHistory,
+  StudentManagementAdmin,
 } from "./lazyRoutes";
 import NotFound from "../pages/basic-pages/NotFound";
-import Layout from "../pages/layout/Layout";
-import ManagementLayout from "../pages/management/Layout";
-
 import DashboardHome from "~/pages/management/nurse/DashboardHome";
 import NurseDashboard from "~/pages/layout/Dashboard";
 import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications";
@@ -45,17 +39,31 @@ import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSupplie
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
-// Placeholder components
 const ManageSupplies = () => <div>Quản lý vật tư</div>;
 const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
 const PrepareList = () => <div>Chuẩn bị danh sách</div>;
-const SendCheckupNotice = () => <div>Gửi thông báo khám sức khỏe</div>;
 const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
 const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
 const Settings = () => <div>Cài đặt</div>;
 import Layout from "../pages/layout/Layout";
 import ManagementLayout from "../pages/management/Layout";
+import VaccinateRecord from "~/pages/management/nurse/InjectionManagement/VaccinateRecord";
+import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagement/PostVaccinationMonitoring";
+
+//ProtectedRoute
+import ProtectedRoute from "./ProtectedRoute";
+import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
+import { SidebarManager } from "~/pages/management/manager/SideBar";
+import CampaignsManagement from "~/pages/management/manager/CampaignsManagement";
+import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpManagement";
+import { Outlet } from "react-router";
+import NursesManagement from "~/pages/management/manager/NursesManagement";
+import MedicalSupplyCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/MedicalSupplyCRUD";
+import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
+import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/SuppliesCRUD";
+import ClassManagement from "~/pages/management/admin/ClassManagement";
+import PartnerManagement from "~/pages/management/admin/PartnerManagement";
 
 const basicRoutes = [
   {
@@ -151,7 +159,7 @@ const nurseRoutes = [
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
       { path: "message", element: <Message /> },
-      { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
+      { path: "manage-medications", element: <ManageMedications /> },
       { path: "manage-supplies", element: <ManageMedicalSupplies /> },
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
@@ -190,25 +198,6 @@ const managerRoutes = [
       { path: "nurse-management", element: <NursesManagement /> },
       { path: "manage-medications", element: <MedicineCRUD /> },
       { path: "manage-supplies", element: <SuppliesCRUD /> },
-      {path: "manage-partner", element: <PartnerManagement /> },
-      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
-    ],
-  },
-];
-
-const managerRoutes = [
-  {
-    path: "/management/manager",
-    element: (
-      <ProtectedRoute allowedRoles={["Manager"]}>
-        <NurseDashboard />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: "", element: <ManagerDashboard /> },
-      { path: "medicine", element: <MedicineInventory /> },
-      { path: "nurse", element: <NurseManagement /> },
-      { path: "student", element: <StudentManagement /> },
     ],
   },
 ];
@@ -227,8 +216,6 @@ const adminRoutes = [
       { path: "users", element: <UserManagement /> },
       { path: "students", element: <StudentManagementAdmin /> },
       { path: "classes", element: <ClassManagement /> },
-      { path: "partners", element: <PartnerManagement /> },
-      { path: "inventory", element: <InventoryManagement /> },
       { path: "partners", element: <PartnerManagement /> },
     ],
   },
@@ -254,7 +241,11 @@ const sharedManagementRoutes = [
 export const mainRoutes = [
   ...basicRoutes,
   ...authenticatedRoutes,
+  ...parentRoutes,
   ...vaccinHistoryManagementRoutes,
-  managementRoutes,
+  ...nurseRoutes,
+  ...managerRoutes,
+  ...adminRoutes,
+  ...sharedManagementRoutes,
   { path: "*", element: <NotFound /> },
 ];

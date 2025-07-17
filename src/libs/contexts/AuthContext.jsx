@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
-import api from '../hooks/axiosInstance';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import api from "../hooks/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkLoginStatus = useCallback(async () => {
     try {
-      const response = await api.get('/user/me');
+      const response = await api.get("/user/me");
       setUser(response.data.data);
       setRole(response.data.data.role);
       setIsLoggedIn(true);
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
       switch (userData.role) {
         case "Parent":
-          navigate("/health-profiles");
+          navigate("/");
           break;
         case "Nurse":
           navigate("/management/nurse");
@@ -82,7 +82,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, role, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, user, role, login, logout, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
