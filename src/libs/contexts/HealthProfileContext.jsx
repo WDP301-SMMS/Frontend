@@ -1,159 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-
-// Dữ liệu mẫu
-const SAMPLE_HEALTH_PROFILES = [
-  {
-    id: "HS001",
-    studentInfo: {
-      studentId: "HS001",
-      studentName: "Nguyễn Văn An",
-      class: "1A1",
-      dateOfBirth: "2010-05-15",
-      parentName: "Nguyễn Văn Bình",
-      parentId: "PH001", // Thêm parentId để liên kết với phụ huynh
-      contactNumber: "0912345678",
-      relationship: "father",
-    },
-    healthInfo: {
-      allergies: [
-        {
-          type: "Thực phẩm",
-          reaction: "Phát ban, ngứa",
-          severity: "medium",
-          notes: "Dị ứng với tôm, cua và các loại hải sản có vỏ",
-        },
-        {
-          type: "Thuốc",
-          reaction: "Sốt, phát ban",
-          severity: "severe",
-          notes: "Dị ứng với penicillin",
-        },
-      ],
-      chronicConditions: [
-        {
-          condition: "Hen suyễn",
-          diagnosis: "Tháng 3/2022",
-          medication: "Ventolin (khi cần)",
-          notes: "Cần mang theo thuốc xịt khi tham gia hoạt động thể thao",
-        },
-      ],
-      medicalHistory: [
-        {
-          condition: "Phẫu thuật ruột thừa",
-          hospital: "Bệnh viện Đa khoa Hà Nội",
-          date: "2023-08-10",
-          treatment: "Phẫu thuật nội soi",
-          notes: "Đã hồi phục hoàn toàn",
-        },
-      ],
-      vision: {
-        rightEye: "6/10",
-        leftEye: "6/9",
-        wearGlasses: true,
-        colorBlindness: false,
-        notes: "Cận thị nhẹ, đã đeo kính điều chỉnh",
-      },
-      hearing: {
-        rightEar: "Bình thường",
-        leftEar: "Bình thường",
-        hearingAid: false,
-        notes: "",
-      },
-      vaccinations: [
-        {
-          name: "MMR (Sởi, Quai bị, Rubella)",
-          date: "2011-05-20",
-          location: "Trung tâm y tế dự phòng",
-          notes: "Mũi 1",
-        },
-        {
-          name: "MMR (Sởi, Quai bị, Rubella)",
-          date: "2015-06-15",
-          location: "Trung tâm y tế dự phòng",
-          notes: "Mũi 2",
-        },
-        {
-          name: "COVID-19 (Pfizer)",
-          date: "2023-02-10",
-          location: "Bệnh viện Bạch Mai",
-          notes: "Không có phản ứng phụ",
-        },
-      ],
-    },
-    status: "complete",
-    lastUpdated: "2025-05-10",
-    createdBy: "Nguyễn Văn Bình",
-    hasAllergies: true,
-    hasChronicConditions: true,
-  },
-  {
-    id: "HS002",
-    studentInfo: {
-      studentId: "HS002",
-      studentName: "Nguyễn Thị Mai",
-      class: "2A1",
-      dateOfBirth: "2012-08-20",
-      parentName: "Nguyễn Văn Bình",
-      parentId: "PH001",
-      contactNumber: "0912345678",
-      relationship: "father",
-    },
-    healthInfo: {
-      allergies: [
-        {
-          type: "Thực phẩm",
-          reaction: "Nổi mề đay",
-          severity: "mild",
-          notes: "Dị ứng với sữa bò",
-        },
-      ],
-      chronicConditions: [],
-      medicalHistory: [],
-      vision: {
-        rightEye: "9/10",
-        leftEye: "9/10",
-        wearGlasses: false,
-        colorBlindness: false,
-        notes: "",
-      },
-      hearing: {
-        rightEar: "Bình thường",
-        leftEar: "Bình thường",
-        hearingAid: false,
-        notes: "",
-      },
-      vaccinations: [
-        {
-          name: "MMR (Sởi, Quai bị, Rubella)",
-          date: "2013-05-10",
-          location: "Trung tâm y tế dự phòng",
-          notes: "Mũi 1",
-        },
-        {
-          name: "MMR (Sởi, Quai bị, Rubella)",
-          date: "2017-06-15",
-          location: "Trung tâm y tế dự phòng",
-          notes: "Mũi 2",
-        },
-      ],
-    },
-    status: "complete",
-    lastUpdated: "2025-05-14",
-    createdBy: "Nguyễn Văn Bình",
-    hasAllergies: true,
-    hasChronicConditions: false,
-  },
-];
-
-const SAMPLE_PARENTS = [
-  {
-    id: "PH001",
-    name: "Nguyễn Văn Bình",
-    contactNumber: "0912345678",
-    email: "binh.nguyen@example.com",
-    children: ["HS001", "HS002"], 
-  },
-];
+import { getMyChildren } from "../api/parentService";
+;
 
 // Tạo Health Profile Context
 const HealthProfileContext = createContext();
@@ -163,50 +10,93 @@ export const HealthProfileProvider = ({ children }) => {
   const [parents, setParents] = useState([]);
   const [currentParent, setCurrentParent] = useState(null);
   const [loading, setLoading] = useState(true);
-
   // Giả lập việc lấy dữ liệu từ API
   useEffect(() => {
     // Trong một ứng dụng thực tế, đây sẽ là một API call
-    const fetchData = () => {
-      setTimeout(() => {
+    const fetchData = async () => {
+      try {
         // Kiểm tra localStorage trước
         const savedProfiles = localStorage.getItem("healthProfiles");
         const savedParents = localStorage.getItem("parents");
 
         if (savedProfiles) {
           setHealthProfiles(JSON.parse(savedProfiles));
-        } else {
-          // Nếu không có dữ liệu trong localStorage, sử dụng dữ liệu mẫu
-          setHealthProfiles(SAMPLE_HEALTH_PROFILES);
-          // Lưu dữ liệu mẫu vào localStorage
-          localStorage.setItem(
-            "healthProfiles",
-            JSON.stringify(SAMPLE_HEALTH_PROFILES)
-          );
         }
 
         if (savedParents) {
           setParents(JSON.parse(savedParents));
-        } else {
-          setParents(SAMPLE_PARENTS);
-          localStorage.setItem("parents", JSON.stringify(SAMPLE_PARENTS));
         }
-
-        // Giả lập người dùng đăng nhập (phụ huynh)
         const savedCurrentParent = localStorage.getItem("currentParent");
         if (savedCurrentParent) {
           setCurrentParent(JSON.parse(savedCurrentParent));
-        } else {
-          // Mặc định đăng nhập là phụ huynh đầu tiên
-          setCurrentParent(SAMPLE_PARENTS[0]);
-          localStorage.setItem(
-            "currentParent",
-            JSON.stringify(SAMPLE_PARENTS[0])
-          );
+        }
+
+        // Fetch real student data from API
+        try {
+          const response = await getMyChildren();
+          if (
+            response.success &&
+            response.students &&
+            response.students.length > 0
+          ) {
+            // Transform API data to match the expected format in the app
+            const formattedProfiles = response.students.map((student) => ({
+              id: student._id,
+              studentInfo: {
+                studentId: student._id,
+                studentName: student.fullName,
+                class: student.classId ? student.classId.className : "N/A",
+                dateOfBirth: new Date(student.dateOfBirth).toLocaleDateString(
+                  "vi-VN"
+                ),
+                parentId: student.parentId,
+                relationship: "parent",
+              },
+              // Default empty health info since it might be filled in later
+              healthInfo: {
+                allergies: [],
+                chronicConditions: [],
+                medicalHistory: [],
+                height: "",
+                weight: "",
+                bloodType: "",
+                emergencyContact: {
+                  name: "",
+                  relationship: "",
+                  phone: "",
+                },
+              },
+              hasAllergies: false,
+              hasChronicConditions: false,
+              status: student.status,
+            }));
+
+            // Update the health profiles with the actual student data
+            setHealthProfiles(formattedProfiles);
+
+            // Update current parent's children list
+            if (currentParent) {
+              const updatedParent = {
+                ...currentParent,
+                children: formattedProfiles.map((profile) => profile.id),
+              };
+              setCurrentParent(updatedParent);
+              localStorage.setItem(
+                "currentParent",
+                JSON.stringify(updatedParent)
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching students from API:", error);
+          // Keep using the local data if API fails
         }
 
         setLoading(false);
-      }, 500); // Giả lập độ trễ 500ms
+      } catch (error) {
+        console.error("Error initializing data:", error);
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -259,9 +149,7 @@ export const HealthProfileProvider = ({ children }) => {
   // Lấy thông tin phụ huynh theo ID
   const getParentById = (parentId) => {
     return parents.find((parent) => parent.id === parentId) || null;
-  };
-
-  // Lấy danh sách hồ sơ của con của phụ huynh hiện tại
+  }; // Lấy danh sách hồ sơ của con của phụ huynh hiện tại
   const getCurrentParentProfiles = () => {
     if (!currentParent) return [];
     return healthProfiles.filter((profile) =>

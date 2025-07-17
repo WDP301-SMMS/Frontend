@@ -60,6 +60,9 @@ const DispenseMedicationAndSupplies = React.lazy(() =>
   )
 );
 
+const ManageMedications = React.lazy(() =>
+  import("../pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications")
+);
 // Manager Routes
 const ManagerDashboard = React.lazy(() =>
   import("../pages/management/manager/Dashboard")
@@ -73,9 +76,9 @@ const StudentManagement = React.lazy(() =>
 );
 
 // Admin Routes
-// const AdminDashboard = React.lazy(() =>
-//   import("../pages/management/admin/Dashboard")
-// );
+const AdminDashboard = React.lazy(() =>
+  import("../pages/management/admin/Dashboard")
+);
 const BlogManagement = React.lazy(() =>
   import("../pages/management/admin/BlogManagement")
 );
@@ -83,13 +86,25 @@ const UserManagement = React.lazy(() =>
   import("../pages/management/admin/UserManagement")
 );
 
+const ClassManagement = React.lazy(() =>
+  import("../pages/management/admin/ClassManagement")
+);
+
+const PartnerManagement = React.lazy(() =>
+  import("../pages/management/admin/PartnerManagement")
+);
+
+const StudentManagementAdmin = React.lazy(() =>
+  import("../pages/management/admin/StudentManagement")
+);
+
 // Shared Management Routes
 const Notification = React.lazy(() =>
   import("../pages/management/shared-page/Notification")
 );
-// const ManagementProfile = React.lazy(() =>
-//   import("../pages/management/shared-page/Profile")
-// );
+const ManagementProfile = React.lazy(() =>
+  import("../pages/management/shared-page/Profile")
+);
 const Vaccination = React.lazy(() =>
   import("../pages/management/shared-page/Vaccination")
 );
@@ -114,19 +129,22 @@ export {
   ResetPassword,
   CompleteProfile,
   VaccinHistoryManagement,
+  AdminDashboard,
+  ClassManagement,
   NurseDashboard,
   Message,
   ManagerDashboard,
   MedicineInventory,
   NurseManagement,
   StudentManagement,
-  // AdminDashboard,
   BlogManagement,
   UserManagement,
+  PartnerManagement,
   Notification,
-  // ManagementProfile,
+  ManagementProfile,
   Vaccination,
   HealthCheck,
   RecordIncident,
   IncidentHistory,
+  StudentManagementAdmin,
 };
