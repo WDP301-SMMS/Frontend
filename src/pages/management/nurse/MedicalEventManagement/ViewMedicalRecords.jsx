@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
   History,
   Edit2,
-  Package,
-  Pill,
-  Heart,
   Clock,
+  FileText,
+  Settings,
+  Save,
+  X,
+  CheckCircle,
 } from "lucide-react";
 import {
   Box,
@@ -24,79 +26,227 @@ import {
   Alert,
   Container,
   Pagination,
+  Chip,
+  Grid,
 } from "@mui/material";
-import { Build, Description, Warning } from "@mui/icons-material";
-import { eventRecords } from "~/mock/mock";
+import { Warning } from "@mui/icons-material";
+import incidentsService from "~/libs/api/services/incidentsService";
 
 function ViewMedicalRecords() {
-  const [historicalRecords, setHistoricalRecords] = useState(
-    eventRecords || []
-  );
+  const [historicalRecords, setHistoricalRecords] = useState([]);
   const [searchEventType, setSearchEventType] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [editRecord, setEditRecord] = useState(null);
-  const [page, setPage] = useState();
-  // Get unique classes
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [editForm, setEditForm] = useState({
+    note: "",
+    status: "",
+    severity: "",
+    incidentType: "",
+    description: "",
+    actionsTaken: "",
+    incidentTime: "",
+  });
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const res = await incidentsService.getAllIncidents();
+        setHistoricalRecords(res.data);
+        setTotalPages(res.totalPages);
+      } catch (error) {
+        console.error("Failed to fetch incidents:", error);
+      }
+    };
+    fetchIncidents();
+  }, []);
+
   const classes = [
-    ...new Set(historicalRecords.map((record) => record.student.class)),
+    ...new Set(historicalRecords.map((record) => record.studentId.class)),
   ];
 
-  // Filtered records
   const filteredRecords = historicalRecords.filter(
     (record) =>
-      record.event.eventType
+      record.incidentType
         .toLowerCase()
         .includes(searchEventType.toLowerCase()) &&
-      (selectedClass === "" || record.student.class === selectedClass)
+      (selectedClass === "" || record.studentId.class === selectedClass)
   );
 
-  // Handle save edit
-  const handleSaveEdit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
+  const handleEditClick = (record) => {
+    console.log("Editing record:", record);
+    setEditRecord(record);
+    setEditForm({
+      note: record.note || "",
+      status: record.status || "",
+      severity: record.severity || "",
+      incidentType: record.incidentType || "",
+      description: record.description || "",
+      actionsTaken: record.actionsTaken || "",
+      incidentTime: record.incidentTime || new Date().toISOString(),
+    });
+  };
 
-    const updatedRecords = historicalRecords.map((record) =>
-      record.id === editRecord.id
-        ? {
-            ...record,
-            event: {
-              ...record.event,
-              eventType: formData.get("eventType"),
-              date: formData.get("date"),
-              time: formData.get("time"),
-              description: formData.get("description"),
-              actionsTaken: formData.get("actionsTaken"),
-            },
-            timestamp: new Date().toLocaleString("vi-VN"),
-          }
-        : record
-    );
-    setHistoricalRecords(updatedRecords);
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleDateTimeChange = (field, value) => {
+    setEditForm((prev) => {
+      const currentDateTime = prev.incidentTime || new Date().toISOString();
+      const [date, time] = currentDateTime.split('T');
+      
+      if (field === 'date') {
+        return {
+          ...prev,
+          incidentTime: `${value}T${time}`,
+        };
+      } else if (field === 'time') {
+        return {
+          ...prev,
+          incidentTime: `${date}T${value}:00.000Z`,
+        };
+      }
+      return prev;
+    });
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    
+    const updateData = {
+      studentId: editRecord.studentId,
+      note: editForm.note,
+      status: editForm.status,
+      severity: editForm.severity,
+      incidentType: editForm.incidentType,
+      description: editForm.description,
+      actionsTaken: editForm.actionsTaken,
+      incidentTime: editForm.incidentTime,
+    };
+console.log("Update Data:", updateData);
+    try {
+      const res = await incidentsService.updateIncident(editRecord._id, updateData);
+      if (res.message === "Validation failed") {
+        setErrorMessage(res.errors.map(err => `${err.field}: ${err.message}`).join('\n'));
+        setShowErrorDialog(true);
+        return;
+      }
+      const updatedRecords = historicalRecords.map((record) =>
+        record._id === editRecord._id
+          ? { ...record, ...updateData }
+          : record
+      );
+      setHistoricalRecords(updatedRecords);
+      setEditRecord(null);
+      setEditForm({
+        note: "",
+        status: "",
+        severity: "",
+        incidentType: "",
+        description: "",
+        actionsTaken: "",
+        incidentTime: "",
+      });
+      setShowSuccessDialog(true);
+    } catch (error) {
+      console.error("Failed to update incident:", error);
+      setErrorMessage("Cập nhật thất bại. Vui lòng thử lại.");
+      setShowErrorDialog(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
     setEditRecord(null);
+    setEditForm({
+      note: "",
+      status: "",
+      severity: "",
+      incidentType: "",
+      description: "",
+      actionsTaken: "",
+      incidentTime: "",
+    });
+  };
+
+  const handleCloseSuccessDialog = () => setShowSuccessDialog(false);
+  const handleCloseErrorDialog = () => setShowErrorDialog(false);
+
+  const getCurrentDate = () => {
+    return editForm.incidentTime ? editForm.incidentTime.split('T')[0] : '';
+  };
+
+  const getCurrentTime = () => {
+    return editForm.incidentTime ? editForm.incidentTime.split('T')[1]?.slice(0, 5) : '';
+  };
+
+  const getSeverityColor = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case 'cao':
+      case 'nặng':
+      case 'khẩn cấp':
+      case 'high':
+        return '#ef4444';
+      case 'trung bình':
+      case 'medium':
+        return '#f59e0b';
+      case 'thấp':
+      case 'nhẹ':
+      case 'low':
+        return '#22c55e';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'đã xử lý':
+      case 'hoàn tất':
+      case 'resolved':
+        return '#22c55e';
+      case 'đang xử lý':
+      case 'in progress':
+        return '#f59e0b';
+      case 'chưa xử lý':
+      case 'pending':
+        return '#ef4444';
+      case 'cần theo dõi':
+        return '#8b5cf6';
+      case 'đã chuyển viện':
+        return '#06b6d4';
+      default:
+        return '#6b7280';
+    }
   };
 
   return (
-    <Container
-      maxWidth="xl"
-      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
-    >
+    <Container maxWidth="xl" sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
       <Typography
         variant="h4"
-        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+        sx={{ mb: 2, fontWeight: "bold", color: "#1e3a8a" }}
       >
-        Xem Hồ sơ Y tế
+        Lịch sử sự cố
       </Typography>
+      
       <Alert
         severity="info"
         icon={<Warning />}
-        sx={{ mb: 3, fontWeight: "medium" }}
+        sx={{ mb: 3 }}
       >
-        Xem và quản lý tất cả các hồ sơ y tế đã được ghi nhận của học sinh trong
-        hệ thống.
+        Xem và quản lý tất cả các hồ sơ y tế đã được ghi nhận của học sinh trong hệ thống.
       </Alert>
 
-      {/* Thanh tìm kiếm */}
-      <Box display="flex" gap={2} mb={6} flexWrap="wrap">
+      {/* Search Bar */}
+      <Box display="flex" gap={2} mb={3} flexWrap="wrap" height={"fit-content"}>
         <TextField
           type="text"
           label="Tìm kiếm theo loại sự kiện"
@@ -104,6 +254,7 @@ function ViewMedicalRecords() {
           onChange={(e) => setSearchEventType(e.target.value)}
           sx={{ width: { xs: "100%", sm: 300 } }}
           variant="outlined"
+          size="small"
         />
         <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
           <InputLabel>Lớp</InputLabel>
@@ -111,6 +262,7 @@ function ViewMedicalRecords() {
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
             label="Lớp"
+            size="small"
           >
             <MenuItem value="">Tất cả</MenuItem>
             {classes.map((cls) => (
@@ -123,545 +275,218 @@ function ViewMedicalRecords() {
       </Box>
 
       {/* Records Display */}
-      <Box sx={{ spaceY: 3 }}>
+      <Box>
         {filteredRecords.length > 0 ? (
           <Box>
             {filteredRecords.map((record) => (
               <Box
-                key={record.id}
+                key={record._id}
                 sx={{
                   bgcolor: "white",
                   borderRadius: 2,
-                  boxShadow: 2,
-                  "&:hover": { boxShadow: 4 },
-                  transition: "all 0.3s",
-                  borderLeft: 4,
-                  borderColor: "#3b82f6",
-                  mb: 4, // Spacing between cards
+                  boxShadow: 1,
+                  "&:hover": { boxShadow: 2 },
+                  transition: "all 0.2s",
+                  border: "1px solid #e5e7eb",
+                  mb: 2,
                 }}
               >
-                <Box sx={{ p: 4 }}>
+                <Box sx={{ p: 3 }}>
                   {/* Header */}
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "start",
-                      mb: 3, // Increased spacing below header
+                      alignItems: "center",
+                      mb: 2,
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 48,
-                          height: 48,
-                          bgcolor: "#3b82f6",
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontWeight: "bold",
-                          fontSize: 20,
-                        }}
-                      >
-                        {record.student.name.charAt(0)}
-                      </Box>
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          fontWeight="bold"
-                          color="gray.800"
-                        >
-                          {record.student.name}
-                        </Typography>
-                        <Typography color="gray.600">
-                          Lớp: {record.student.class}
-                        </Typography>
-                      </Box>
+                    <Box>
+                      <Typography variant="h6" fontWeight="600" color="text.primary">
+                        {record.studentId.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Lớp: {record.studentId.class}
+                      </Typography>
                     </Box>
                     <Button
-                      onClick={() => setEditRecord(record)}
+                      onClick={() => handleEditClick(record)}
+                      size="small"
+                      startIcon={<Edit2 size={16} />}
                       sx={{
-                        display: "flex",
-                        gap: 1,
                         color: "#3b82f6",
-                        "&:hover": { bgcolor: "#dbeafe" },
-                        borderRadius: 1,
-                        px: 2,
-                        py: 1,
+                        "&:hover": { bgcolor: "#eff6ff" },
                       }}
-                      aria-label="Chỉnh sửa hồ sơ"
                     >
-                      <Edit2 size={18} />
-                      <Typography>Chỉnh sửa</Typography>
+                      Chỉnh sửa
                     </Button>
                   </Box>
 
-                  {/* Event Info */}
+                  {/* Content Grid */}
                   <Box
                     sx={{
-                      display: { md: "grid" },
-                      gridTemplateColumns: { md: "1fr 1fr" },
-                      gap: 4, // Increased from 3
-                      mb: 4, // Increased from 3
-                      maxWidth: 1200,
-                      mx: "auto",
-                      p: { xs: 2, md: 3 }, // Added responsive padding
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      gap: 2,
+                      mb: 2,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 3, // Using consistent gap instead of spaceY
-                      }}
-                    >
-                      {/* Event Type Header - Enhanced with better styling */}
+                    {/* Left Column */}
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {/* Event Type */}
                       <Box
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 3, // Increased gap
-                          p: 3, // Added padding
-                          bgcolor:
-                            "linear-gradient(135deg, #fef2f2 0%, #fde68a 100%)",
-                          borderRadius: 3, // Increased border radius
-                          border: "2px solid #fecaca",
-                          position: "relative",
-                          overflow: "hidden",
-                          transition: "all 0.3s ease-in-out",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                          },
-                          "&::before": {
-                            content: '""',
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background:
-                              "linear-gradient(45deg, rgba(220, 38, 38, 0.05), rgba(245, 158, 11, 0.05))",
-                            zIndex: -1,
-                          },
+                          gap: 2,
+                          p: 2,
+                          bgcolor: "#fef2f2",
+                          borderRadius: 1,
+                          border: "1px solid #fecaca",
                         }}
                       >
-                        <Box
-                          sx={{
-                            width: 56, // Increased from 32
-                            height: 56,
-                            bgcolor: "rgba(220, 38, 38, 0.1)",
-                            borderRadius: "50%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "0 4px 12px rgba(220, 38, 38, 0.2)",
-                          }}
-                        >
-                          <AlertTriangle
-                            sx={{
-                              color: "#dc2626",
-                              fontSize: 28, // Increased from 18
-                            }}
-                          />
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            color="text.secondary"
-                            variant="body2"
-                            sx={{ mb: 1, fontWeight: 500 }}
-                          >
+                        <AlertTriangle size={20} color="#ef4444" />
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
                             Loại sự kiện
                           </Typography>
-                          <Box
-                            sx={{
-                              display: "inline-block",
-                              bgcolor: "#dc2626",
-                              color: "white",
-                              px: 3,
-                              py: 1,
-                              borderRadius: 6,
-                              fontWeight: 600,
-                              fontSize: "0.875rem",
-                              boxShadow: "0 4px 12px rgba(220, 38, 38, 0.3)",
-                            }}
-                          >
-                            {record.event.eventType}
-                          </Box>
-                        </Box>
-                      </Box>
-
-                      {/* Time Section - Enhanced card design */}
-                      <Box
-                        sx={{
-                          bgcolor: "white",
-                          p: 3,
-                          borderRadius: 3,
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                          border: "1px solid rgba(0, 0, 0, 0.05)",
-                          transition: "all 0.3s ease-in-out",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 12px 20px -5px rgba(0, 0, 0, 0.15)",
-                          },
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            mb: 2,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 48,
-                              height: 48,
-                              bgcolor: "rgba(59, 130, 246, 0.1)",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Clock sx={{ color: "#3b82f6", fontSize: 24 }} />
-                          </Box>
-                          <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            color="text.primary"
-                          >
-                            Thời gian
+                          <Typography variant="body1" fontWeight="600">
+                            {record.incidentType}
                           </Typography>
                         </Box>
-                        <Typography
-                          variant="h5"
-                          fontWeight={500}
-                          color="#3b82f6"
-                          sx={{ mt: 1 }}
-                        >
-                          {record.event.date} lúc {record.event.time}
-                        </Typography>
                       </Box>
 
-                      {/* Description Section - Enhanced */}
-                      <Box
-                        sx={{
-                          bgcolor: "white",
-                          p: 3,
-                          borderRadius: 3,
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                          border: "1px solid rgba(0, 0, 0, 0.05)",
-                          transition: "all 0.3s ease-in-out",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 12px 20px -5px rgba(0, 0, 0, 0.15)",
-                          },
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            mb: 2,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 48,
-                              height: 48,
-                              bgcolor: "rgba(14, 165, 233, 0.1)",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Description
-                              sx={{ color: "#0ea5e9", fontSize: 24 }}
-                            />
-                          </Box>
-                          <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            color="text.primary"
-                          >
-                            Mô tả chi tiết
-                          </Typography>
-                        </Box>
-                        <Typography
-                          color="text.primary"
-                          sx={{ lineHeight: 1.7, fontSize: "1rem" }}
-                        >
-                          {record.event.description}
-                        </Typography>
-                      </Box>
-
-                      {/* Actions Section - Enhanced */}
-                      <Box
-                        sx={{
-                          bgcolor: "white",
-                          p: 3,
-                          borderRadius: 3,
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                          border: "1px solid rgba(0, 0, 0, 0.05)",
-                          transition: "all 0.3s ease-in-out",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 12px 20px -5px rgba(0, 0, 0, 0.15)",
-                          },
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            mb: 2,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 48,
-                              height: 48,
-                              bgcolor: "rgba(245, 158, 11, 0.1)",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Build sx={{ color: "#f59e0b", fontSize: 24 }} />
-                          </Box>
-                          <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            color="text.primary"
-                          >
-                            Hành động xử lý
-                          </Typography>
-                        </Box>
-                        <Typography
-                          color="text.primary"
-                          sx={{ lineHeight: 1.7, fontSize: "1rem" }}
-                        >
-                          {record.event.actionsTaken}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    {/* Medicines Used - Enhanced right column */}
-                    <Box
-                      sx={{
-                        bgcolor:
-                          "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-                        p: 3,
-                        borderRadius: 3,
-                        border: "2px solid rgba(34, 197, 94, 0.2)",
-                        boxShadow: "0 8px 16px -4px rgba(34, 197, 94, 0.1)",
-                        height: "fit-content",
-                      }}
-                    >
+                      {/* Time */}
                       <Box
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 3, // Increased gap
-                          mb: 3,
+                          gap: 2,
+                          p: 2,
+                          bgcolor: "#eff6ff",
+                          borderRadius: 1,
+                          border: "1px solid #bfdbfe",
                         }}
                       >
-                        <Box
-                          sx={{
-                            width: 56, // Increased size
-                            height: 56,
-                            bgcolor: "#22c55e",
-                            borderRadius: "50%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
-                          }}
-                        >
-                          <Package sx={{ color: "white", fontSize: 28 }} />
-                        </Box>
+                        <Clock size={20} color="#3b82f6" />
                         <Box>
-                          <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            color="#166534"
-                            sx={{ mb: 0.5 }}
-                          >
-                            Thuốc & Vật tư đã sử dụng
-                          </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Đã sử dụng trong xử lý
+                            Thời gian
+                          </Typography>
+                          <Typography variant="body1" fontWeight="600">
+                            {new Date(record.incidentTime).toLocaleString("vi-VN")}
                           </Typography>
                         </Box>
+                        {/* <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                          {record.description}
+                        </Typography> */}
                       </Box>
 
-                      {/* Divider */}
-                      <Box
-                        sx={{
-                          height: 1,
-                          bgcolor: "rgba(34, 197, 94, 0.2)",
-                          mb: 3,
-                        }}
-                      />
+                      
 
-                      {record.event.medicinesUsed &&
-                      record.event.medicinesUsed.length > 0 ? (
+                      {/* Status & Severity */}
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Chip
+                          label={record.severity}
+                          size="small"
+                          sx={{
+                            bgcolor: getSeverityColor(record.severity),
+                            color: "white",
+                            fontWeight: "500",
+                          }}
+                        />
+                        <Chip
+                          label={record.status}
+                          size="small"
+                          sx={{
+                            bgcolor: getStatusColor(record.status),
+                            color: "white",
+                            fontWeight: "500",
+                          }}
+                        />
+                      </Box>
+
+                      {/* Note */}
+                      {record.note && (
                         <Box
                           sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2.5, // Increased spacing
+                            p: 2,
+                            bgcolor: "#f0f9ff",
+                            borderRadius: 1,
+                            border: "1px solid #bae6fd",
+                            minHeight: 60,
                           }}
                         >
-                          {record.event.medicinesUsed.map((medicine, index) => (
-                            <Box
-                              key={index}
-                              sx={{
-                                bgcolor: "white",
-                                p: 2.5, // Increased padding
-                                borderRadius: 2.5, // Increased border radius
-                                border: "1px solid rgba(34, 197, 94, 0.2)",
-                                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-                                transition: "all 0.3s ease-in-out",
-                                cursor: "pointer",
-                                "&:hover": {
-                                  transform: "translateY(-3px)",
-                                  boxShadow:
-                                    "0 12px 20px rgba(34, 197, 94, 0.15)",
-                                  borderColor: "rgba(34, 197, 94, 0.4)",
-                                },
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  gap: 2.5, // Increased gap
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: 44, // Slightly larger
-                                    height: 44,
-                                    bgcolor: "rgba(34, 197, 94, 0.1)",
-                                    borderRadius: "50%",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  {medicine.name
-                                    .toLowerCase()
-                                    .includes("băng") ||
-                                  medicine.name
-                                    .toLowerCase()
-                                    .includes("bông") ||
-                                  medicine.name
-                                    .toLowerCase()
-                                    .includes("gạc") ? (
-                                    <Heart
-                                      sx={{ color: "#22c55e", fontSize: 20 }}
-                                    />
-                                  ) : (
-                                    <Pill
-                                      sx={{ color: "#22c55e", fontSize: 20 }}
-                                    />
-                                  )}
-                                </Box>
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Typography
-                                    variant="subtitle1"
-                                    fontWeight={600}
-                                    color="text.primary"
-                                    sx={{ mb: 1 }}
-                                  >
-                                    {medicine.name}
-                                  </Typography>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      gap: 1,
-                                      flexWrap: "wrap",
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        bgcolor: "rgba(34, 197, 94, 0.1)",
-                                        color: "#22c55e",
-                                        px: 2,
-                                        py: 0.5,
-                                        borderRadius: 4,
-                                        fontSize: "0.75rem",
-                                        fontWeight: 500,
-                                        border:
-                                          "1px solid rgba(34, 197, 94, 0.3)",
-                                      }}
-                                    >
-                                      SL: {medicine.quantity}
-                                    </Box>
-                                    <Box
-                                      sx={{
-                                        bgcolor: "rgba(107, 114, 128, 0.1)",
-                                        color: "#6b7280",
-                                        px: 2,
-                                        py: 0.5,
-                                        borderRadius: 4,
-                                        fontSize: "0.75rem",
-                                        fontWeight: 500,
-                                        border:
-                                          "1px solid rgba(107, 114, 128, 0.3)",
-                                      }}
-                                    >
-                                      {medicine.time}
-                                    </Box>
-                                  </Box>
-                                </Box>
-                              </Box>
-                            </Box>
-                          ))}
-                        </Box>
-                      ) : (
-                        <Box sx={{ textAlign: "center", py: 4 }}>
-                          <Package
-                            sx={{
-                              fontSize: 48,
-                              color: "rgba(107, 114, 128, 0.4)",
-                              mb: 2,
-                            }}
-                          />
-                          <Typography color="text.secondary" variant="body1">
-                            Không sử dụng thuốc hoặc vật tư y tế
+                          <Typography variant="body2" color="text.secondary" fontWeight="500" mb={1}>
+                            Ghi chú
+                          </Typography>
+                          <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                            {record.note}
                           </Typography>
                         </Box>
                       )}
                     </Box>
+
+                    {/* Right Column */}
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {/* Description */}
+                      <Box
+                        sx={{
+                          p: 2,
+                          bgcolor: "#f8fafc",
+                          borderRadius: 1,
+                          border: "1px solid #e2e8f0",
+                          minHeight: 80,
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                          <FileText size={16} color="#64748b" />
+                          <Typography variant="body2" color="text.secondary" fontWeight="500">
+                            Mô tả
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                          {record.description}
+                        </Typography>
+                      </Box>
+
+                      {/* Actions */}
+                      <Box
+                        sx={{
+                          p: 2,
+                          bgcolor: "#fffbeb",
+                          borderRadius: 1,
+                          border: "1px solid #fde68a",
+                          minHeight: 80,
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                          <Settings size={16} color="#f59e0b" />
+                          <Typography variant="body2" color="text.secondary" fontWeight="500">
+                            Hành động xử lý
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                          {record.actionsTaken}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
 
                   {/* Timestamp */}
-                  <Box
-                    sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "gray.200" }}
-                  >
-                    <Typography variant="body2" color="gray.500" >
-                      Ghi nhận lúc: {record.timestamp}
+                  <Box sx={{ pt: 2, borderTop: "1px solid #e5e7eb" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Ghi nhận lúc: {new Date(record.incidentTime).toLocaleString("vi-VN")}
                     </Typography>
                   </Box>
                 </Box>
               </Box>
             ))}
+            
             {/* Pagination */}
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Pagination
-                count={Math.ceil(filteredRecords.length / 5)} // 5 items per page
+                count={totalPages}
                 page={page}
                 onChange={(event, value) => setPage(value)}
                 color="primary"
@@ -675,129 +500,289 @@ function ViewMedicalRecords() {
             sx={{
               bgcolor: "white",
               borderRadius: 2,
-              boxShadow: 2,
-              p: 6,
+              boxShadow: 1,
+              p: 4,
               textAlign: "center",
             }}
           >
-            <History
-              sx={{ mx: "auto", mb: 2, color: "gray.400", fontSize: 64 }}
-            />
-            <Typography
-              variant="h6"
-              fontWeight="semibold"
-              color="gray.600"
-              mb={1}
-            >
+            <History size={48} color="#9ca3af" style={{ marginBottom: 16 }} />
+            <Typography variant="h6" color="text.secondary" mb={1}>
               Không tìm thấy hồ sơ
             </Typography>
-            <Typography color="gray.500">
+            <Typography variant="body2" color="text.secondary">
               Chưa có hồ sơ y tế nào phù hợp với tiêu chí tìm kiếm.
             </Typography>
           </Box>
         )}
       </Box>
 
-      {/* Edit Dialog */}
+      {/* Enhanced Edit Dialog */}
       <Dialog
         open={!!editRecord}
-        onClose={() => setEditRecord(null)}
+        onClose={handleCancelEdit}
+        maxWidth="lg"
+        fullWidth
         sx={{
           "& .MuiDialog-paper": {
+            borderRadius: 2,
             maxHeight: "90vh",
-            overflowY: "auto",
-            gap: "20px",
           },
         }}
       >
-        <DialogTitle sx={{ p: 3, borderBottom: 1, borderColor: "gray.200" }}>
-          <Typography variant="h6" fontWeight="bold" color="gray.800">
-            Chỉnh sửa Hồ sơ Y tế
-          </Typography>
+        <DialogTitle
+          sx={{
+            bgcolor: "#f8fafc",
+            borderBottom: "1px solid #e2e8f0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Edit2 size={20} color="#3b82f6" />
+            <Typography variant="h6" fontWeight="600" color="#1e293b">
+              Chỉnh sửa Hồ sơ Y tế
+            </Typography>
+          </Box>
+          <Button
+            onClick={handleCancelEdit}
+            size="small"
+            sx={{ minWidth: "auto", p: 1 }}
+          >
+            <X size={18} />
+          </Button>
         </DialogTitle>
-        <DialogContent sx={{ p: 3, spaceY: 2 }}>
+        
+        <DialogContent sx={{ p: 3 }}>
           {editRecord && (
-            <Box
-              component="form"
-              onSubmit={handleSaveEdit}
-              sx={{ spaceY: 2, marginTop: "10px" }}
-            >
-              <TextField
-                name="eventType"
-                label="Loại sự kiện"
-                defaultValue={editRecord.event.eventType}
-                fullWidth
-                required
-                variant="outlined"
-              />
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { sm: "1fr 1fr" },
-                  gap: 2,
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <TextField
-                  name="date"
-                  label="Ngày"
-                  type="date"
-                  defaultValue={editRecord.event.date}
-                  fullWidth
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-                <TextField
-                  name="time"
-                  label="Giờ"
-                  type="time"
-                  defaultValue={editRecord.event.time}
-                  fullWidth
-                  required
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Box>
-              <TextField
-                name="description"
-                label="Mô tả chi tiết"
-                defaultValue={editRecord.event.description}
-                fullWidth
-                required
-                multiline
-                rows={3}
-                variant="outlined"
-                sx={{ marginBottom: "10px" }}
-              />
-              <TextField
-                name="actionsTaken"
-                label="Hành động xử lý"
-                defaultValue={editRecord.event.actionsTaken}
-                fullWidth
-                required
-                multiline
-                rows={3}
-                variant="outlined"
-              />
-              <DialogActions
-                sx={{
-                  p: 2,
-                  borderTop: 1,
-                  borderColor: "gray.200",
-                  justifyContent: "flex-end",
-                  gap: 2,
-                }}
-              >
-                <Button onClick={() => setEditRecord(null)} color="inherit">
-                  Hủy
-                </Button>
-                <Button type="submit" variant="contained" color="primary">
-                  Lưu thay đổi
-                </Button>
-              </DialogActions>
+            <Box component="form" onSubmit={handleSaveEdit} sx={{ mt: 1 }}>
+              <Grid container spacing={3}>
+                {/* Row 1: Student Info (Read-only) */}
+                <Grid item xs={12} sx={{ width: "50%" }}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: "#f1f5f9",
+                      borderRadius: 1,
+                      border: "1px solid #cbd5e1",
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      Học sinh: {editRecord.studentId.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Lớp: {editRecord.studentId.class}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                {/* Row 2: Incident Type, Severity, Status */}
+                <Grid item xs={12} md={4} sx={{ width: "20%" }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Loại sự kiện</InputLabel>
+                    <Select
+                      name="incidentType"
+                      value={editForm.incidentType}
+                      onChange={handleFormChange}
+                      label="Loại sự kiện"
+                    >
+                      <MenuItem value="Chấn thương nhẹ">Chấn thương nhẹ</MenuItem>
+                      <MenuItem value="Chấn thương nặng">Chấn thương nặng</MenuItem>
+                      <MenuItem value="Sốt">Sốt</MenuItem>
+                      <MenuItem value="Đau đầu">Đau đầu</MenuItem>
+                      <MenuItem value="Dị ứng">Dị ứng</MenuItem>
+                      <MenuItem value="Tiêu chảy">Tiêu chảy</MenuItem>
+                      <MenuItem value="Khác">Khác</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={4} sx={{ width: "20%" }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Mức độ nghiêm trọng</InputLabel>
+                    <Select
+                      name="severity"
+                      value={editForm.severity}
+                      onChange={handleFormChange}
+                      label="Mức độ nghiêm trọng"
+                    >
+                      <MenuItem value="Nhẹ">Nhẹ</MenuItem>
+                      <MenuItem value="Trung bình">Trung bình</MenuItem>
+                      <MenuItem value="Nặng">Nặng</MenuItem>
+                      <MenuItem value="Khẩn cấp">Khẩn cấp</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={4} sx={{ width: "24%" }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Trạng thái xử lý</InputLabel>
+                    <Select
+                      name="status"
+                      value={editForm.status}
+                      onChange={handleFormChange}
+                      label="Trạng thái xử lý"
+                    >
+                      <MenuItem value="Đang xử lý">Đang xử lý</MenuItem>
+                      <MenuItem value="Đã xử lý">Đã xử lý</MenuItem>
+                      <MenuItem value="Cần theo dõi">Cần theo dõi</MenuItem>
+                      <MenuItem value="Đã chuyển viện">Đã chuyển viện</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* Row 3: Date and Time */}
+                <Grid item xs={12} md={6} sx={{ width: "24%" }}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Ngày xảy ra"
+                    value={getCurrentDate()}
+                    onChange={(e) => handleDateTimeChange('date', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6} sx={{ width: "20%" }}>
+                  <TextField
+                    fullWidth
+                    type="time"
+                    label="Thời gian xảy ra"
+                    value={getCurrentTime()}
+                    onChange={(e) => handleDateTimeChange('time', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
+
+                {/* Row 4: Note */}
+                <Grid item xs={12} sx={{ width: "100%" }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    name="note"
+                    label="Ghi chú"
+                    value={editForm.note}
+                    onChange={handleFormChange}
+                    placeholder="Ghi chú bổ sung về sự kiện..."
+                  />
+                </Grid>
+
+                {/* Row 5: Description */}
+                <Grid item xs={12} sx={{ width: "50%" }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    name="description"
+                    label="Mô tả chi tiết sự kiện"
+                    value={editForm.description}
+                    onChange={handleFormChange}
+                    placeholder="Mô tả cụ thể sự việc, tình trạng ban đầu của học sinh, triệu chứng..."
+                  />
+                </Grid>
+
+                {/* Row 6: Actions Taken */}
+                <Grid item xs={12} sx={{ width: "47.8%" }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    name="actionsTaken"
+                    label="Hành động đã xử lý"
+                    value={editForm.actionsTaken}
+                    onChange={handleFormChange}
+                    placeholder="Các bước xử lý đã thực hiện, ví dụ: sơ cứu, gọi phụ huynh, chuyển lên phòng y tế, dùng thuốc gì..."
+                  />
+                </Grid>
+              </Grid>
             </Box>
           )}
         </DialogContent>
+
+        <DialogActions
+          sx={{
+            bgcolor: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+            p: 3,
+            gap: 2,
+          }}
+        >
+          <Button
+            onClick={handleCancelEdit}
+            variant="outlined"
+            sx={{
+              borderColor: "#cbd5e0",
+              color: "#4a5568",
+              "&:hover": {
+                backgroundColor: "#f7fafc",
+                borderColor: "#a0aec0",
+              },
+            }}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            onClick={handleSaveEdit}
+            variant="contained"
+            sx={{
+              backgroundColor: "#2563eb",
+              "&:hover": {
+                backgroundColor: "#1d4ed8",
+              },
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Save size={18} />
+            Lưu thay đổi
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog
+        open={showSuccessDialog}
+        onClose={handleCloseSuccessDialog}
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" } }}
+      >
+        <DialogContent>
+          <CheckCircle size={60} color="#22c55e" sx={{ mb: 2 }} />
+          <Typography variant="h6" color="text.primary">
+            Cập nhật Thành công!
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Hồ sơ y tế đã được cập nhật thành công.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center" }}>
+          <Button onClick={handleCloseSuccessDialog} variant="contained" color="success">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog
+        open={showErrorDialog}
+        onClose={handleCloseErrorDialog}
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" } }}
+      >
+        <DialogContent>
+          <AlertTriangle size={60} color="#ef4444" sx={{ mb: 2 }} />
+          <Typography variant="h6" color="error">
+            Lỗi Cập nhật
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {errorMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center" }}>
+          <Button onClick={handleCloseErrorDialog} variant="contained" color="error">
+            Đóng
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

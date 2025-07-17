@@ -24,8 +24,8 @@ import {
   InputAdornment,
   Chip,
   Container,
-  Alert,
   Avatar,
+  Alert,
 } from "@mui/material";
 import { Download, CheckCircle, Save, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
@@ -77,12 +77,18 @@ function VaccinateRecord() {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const response = await campaignService.getCampaignsByStatus("IN_PROGRESS", 1, 100);
+        const response = await campaignService.getCampaignsByStatus(
+          "IN_PROGRESS",
+          1,
+          100
+        );
         if (response.success) {
           console.log(response.data);
           setCampaigns(response.data || []);
         } else {
-          throw new Error(response.message || "Không thể tải danh sách chiến dịch.");
+          throw new Error(
+            response.message || "Không thể tải danh sách chiến dịch."
+          );
         }
       } catch (error) {
         console.error("Failed to load campaigns:", error);
@@ -94,7 +100,12 @@ function VaccinateRecord() {
   }, []);
 
   // Load vaccination records
-  const loadVaccinationRecords = async (campaignId, classId, query, statusFilter) => {
+  const loadVaccinationRecords = async (
+    campaignId,
+    classId,
+    query,
+    statusFilter
+  ) => {
     if (!campaignId) {
       setVaccinationRecords([]);
       return;
@@ -103,7 +114,9 @@ function VaccinateRecord() {
     try {
       const response = await campaignService.getListVaccination(campaignId);
       if (!response.success) {
-        throw new Error(response.message || "Không thể tải danh sách tiêm chủng.");
+        throw new Error(
+          response.message || "Không thể tải danh sách tiêm chủng."
+        );
       }
 
       let filteredRecords = response.data.filter((record) =>
@@ -111,7 +124,9 @@ function VaccinateRecord() {
       );
 
       if (classId) {
-        filteredRecords = filteredRecords.filter((record) => record.className === classId);
+        filteredRecords = filteredRecords.filter(
+          (record) => record.className === classId
+        );
       }
 
       if (statusFilter) {
@@ -128,22 +143,27 @@ function VaccinateRecord() {
         });
       }
 
-      const mappedRecords = filteredRecords.map((record, index) => ({
-        stt: index + 1,
-        student_id: record.studentId,
-        consentId: record.consentId, // Use consentId from API response
-        fullName: record.fullName,
-        className: record.className,
-        dateOfBirth: record.dateOfBirth,
-        allergies: record.allergies,
-        chronicConditions: record.chronicConditions,
-        vaccinationStatus: record.vaccinationStatus === "PENDING_VACCINATION" ? "Chưa tiêm" : "Đã tiêm",
-      })).sort((a, b) => {
-        const classCompare = a.className.localeCompare(b.className, "vi");
-        if (classCompare !== 0) return classCompare;
-        return a.fullName.localeCompare(b.fullName, "vi");
-      });
-      console.log(mappedRecords)
+      const mappedRecords = filteredRecords
+        .map((record, index) => ({
+          stt: index + 1,
+          student_id: record.studentId,
+          consentId: record.consentId, // Use consentId from API response
+          fullName: record.fullName,
+          className: record.className,
+          dateOfBirth: record.dateOfBirth,
+          allergies: record.allergies,
+          chronicConditions: record.chronicConditions,
+          vaccinationStatus:
+            record.vaccinationStatus === "PENDING_VACCINATION"
+              ? "Chưa tiêm"
+              : "Đã tiêm",
+        }))
+        .sort((a, b) => {
+          const classCompare = a.className.localeCompare(b.className, "vi");
+          if (classCompare !== 0) return classCompare;
+          return a.fullName.localeCompare(b.fullName, "vi");
+        });
+      console.log(mappedRecords);
       setVaccinationRecords(mappedRecords);
     } catch (error) {
       console.error("Failed to load vaccination records:", error);
@@ -162,7 +182,9 @@ function VaccinateRecord() {
     try {
       const response = await campaignService.getPartnerByID(partnerId);
       if (!response) {
-        throw new Error(response.message || "Không thể tải thông tin bên thứ ba.");
+        throw new Error(
+          response.message || "Không thể tải thông tin bên thứ ba."
+        );
       }
       const partnerData = response.data;
       setThirdPartyProvider(partnerData.name || "");
@@ -180,12 +202,18 @@ function VaccinateRecord() {
       if (openDetailDialog && selectedStudent?.consentId) {
         setHistoryLoading(true);
         try {
-          const response = await campaignService.getStudentImmunizationHistory(selectedStudent.student_id);
+          const response = await campaignService.getStudentImmunizationHistory(
+            selectedStudent.student_id
+          );
           if (response.success) {
-            const matchedHistory = response.data.find((record) => record.consentId === selectedStudent.consentId);
+            const matchedHistory = response.data.find(
+              (record) => record.consentId === selectedStudent.consentId
+            );
             setImmunizationHistory(matchedHistory || null);
           } else {
-            throw new Error(response.message || "Không thể tải lịch sử tiêm chủng.");
+            throw new Error(
+              response.message || "Không thể tải lịch sử tiêm chủng."
+            );
           }
         } catch (error) {
           console.error("Failed to load immunization history:", error);
@@ -221,7 +249,12 @@ function VaccinateRecord() {
     const classId = e.target.value;
     setSelectedClass(classId);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, classId, searchQuery, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      classId,
+      searchQuery,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle search
@@ -229,7 +262,12 @@ function VaccinateRecord() {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, query, vaccinationStatusFilter);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      query,
+      vaccinationStatusFilter
+    );
   };
 
   // Handle vaccination status filter
@@ -237,7 +275,12 @@ function VaccinateRecord() {
     const status = e.target.value;
     setVaccinationStatusFilter(status);
     setCurrentPage(1);
-    loadVaccinationRecords(selectedCampaign, selectedClass, searchQuery, status);
+    loadVaccinationRecords(
+      selectedCampaign,
+      selectedClass,
+      searchQuery,
+      status
+    );
   };
 
   // Open vaccination dialog
@@ -270,12 +313,17 @@ function VaccinateRecord() {
 
     setLoading(true);
     try {
-      const staffMember = staffMembers.find((staff) => staff.fullName === administeredBy);
+      const staffMember = staffMembers.find(
+        (staff) => staff.fullName === administeredBy
+      );
       if (!staffMember) {
         throw new Error("Không tìm thấy thông tin nhân viên.");
       }
-      console.log(selectedStudent)
-      await campaignService.injectionRecord(selectedStudent.consentId, staffMember._id);
+      console.log(selectedStudent);
+      await campaignService.injectionRecord(
+        selectedStudent.consentId,
+        staffMember._id
+      );
 
       setVaccinationRecords((prev) =>
         prev.map((record) =>
@@ -406,7 +454,8 @@ function VaccinateRecord() {
         icon={<Warning />}
         sx={{ mb: 3, fontWeight: "medium" }}
       >
-        Tiến hành ghi nhận kết quả tiêm chủng cho học sinh theo chiến dịch đã chọn. Vui lòng đảm bảo thông tin đầy đủ và chính xác trước khi lưu.
+        Tiến hành ghi nhận kết quả tiêm chủng cho học sinh theo chiến dịch đã
+        chọn. Vui lòng đảm bảo thông tin đầy đủ và chính xác trước khi lưu.
       </Alert>
       <Box display="flex" gap={2} mb={4}>
         <FormControl fullWidth>
@@ -433,11 +482,14 @@ function VaccinateRecord() {
             label="Chọn lớp"
           >
             <MenuItem value="">Tất cả các lớp</MenuItem>
-            {selectedCampaign && [...new Set(vaccinationRecords.map((r) => r.className))].sort().map((className) => (
-              <MenuItem key={className} value={className}>
-                {className}
-              </MenuItem>
-            ))}
+            {selectedCampaign &&
+              [...new Set(vaccinationRecords.map((r) => r.className))]
+                .sort()
+                .map((className) => (
+                  <MenuItem key={className} value={className}>
+                    {className}
+                  </MenuItem>
+                ))}
           </Select>
         </FormControl>
         <FormControl fullWidth>
@@ -519,25 +571,38 @@ function VaccinateRecord() {
                       <TableCell>{record.fullName}</TableCell>
                       <TableCell>{record.className}</TableCell>
                       <TableCell>
-                        {new Date(record.dateOfBirth).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
+                        {new Date(record.dateOfBirth).toLocaleDateString(
+                          "vi-VN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )}
                       </TableCell>
                       <TableCell
                         sx={{
-                          color: record.allergies !== "Không có" ? "red" : "inherit",
+                          color:
+                            record.allergies !== "Không có" ? "red" : "inherit",
                         }}
                       >
                         {record.allergies}
                       </TableCell>
                       <TableCell
                         sx={{
-                          color: record.chronicConditions !== "Chưa có thông tin" ? "red" : "inherit",
+                          color:
+                            record.chronicConditions?.length > 0 &&
+                            record.chronicConditions[0]?.conditionName !==
+                              "Chưa có thông tin"
+                              ? "red"
+                              : "inherit",
                         }}
                       >
-                        {record.chronicConditions}
+                        {record.chronicConditions?.length > 0
+                          ? record.chronicConditions
+                              .map((condition) => condition.conditionName)
+                              .join(", ")
+                          : "Chưa có thông tin"}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -640,16 +705,21 @@ function VaccinateRecord() {
                   {selectedStudent.fullName.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">{selectedStudent.fullName}</Typography>
+                  <Typography variant="h6">
+                    {selectedStudent.fullName}
+                  </Typography>
                   <Typography>Mã HS: {selectedStudent.student_id}</Typography>
                   <Typography>Lớp: {selectedStudent.className}</Typography>
                   <Typography>
                     Ngày sinh:{" "}
-                    {new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+                    {new Date(selectedStudent.dateOfBirth).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }
+                    )}
                   </Typography>
                 </Box>
               </Box>
@@ -659,7 +729,9 @@ function VaccinateRecord() {
                   Tiền sử dị ứng
                 </Typography>
                 <Typography
-                  color={selectedStudent.allergies !== "Không có" ? "red" : "inherit"}
+                  color={
+                    selectedStudent.allergies !== "Không có" ? "red" : "inherit"
+                  }
                 >
                   {selectedStudent.allergies}
                 </Typography>
@@ -671,12 +743,24 @@ function VaccinateRecord() {
                 </Typography>
                 <Typography
                   color={
+                    selectedStudent.chronicConditions &&
                     selectedStudent.chronicConditions !== "Chưa có thông tin"
                       ? "red"
                       : "inherit"
                   }
                 >
-                  {selectedStudent.chronicConditions}
+                  {selectedStudent.chronicConditions &&
+                  typeof selectedStudent.chronicConditions === "object"
+                    ? Array.isArray(selectedStudent.chronicConditions)
+                      ? selectedStudent.chronicConditions
+                          .map(
+                            (condition) =>
+                              condition.conditionName || "Không xác định"
+                          )
+                          .join(", ")
+                      : selectedStudent.chronicConditions.conditionName ||
+                        "Chưa có thông tin"
+                    : selectedStudent.chronicConditions || "Chưa có thông tin"}
                 </Typography>
               </Box>
 
@@ -684,7 +768,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Tên chiến dịch"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.name || ""
+                    campaigns.find((c) => c._id === selectedCampaign)?.name ||
+                    ""
                   }
                   disabled
                   fullWidth
@@ -692,7 +777,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Tên vắc-xin"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.vaccineName || ""
+                    campaigns.find((c) => c._id === selectedCampaign)
+                      ?.vaccineName || ""
                   }
                   disabled
                   fullWidth
@@ -700,7 +786,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Số mũi"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.doseNumber || ""
+                    campaigns.find((c) => c._id === selectedCampaign)
+                      ?.doseNumber || ""
                   }
                   disabled
                   fullWidth
@@ -715,7 +802,11 @@ function VaccinateRecord() {
                   label="Ngày bắt đầu"
                   value={
                     campaigns.find((c) => c._id === selectedCampaign)?.startDate
-                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.startDate).toLocaleDateString("vi-VN", {
+                      ? new Date(
+                          campaigns.find(
+                            (c) => c._id === selectedCampaign
+                          )?.startDate
+                        ).toLocaleDateString("vi-VN", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
@@ -729,7 +820,11 @@ function VaccinateRecord() {
                   label="Ngày kết thúc"
                   value={
                     campaigns.find((c) => c._id === selectedCampaign)?.endDate
-                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.endDate).toLocaleDateString("vi-VN", {
+                      ? new Date(
+                          campaigns.find(
+                            (c) => c._id === selectedCampaign
+                          )?.endDate
+                        ).toLocaleDateString("vi-VN", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
@@ -742,8 +837,13 @@ function VaccinateRecord() {
                 <TextField
                   label="Ngày bắt đầu thực tế"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.actualStartDate
-                      ? new Date(campaigns.find((c) => c._id === selectedCampaign)?.actualStartDate).toLocaleDateString("vi-VN", {
+                    campaigns.find((c) => c._id === selectedCampaign)
+                      ?.actualStartDate
+                      ? new Date(
+                          campaigns.find(
+                            (c) => c._id === selectedCampaign
+                          )?.actualStartDate
+                        ).toLocaleDateString("vi-VN", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
@@ -756,7 +856,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Mô tả"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.description || ""
+                    campaigns.find((c) => c._id === selectedCampaign)
+                      ?.description || ""
                   }
                   disabled
                   fullWidth
@@ -766,7 +867,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Địa điểm"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.destination || ""
+                    campaigns.find((c) => c._id === selectedCampaign)
+                      ?.destination || ""
                   }
                   disabled
                   fullWidth
@@ -774,7 +876,8 @@ function VaccinateRecord() {
                 <TextField
                   label="Người tạo"
                   value={
-                    campaigns.find((c) => c._id === selectedCampaign)?.createdBy?.username || ""
+                    campaigns.find((c) => c._id === selectedCampaign)?.createdBy
+                      ?.username || ""
                   }
                   disabled
                   fullWidth
@@ -794,8 +897,8 @@ function VaccinateRecord() {
                   </Select>
                 </FormControl>
               </Box>
-            </Box>)
-          }
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseVaccinationDialog} color="inherit">
@@ -814,166 +917,199 @@ function VaccinateRecord() {
 
       {/* Detail Dialog */}
       <Dialog
-  open={openDetailDialog}
-  onClose={handleCloseDetailDialog}
-  maxWidth="md"
-  fullWidth
->
-  <DialogTitle>Chi Tiết Tiêm Chủng</DialogTitle>
-  <DialogContent>
-    {historyLoading ? (
-      <Box display="flex" justifyContent="center" my={4}>
-        <CircularProgress />
-      </Box>
-    ) : selectedStudent?.consentId && immunizationHistory ? (
-      <Box display="flex" flexDirection="column" gap={3}>
-        <Box display="flex" gap={2}>
-          <Avatar sx={{ width: 60, height: 60 }}>
-            {selectedStudent.fullName.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box>
-            <Typography variant="h6">{selectedStudent.fullName}</Typography>
-            <Typography>Mã HS: {selectedStudent.student_id}</Typography>
-            <Typography>Lớp: {selectedStudent.className}</Typography>
-            <Typography>
-              Ngày sinh:{" "}
-              {new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })}
+        open={openDetailDialog}
+        onClose={handleCloseDetailDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Chi Tiết Tiêm Chủng</DialogTitle>
+        <DialogContent>
+          {historyLoading ? (
+            <Box display="flex" justifyContent="center" my={4}>
+              <CircularProgress />
+            </Box>
+          ) : selectedStudent?.consentId && immunizationHistory ? (
+            <Box display="flex" flexDirection="column" gap={3}>
+              <Box display="flex" gap={2}>
+                <Avatar sx={{ width: 60, height: 60 }}>
+                  {selectedStudent.fullName.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6">
+                    {selectedStudent.fullName}
+                  </Typography>
+                  <Typography>Mã HS: {selectedStudent.student_id}</Typography>
+                  <Typography>Lớp: {selectedStudent.className}</Typography>
+                  <Typography>
+                    Ngày sinh:{" "}
+                    {new Date(selectedStudent.dateOfBirth).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }
+                    )}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                  Tiền sử dị ứng
+                </Typography>
+                <Typography
+                  color={
+                    selectedStudent.allergies !== "Không có" ? "red" : "inherit"
+                  }
+                >
+                  {selectedStudent.allergies}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                  Bệnh mãn tính
+                </Typography>
+                <Typography
+                  color={
+                    selectedStudent.chronicConditions?.length > 0 &&
+                    selectedStudent.chronicConditions[0]?.conditionName !==
+                      "Chưa có thông tin"
+                      ? "red"
+                      : "inherit"
+                  }
+                >
+                  {selectedStudent.chronicConditions?.length > 0
+                    ? selectedStudent.chronicConditions
+                        .map((condition) => condition.conditionName)
+                        .join(", ")
+                    : "Chưa có thông tin"}
+                </Typography>
+              </Box>
+
+              <Box display="flex" flexDirection="column" gap={2}>
+                <TextField
+                  label="Bên thứ ba"
+                  value={immunizationHistory.partnerId?.name || ""}
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Người thực hiện"
+                  value={
+                    immunizationHistory.administeredByStaffId?.fullName || ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Mã học sinh"
+                  value={immunizationHistory.studentId || ""}
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Thời gian tiêm"
+                  value={
+                    immunizationHistory.administeredAt
+                      ? new Date(
+                          immunizationHistory.administeredAt
+                        ).toLocaleString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "Asia/Ho_Chi_Minh",
+                        })
+                      : ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Tên vắc-xin"
+                  value={immunizationHistory.vaccineName || ""}
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Số mũi"
+                  value={immunizationHistory.doseNumber || ""}
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Kiểm tra sau tiêm"
+                  value={
+                    immunizationHistory.postVaccinationChecks.length > 0
+                      ? immunizationHistory.postVaccinationChecks.join(", ")
+                      : "Không có"
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Thời gian tạo"
+                  value={
+                    immunizationHistory.createdAt
+                      ? new Date(immunizationHistory.createdAt).toLocaleString(
+                          "vi-VN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: "Asia/Ho_Chi_Minh",
+                          }
+                        )
+                      : ""
+                  }
+                  disabled
+                  fullWidth
+                />
+                <TextField
+                  label="Thời gian cập nhật"
+                  value={
+                    immunizationHistory.updatedAt
+                      ? new Date(immunizationHistory.updatedAt).toLocaleString(
+                          "vi-VN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: "Asia/Ho_Chi_Minh",
+                          }
+                        )
+                      : ""
+                  }
+                  disabled
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  required
+                />
+              </Box>
+            </Box>
+          ) : (
+            <Typography color="textSecondary" align="center" py={4}>
+              Không có thông tin tiêm chủng để hiển thị.
             </Typography>
-          </Box>
-        </Box>
-
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Tiền sử dị ứng
-          </Typography>
-          <Typography
-            color={selectedStudent.allergies !== "Không có" ? "red" : "inherit"}
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseDetailDialog}
+            color="primary"
+            variant="contained"
           >
-            {selectedStudent.allergies}
-          </Typography>
-        </Box>
-
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Bệnh mãn tính
-          </Typography>
-          <Typography
-            color={
-              selectedStudent.chronicConditions !== "Chưa có thông tin"
-                ? "red"
-                : "inherit"
-            }
-          >
-            {selectedStudent.chronicConditions}
-          </Typography>
-        </Box>
-
-        <Box display="flex" flexDirection="column" gap={2}>
-          <TextField
-            label="Bên thứ ba"
-            value={immunizationHistory.partnerId?.name || ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Người thực hiện"
-            value={immunizationHistory.administeredByStaffId?.fullName || ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Mã học sinh"
-            value={immunizationHistory.studentId || ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Thời gian tiêm"
-            value={immunizationHistory.administeredAt
-              ? new Date(immunizationHistory.administeredAt).toLocaleString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZone: "Asia/Ho_Chi_Minh",
-                })
-              : ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Tên vắc-xin"
-            value={immunizationHistory.vaccineName || ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Số mũi"
-            value={immunizationHistory.doseNumber || ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Kiểm tra sau tiêm"
-            value={immunizationHistory.postVaccinationChecks.length > 0
-              ? immunizationHistory.postVaccinationChecks.join(", ")
-              : "Không có"}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Thời gian tạo"
-            value={immunizationHistory.createdAt
-              ? new Date(immunizationHistory.createdAt).toLocaleString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZone: "Asia/Ho_Chi_Minh",
-                })
-              : ""}
-            disabled
-            fullWidth
-          />
-          <TextField
-            label="Thời gian cập nhật"
-            value={immunizationHistory.updatedAt
-              ? new Date(immunizationHistory.updatedAt).toLocaleString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZone: "Asia/Ho_Chi_Minh",
-                })
-              : ""}
-            disabled
-            fullWidth
-          />
-        </Box>
-      </Box>
-    ) : (
-      <Typography color="textSecondary" align="center" py={4}>
-        Không có thông tin tiêm chủng để hiển thị.
-      </Typography>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button
-      onClick={handleCloseDetailDialog}
-      color="primary"
-      variant="contained"
-    >
-      Đóng
-    </Button>
-  </DialogActions>
-</Dialog>
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Success Dialog */}
       <Dialog

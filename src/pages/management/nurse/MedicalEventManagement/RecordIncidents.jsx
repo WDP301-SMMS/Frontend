@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   User,
@@ -13,7 +13,6 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { mockStudents } from "~/mock/mock";
 import {
   Dialog,
   DialogActions,
@@ -29,41 +28,71 @@ import {
   InputLabel,
   Alert,
   Container,
+  Grid,
+  FormHelperText,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import { Warning } from "@mui/icons-material";
+import incidentsService from "~/libs/api/services/incidentsService";
+import userStudentServiceInstance from "~/libs/api/services/userStudentService";
 
 function RecordIncidents() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [eventForm, setEventForm] = useState({
-    eventType: "",
-    date: "",
-    time: "",
+    incidentType: "",
     description: "",
+    severity: "",
+    status: "",
     actionsTaken: "",
-    notes: "",
+    incidentTime: "",
   });
   const [medicalRecords, setMedicalRecords] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [lastSavedRecord, setLastSavedRecord] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch all students on component mount and when searchTerm or selectedClass changes
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const res = await userStudentServiceInstance.getAllStudents({
+          page: 1,
+          limit: 10,
+          classId: selectedClass,
+          search: searchTerm,
+        });
+        console.log("Fetched students response:", res);
+        if (res.data && res.data.students) {
+          setStudents(res.data.students);
+        } else {
+          setStudents([]);
+          console.warn("Unexpected response structure:", res);
+        }
+      } catch (error) {
+        console.error("Failed to fetch students:", error);
+        setStudents([]);
+      }
+    };
+    fetchStudents();
+  }, [searchTerm, selectedClass]);
+
   const uniqueClasses = [
-    ...new Set(mockStudents.map((student) => student.class)),
+    ...new Set(students.map((student) => student.class.className)),
   ].sort();
 
   const handleSearchAndFilter = (term, classFilter) => {
     if (term.length > 0 || classFilter.length > 0) {
-      const filteredStudents = mockStudents.filter((student) => {
+      const filteredStudents = students.filter((student) => {
         const matchesSearchTerm =
           term.length === 0 ||
-          student.name.toLowerCase().includes(term.toLowerCase()) ||
-          student.id.toLowerCase().includes(term.toLowerCase());
+          student.fullName.toLowerCase().includes(term.toLowerCase()) ||
+          student._id.toLowerCase().includes(term.toLowerCase());
         const matchesClass =
-          classFilter.length === 0 || student.class === classFilter;
+          classFilter.length === 0 || student.class.className === classFilter;
         return matchesSearchTerm && matchesClass;
       });
       setSearchResults(filteredStudents);
@@ -89,17 +118,19 @@ function RecordIncidents() {
     setSearchResults([]);
     setSearchTerm("");
     setSelectedClass("");
+    
+    // Set default values with current date and time
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().slice(0, 5);
+    
     setEventForm({
-      eventType: "",
-      date: new Date().toISOString().substring(0, 10),
-      time: new Date().toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
+      incidentType: "",
       description: "",
+      severity: "",
+      status: "",
       actionsTaken: "",
-      notes: "",
+      incidentTime: `${currentDate}T${currentTime}:00Z`,
     });
   };
 
@@ -111,32 +142,88 @@ function RecordIncidents() {
     }));
   };
 
-  const handleSubmitEvent = (e) => {
+  const handleDateTimeChange = (field, value) => {
+    setEventForm((prevForm) => {
+      const currentDateTime = prevForm.incidentTime || new Date().toISOString();
+      const [date, time] = currentDateTime.split('T');
+      
+      if (field === 'date') {
+        return {
+          ...prevForm,
+          incidentTime: `${value}T${time}`,
+        };
+      } else if (field === 'time') {
+        return {
+          ...prevForm,
+          incidentTime: `${date}T${value}:00Z`,
+        };
+      }
+      return prevForm;
+    });
+  };
+
+  const handleSubmitEvent = async (e) => {
     e.preventDefault();
-    if (selectedStudent) {
+    if (!selectedStudent) {
+      alert("Vui lòng chọn học sinh trước khi ghi nhận sự kiện.");
+      return;
+    }
+
+    // Build incident data object, only include fields that have values
+    const incidentData = {
+      studentId: selectedStudent._id,
+    };
+
+    // Add fields only if they have values
+    if (eventForm.incidentType.trim()) {
+      incidentData.incidentType = eventForm.incidentType;
+    }
+    if (eventForm.description.trim()) {
+      incidentData.description = eventForm.description;
+    }
+    if (eventForm.severity.trim()) {
+      incidentData.severity = eventForm.severity;
+    }
+    if (eventForm.status.trim()) {
+      incidentData.status = eventForm.status;
+    }
+    if (eventForm.actionsTaken.trim()) {
+      incidentData.actionsTaken = eventForm.actionsTaken;
+    }
+    if (eventForm.incidentTime.trim()) {
+      incidentData.incidentTime = eventForm.incidentTime;
+    }
+
+    try {
+      const res = await incidentsService.createIncident(incidentData);
       const newMedicalRecord = {
-        id: Date.now().toString(),
-        student: selectedStudent,
+        id: res.data._id,
+        student: {
+          _id: selectedStudent._id,
+          fullName: selectedStudent.fullName,
+          class: selectedStudent.class.className,
+        },
         event: { ...eventForm },
         timestamp: new Date().toLocaleString("vi-VN"),
       };
       setMedicalRecords((prevRecords) => [...prevRecords, newMedicalRecord]);
       setLastSavedRecord(newMedicalRecord);
       setShowConfirmationDialog(true);
-    } else {
-      alert("Vui lòng chọn học sinh trước khi ghi nhận sự kiện.");
+    } catch (error) {
+      console.error("Failed to create incident:", error);
+      alert("Ghi nhận sự kiện thất bại. Vui lòng thử lại.");
     }
   };
 
   const handleClearSelectedStudent = () => {
     setSelectedStudent(null);
     setEventForm({
-      eventType: "",
-      date: "",
-      time: "",
+      incidentType: "",
       description: "",
+      severity: "",
+      status: "",
       actionsTaken: "",
-      notes: "",
+      incidentTime: "",
     });
   };
 
@@ -153,11 +240,12 @@ function RecordIncidents() {
     setShowConfirmationDialog(false);
     setSelectedStudent(null);
     setEventForm({
-      eventType: "",
-      date: "",
-      time: "",
+      incidentType: "",
       description: "",
+      severity: "",
+      status: "",
       actionsTaken: "",
+      incidentTime: "",
     });
     navigate("/management/nurse/view-medical-records", {
       state: { medicalRecords: [...medicalRecords, lastSavedRecord] },
@@ -167,29 +255,41 @@ function RecordIncidents() {
   const handleContinueRecording = () => {
     setShowConfirmationDialog(false);
     setSelectedStudent(null);
+    
+    // Reset form with current date and time
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().slice(0, 5);
+    
     setEventForm({
-      eventType: "",
-      date: new Date().toISOString().substring(0, 10),
-      time: new Date().toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
+      incidentType: "",
       description: "",
+      severity: "",
+      status: "",
       actionsTaken: "",
-      notes: "",
+      incidentTime: `${currentDate}T${currentTime}:00Z`,
     });
   };
 
   const showSearchResults = searchTerm.length > 0 || selectedClass.length > 0;
 
   const eventIconMap = {
-    "Tai nạn": <AlertTriangle size={16} className="text-orange-500 mr-1.5" />,
-    Sốt: <HeartPulse size={16} className="text-red-500 mr-1.5" />,
-    "Té ngã": <Stethoscope size={16} className="text-yellow-600 mr-1.5" />,
+    "Chấn thương nhẹ": <AlertTriangle size={16} className="text-orange-500 mr-1.5" />,
+    "Chấn thương nặng": <AlertTriangle size={16} className="text-red-500 mr-1.5" />,
+    "Sốt": <HeartPulse size={16} className="text-red-500 mr-1.5" />,
+    "Đau đầu": <Stethoscope size={16} className="text-yellow-600 mr-1.5" />,
     "Dị ứng": <Pill size={16} className="text-purple-500 mr-1.5" />,
-    "Dịch bệnh": <ShieldCheck size={16} className="text-green-500 mr-1.5" />,
-    Khác: <Clipboard size={16} className="text-gray-500 mr-1.5" />,
+    "Tiêu chảy": <ShieldCheck size={16} className="text-green-500 mr-1.5" />,
+    "Khác": <Clipboard size={16} className="text-gray-500 mr-1.5" />,
+  };
+
+  // Get current date and time for form fields
+  const getCurrentDate = () => {
+    return eventForm.incidentTime ? eventForm.incidentTime.split('T')[0] : '';
+  };
+
+  const getCurrentTime = () => {
+    return eventForm.incidentTime ? eventForm.incidentTime.split('T')[1]?.slice(0, 5) : '';
   };
 
   return (
@@ -200,16 +300,17 @@ function RecordIncidents() {
       <Typography
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
-      >  Ghi nhận Sự kiện Y tế
+      >
+        Ghi nhận Sự kiện Y tế
       </Typography>
-            <Alert
-              severity="info"
-              icon={<Warning />}
-              sx={{ mb: 3, fontWeight: "medium" }}
-            >
-             Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như tai
-          nạn, sốt, té ngã, hoặc dịch bệnh một cách nhanh chóng và chính xác.
-          </Alert>
+      <Alert
+        severity="info"
+        icon={<Warning />}
+        sx={{ mb: 3, fontWeight: "medium" }}
+      >
+        Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như chấn thương, 
+        sốt, đau đầu, dị ứng hoặc các sự kiện khác một cách nhanh chóng và chính xác.
+      </Alert>
 
       {/* Phần Tìm kiếm & Lọc Học sinh */}
       <div className="mb-10 p-6 bg-white rounded-xl border border-blue-100 shadow-md transition-all duration-300 hover:shadow-lg">
@@ -252,7 +353,7 @@ function RecordIncidents() {
             {searchResults.length > 0 ? (
               searchResults.map((student) => (
                 <button
-                  key={student.id}
+                  key={student._id}
                   onClick={() => handleSelectStudent(student)}
                   className="w-full text-left p-3 hover:bg-blue-100 border-b border-blue-200 last:border-b-0 transition-colors duration-200 flex items-center space-x-3 group"
                 >
@@ -262,13 +363,13 @@ function RecordIncidents() {
                   />
                   <div>
                     <p className="font-semibold text-sm text-gray-800 group-hover:text-blue-800">
-                      {student.name}
+                      {student.fullName}
                     </p>
                     <p className="text-xs text-gray-500 group-hover:text-blue-600">
-                      Lớp: {student.class} | Mã HS: {student.id}
+                      Lớp: {student.class.className} | Mã HS: {student._id}
                     </p>
                     <p className="text-xs text-gray-400 group-hover:text-blue-500">
-                      Ngày sinh: {student.dob}
+                      Ngày sinh: {new Date(student.dateOfBirth).toLocaleDateString("vi-VN")}
                     </p>
                   </div>
                   <span className="ml-auto text-blue-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -292,15 +393,15 @@ function RecordIncidents() {
               <User size={22} className="text-blue-700 flex-shrink-0" />
               <div>
                 <p className="font-bold text-blue-800 text-base">
-                  {selectedStudent.name}
+                  {selectedStudent.fullName}
                 </p>
                 <p className="text-xs text-blue-600">
                   Lớp:{" "}
-                  <span className="font-semibold">{selectedStudent.class}</span>{" "}
+                  <span className="font-semibold">{selectedStudent.class.className}</span>{" "}
                   | Mã HS:{" "}
-                  <span className="font-semibold">{selectedStudent.id}</span> |
+                  <span className="font-semibold">{selectedStudent._id}</span> |
                   Ngày sinh:{" "}
-                  <span className="font-semibold">{selectedStudent.dob}</span>
+                  <span className="font-semibold">{new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN")}</span>
                 </p>
               </div>
             </div>
@@ -318,143 +419,167 @@ function RecordIncidents() {
 
       {/* Phần Ghi nhận Sự kiện Y tế (chỉ hiển thị khi đã chọn học sinh) */}
       {selectedStudent && (
-        <form
+        <Box
+          component="form"
           onSubmit={handleSubmitEvent}
-          className="mt-10 p-6 bg-green-50 rounded-xl border border-green-200 shadow-md animate-in fade-in duration-500"
+          sx={{
+            mt: 4,
+            p: 3,
+            bgcolor: "#f0f4f8",
+            borderRadius: 2,
+            border: "1px solid #c3d8e8",
+            boxShadow: 1,
+            animation: "fade-in 0.5s",
+          }}
         >
-          <h2 className="text-2xl font-bold mb-5 text-green-700 flex items-center">
-            <Clipboard size={24} className="mr-3 text-green-600" />
-            Ghi nhận Sự kiện Y tế cho{" "}
-            <span className="text-green-800 ml-1.5">
-              {selectedStudent.name}
-            </span>
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
-            <div>
-              <label
-                htmlFor="eventType"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Loại sự kiện <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="eventType"
-                name="eventType"
-                value={eventForm.eventType}
-                onChange={handleFormChange}
-                required
-                className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800 bg-white cursor-pointer"
-              >
-                <option value="">-- Chọn loại sự kiện --</option>
-                <option value="Tai nạn">Tai nạn</option>
-                <option value="Sốt">Sốt</option>
-                <option value="Té ngã">Té ngã</option>
-                <option value="Dị ứng">Dị ứng</option>
-                <option value="Dịch bệnh">Dịch bệnh</option>
-                <option value="Khác">Khác</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="date"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Ngày xảy ra <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={eventForm.date}
-                onChange={handleFormChange}
-                required
-                className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label
-                htmlFor="time"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Thời gian xảy ra <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                value={eventForm.time}
-                onChange={handleFormChange}
-                required
-                className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700 mb-1.5"
-            >
-              Mô tả chi tiết sự kiện <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows="3"
-              value={eventForm.description}
-              onChange={handleFormChange}
-              required
-              className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800 placeholder:text-gray-400"
-              placeholder="Mô tả cụ thể sự việc, tình trạng ban đầu của học sinh, triệu chứng..."
-            ></textarea>
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="actionsTaken"
-              className="block text-sm font-medium text-gray-700 mb-1.5"
-            >
-              Hành động đã xử lý <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="actionsTaken"
-              name="actionsTaken"
-              rows="2"
-              value={eventForm.actionsTaken}
-              onChange={handleFormChange}
-              required
-              className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800 placeholder:text-gray-400"
-              placeholder="Các bước xử lý đã thực hiện, ví dụ: sơ cứu, gọi phụ huynh, chuyển lên phòng y tế, dùng thuốc gì..."
-            ></textarea>
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="notes"
-              className="block text-sm font-medium text-gray-700 mb-1.5"
-            >
-              Ghi chú thêm (Nếu có)
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows="1"
-              value={eventForm.notes}
-              onChange={handleFormChange}
-              className="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-800 placeholder:text-gray-400"
-              placeholder="Các thông tin bổ sung, quan sát sau khi xử lý, kế hoạch theo dõi..."
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-[1.02] text-base"
+          <Typography
+            variant="h6"
+            sx={{ mb: 3, fontWeight: "bold", color: "#2e7d32", display: "flex", alignItems: "center" }}
           >
-            <Save size={20} />
-            <span>Lưu Hồ sơ Sự kiện</span>
-          </button>
-        </form>
+            <Clipboard sx={{ mr: 1, color: "#2e7d32" }} />
+            Ghi nhận Sự kiện Y tế cho{" "}
+            <span style={{ color: "#1a5d1a", marginLeft: "0.5rem" }}>
+              {selectedStudent.fullName}
+            </span>
+          </Typography>
+
+          <Grid container spacing={3}>
+            {/* Row 1: Incident Type, Severity, Status */}
+            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+              <FormControl fullWidth>
+                <InputLabel>Loại sự kiện</InputLabel>
+                <Select
+                  name="incidentType"
+                  value={eventForm.incidentType}
+                  onChange={handleFormChange}
+                  label="Loại sự kiện"
+                >
+                  <MenuItem value="">-- Chọn loại sự kiện --</MenuItem>
+                  <MenuItem value="Chấn thương nhẹ">Chấn thương nhẹ</MenuItem>
+                  <MenuItem value="Chấn thương nặng">Chấn thương nặng</MenuItem>
+                  <MenuItem value="Sốt">Sốt</MenuItem>
+                  <MenuItem value="Đau đầu">Đau đầu</MenuItem>
+                  <MenuItem value="Dị ứng">Dị ứng</MenuItem>
+                  <MenuItem value="Tiêu chảy">Tiêu chảy</MenuItem>
+                  <MenuItem value="Khác">Khác</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+              <FormControl fullWidth>
+                <InputLabel>Mức độ nghiêm trọng</InputLabel>
+                <Select
+                  name="severity"
+                  value={eventForm.severity}
+                  onChange={handleFormChange}
+                  label="Mức độ nghiêm trọng"
+                >
+                  <MenuItem value="">-- Chọn mức độ --</MenuItem>
+                  <MenuItem value="Nhẹ">Nhẹ</MenuItem>
+                  <MenuItem value="Trung bình">Trung bình</MenuItem>
+                  <MenuItem value="Nặng">Nặng</MenuItem>
+                  <MenuItem value="Khẩn cấp">Khẩn cấp</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+              <FormControl fullWidth>
+                <InputLabel>Trạng thái xử lý</InputLabel>
+                <Select
+                  name="status"
+                  value={eventForm.status}
+                  onChange={handleFormChange}
+                  label="Trạng thái xử lý"
+                >
+                  <MenuItem value="">-- Chọn trạng thái --</MenuItem>
+                  <MenuItem value="Đang xử lý">Đang xử lý</MenuItem>
+                  <MenuItem value="Đã xử lý">Đã xử lý</MenuItem>
+                  <MenuItem value="Cần theo dõi">Cần theo dõi</MenuItem>
+                  <MenuItem value="Đã chuyển viện">Đã chuyển viện</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Row 2: Date and Time */}
+            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Ngày xảy ra"
+                value={getCurrentDate()}
+                onChange={(e) => handleDateTimeChange('date', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}   md={4} sx={{width: "30%"}}>
+              <TextField
+                fullWidth
+                type="time"
+                label="Thời gian xảy ra"
+                value={getCurrentTime()}
+                onChange={(e) => handleDateTimeChange('time', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            {/* Row 3: Description */}
+            <Grid item xs={12} sx={{width: "100%"}}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                name="description"
+                label="Mô tả chi tiết sự kiện"
+                value={eventForm.description}
+                onChange={handleFormChange}
+                placeholder="Mô tả cụ thể sự việc, tình trạng ban đầu của học sinh, triệu chứng..."
+              />
+            </Grid>
+
+            {/* Row 4: Actions Taken */}
+            <Grid item xs={12} sx={{width: "100%"}}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                name="actionsTaken"
+                label="Hành động đã xử lý"
+                value={eventForm.actionsTaken}
+                onChange={handleFormChange}
+                placeholder="Các bước xử lý đã thực hiện, ví dụ: sơ cứu, gọi phụ huynh, chuyển lên phòng y tế, dùng thuốc gì..."
+              />
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                px: 4,
+                py: 1.5,
+                bgcolor: "#2563eb",
+                "&:hover": { bgcolor: "#1d4ed8" },
+                color: "white",
+                fontWeight: "bold",
+                borderRadius: 1,
+                boxShadow: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                transition: "transform 0.2s",
+                "&:hover": { transform: "scale(1.02)" },
+              }}
+            >
+              <Save size={18} />
+              <span>Lưu Hồ sơ Sự kiện</span>
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {/* MUI Dialog */}
@@ -495,7 +620,11 @@ function RecordIncidents() {
         </DialogTitle>
         <DialogContent sx={{ paddingTop: "8px !important" }}>
           <Typography variant="body1" sx={{ color: "#4a5568" }}>
-            Hồ sơ sự kiện y tế cho học sinh <Typography variant="body1" sx={{fontWeight:"700"}}>{lastSavedRecord?.student.name}</Typography> đã được ghi nhận.
+            Hồ sơ sự kiện y tế cho học sinh{" "}
+            <Typography component="span" sx={{ fontWeight: "700" }}>
+              {lastSavedRecord?.student.fullName}
+            </Typography>{" "}
+            đã được ghi nhận thành công.
           </Typography>
         </DialogContent>
         <DialogActions

@@ -169,9 +169,13 @@ function SendVaccinationConsent() {
         (campaign) => campaign.status !== "DRAFT"
       );
       const notificationsData = nonDraftCampaigns.map((campaign) => {
-        const campaignActualStartDate = new Date(campaign.actualStartDate)
-          .toISOString()
-          .substring(0, 10);
+        let campaignActualStartDate = "N/A";
+        if (campaign.actualStartDate) {
+          const dateObj = new Date(campaign.actualStartDate);
+          if (!isNaN(dateObj.getTime())) {
+            campaignActualStartDate = dateObj.toISOString().substring(0, 10);
+          }
+        }
         // Set status to IN_PROGRESS if actualStartDate matches current date
         const status =
           campaignActualStartDate === currentDate

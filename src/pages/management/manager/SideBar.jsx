@@ -56,7 +56,6 @@ const iconMap = {
   Package,
   HeartHandshake,
   TrendingUp,
-  Pill,
   PillBottle
 };
 

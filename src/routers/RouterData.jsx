@@ -20,11 +20,11 @@ import {
   MedicineInventory,
   NurseManagement,
   StudentManagement,
-  AdminDashboard,
+  // AdminDashboard,
   BlogManagement,
   UserManagement,
   Notification,
-  ManagementProfile,
+  // ManagementProfile,
   Vaccination,
   HealthCheck,
   RecordIncident,
@@ -33,7 +33,6 @@ import {
 import NotFound from "../pages/basic-pages/NotFound";
 import DashboardHome from "~/pages/management/nurse/DashboardHome";
 import NurseDashboard from "~/pages/layout/Dashboard";
-import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications";
 import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/ManageMedicalSupplies";
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
@@ -59,8 +58,11 @@ import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpM
 import { Outlet } from "react-router";
 import NursesManagement from "~/pages/management/manager/NursesManagement";
 import MedicalSupplyCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/MedicalSupplyCRUD";
-import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
 import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/SuppliesCRUD";
+import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/DispenseMedicationAndSupplies";
+import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
+import PartnerManagement from "~/pages/management/manager/PartnerManagement";
+import HealthCheckCampaignsManagement from "~/pages/management/manager/HealthCheckCampaignsManagement";
 
 const basicRoutes = [
   {
@@ -156,7 +158,7 @@ const nurseRoutes = [
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
       { path: "message", element: <Message /> },
-      { path: "manage-medications", element: <ManageMedications /> },
+      { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
       { path: "manage-supplies", element: <ManageMedicalSupplies /> },
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
@@ -195,6 +197,8 @@ const managerRoutes = [
       { path: "nurse-management", element: <NursesManagement /> },
       { path: "manage-medications", element: <MedicineCRUD /> },
       { path: "manage-supplies", element: <SuppliesCRUD /> },
+      {path: "manage-partner", element: <PartnerManagement /> },
+      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
     ],
   },
 ];
@@ -208,7 +212,7 @@ const adminRoutes = [
       </ProtectedRoute>
     ),
     children: [
-      { path: "", element: <AdminDashboard /> },
+      // { path: "", element: <AdminDashboard /> },
       { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
     ],
@@ -225,12 +229,13 @@ const sharedManagementRoutes = [
     ),
     children: [
       { path: "notification", element: <Notification /> },
-      { path: "profile", element: <ManagementProfile /> },
+      // { path: "profile", element: <ManagementProfile /> },
       { path: "vaccination", element: <Vaccination /> },
       { path: "health-check", element: <HealthCheck /> },
     ],
   },
 ];
+
 
 export const mainRoutes = [
   ...basicRoutes,
