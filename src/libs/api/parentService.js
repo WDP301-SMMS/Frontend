@@ -81,25 +81,6 @@ export const claimStudentByCode = async (invitedCode) => {
  *            "notes": "Đã điều trị khỏi hoàn toàn."
  *        }
  *    ],
- *    "visionHistory": [
- *        {
- *            "checkupDate": "2024-05-10T00:00:00.000Z",
- *            "rightEyeVision": "9/10",
- *            "leftEyeVision": "8/10",
- *            "wearsGlasses": true,
- *            "isColorblind": false,
- *            "notes": "Đeo kính khi học bài và xem TV. Cần kiểm tra lại sau 6 tháng."
- *        }
- *    ],
- *    "hearingHistory": [
- *        {
- *            "checkupDate": "2024-05-10T00:00:00.000Z",
- *            "rightEarStatus": "Bình thường",
- *            "leftEarStatus": "Bình thường",
- *            "usesHearingAid": false,
- *            "notes": "Thính lực tốt."
- *        }
- *    ],
  *    "vaccines": [
  *        {
  *            "vaccineName": "Sởi - Quai bị - Rubella (MMR)",
@@ -146,6 +127,68 @@ export const getStudentHealthProfile = async (studentId) => {
     const response = await api.get(
       `${API_URL}/health-profiles/student/${studentId}`
     );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//get history of student health profile
+export const getStudentHealthProfileHistory = async (studentId, schoolYear) => {
+  try {
+    const response = await api.get(
+      `${API_URL}/health-history/students/${studentId}?schoolYear=${schoolYear}`
+    );
+  //   {
+  //     "data": {
+  //         "studentId": "686b97d15723b5b353c68f58",
+  //         "studentName": "Nguyễn Văn A",
+  //         "currentClassName": "Lớp 1A",
+  //         "schoolYear": "2024-2025",
+  //         "healthChecks": [
+  //             {
+  //                 "campaignName": "Chiến dịch khám sức khỏe HK1 2024-2025",
+  //                 "className": "Lớp 1A",
+  //                 "checkupDate": "2024-10-05T00:00:00.000Z",
+  //                 "overallConclusion": "Phát triển bình thường, trong ngưỡng an toàn.",
+  //                 "recommendations": "Tiếp tục theo dõi chế độ dinh dưỡng và vận động.",
+  //                 "nurseName": "Nguyễn Ngọc C",
+  //                 "details": [
+  //                     {
+  //                         "itemName": "Chiều cao",
+  //                         "value": 125,
+  //                         "unit": "CM",
+  //                         "isAbnormal": false
+  //                     },
+  //                     {
+  //                         "itemName": "Cân nặng",
+  //                         "value": 25,
+  //                         "unit": "KG",
+  //                         "isAbnormal": false
+  //                     }
+  //                 ]
+  //             }
+  //         ],
+  //         "vaccinations": [
+  //             {
+  //                 "campaignName": "Chiến dịch tiêm MMR năm 2024",
+  //                 "vaccineName": "MMR",
+  //                 "doseNumber": 1,
+  //                 "administeredAt": "2024-11-01T10:00:00.000Z",
+  //                 "administeredBy": "Nurse Carol Green",
+  //                 "organizationName": "City Health Clinic",
+  //                 "observations": [
+  //                     {
+  //                         "observedAt": "2024-11-01T10:30:00.000Z",
+  //                         "notes": "Bình thường, không có phản ứng phụ.",
+  //                         "isAbnormal": false
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     },
+  //     "message": "Health history retrieved successfully"
+  // }
     return response.data;
   } catch (error) {
     throw error;

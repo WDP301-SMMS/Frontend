@@ -243,14 +243,20 @@ const ParentHealthProfiles = () => {
 
                   <div className="flex justify-end mt-4 pt-3 border-t">
                     <button
-                      onClick={() => navigate(`/health-profile/${profile.id}`)}
+                      onClick={() =>
+                        navigate(`/health-profile/${profile.id}`, {
+                          state: { studentInfo: profile.studentInfo },
+                        })
+                      }
                       className="text-blue-600 hover:text-blue-800 mr-4 flex items-center text-sm"
                     >
                       <Eye className="w-4 h-4 mr-1" /> Xem chi tiết
                     </button>
                     <button
                       onClick={() =>
-                        navigate(`/health-profile/${profile.id}/edit`)
+                        navigate(`/health-profile/${profile.id}/edit`, {
+                          state: { studentInfo: profile.studentInfo },
+                        })
                       }
                       className="text-indigo-600 hover:text-indigo-800 flex items-center text-sm"
                     >
@@ -320,7 +326,7 @@ const ParentHealthProfiles = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-gray-200 bg-opacity-50" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">

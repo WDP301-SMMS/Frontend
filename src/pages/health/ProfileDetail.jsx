@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Printer,
@@ -17,11 +17,15 @@ import {
   FileText,
   School,
 } from "lucide-react";
-import { getStudentHealthProfile } from "../../libs/api/parentService";
+import {
+  getStudentHealthProfile,
+  getStudentHealthProfileHistory,
+} from "../../libs/api/parentService";
 import { useAuth } from "../../libs/contexts/AuthContext";
 
 const ParentHealthProfileDetail = () => {
   const { profileId } = useParams();
+  const location = useLocation();
   console.log("Profile ID from URL:", profileId); // For debugging
 
   const navigate = useNavigate();
@@ -31,7 +35,32 @@ const ParentHealthProfileDetail = () => {
   const [error, setError] = useState("");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const { user } = useAuth();
+
+  // State cho tab lịch sử sức khỏe
+  const [schoolYear, setSchoolYear] = useState("2024-2025");
+  const [historyData, setHistoryData] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [hasHealthHistory, setHasHealthHistory] = useState(false);
+  const [showHistoryTab, setShowHistoryTab] = useState(false);
+
+  // Lấy danh sách năm học (có thể lấy từ API hoặc hardcode)
+  const schoolYearOptions = [
+    "2022-2023",
+    "2023-2024",
+    "2024-2025",
+    "2025-2026",
+  ];
+
   useEffect(() => {
+    // If studentInfo is passed via navigation state, use it for initial profile
+    if (location.state && location.state.studentInfo) {
+      setProfile((prev) => ({
+        ...prev,
+        studentInfo: location.state.studentInfo,
+      }));
+    }
+    // Always fetch health info from API
     const fetchProfileData = async () => {
       if (!profileId) return;
 
@@ -42,6 +71,13 @@ const ParentHealthProfileDetail = () => {
         if (response.success) {
           // Format the API response into our local profile structure
           const formattedProfile = formatProfileData(response.data);
+          // If studentInfo is in location.state, override API studentInfo
+          if (location.state && location.state.studentInfo) {
+            formattedProfile.studentInfo = {
+              ...formattedProfile.studentInfo,
+              ...location.state.studentInfo,
+            };
+          }
           setProfile(formattedProfile);
         } else {
           setError(response.message || "Không thể tải hồ sơ sức khỏe");
@@ -58,7 +94,84 @@ const ParentHealthProfileDetail = () => {
     };
 
     fetchProfileData();
-  }, [profileId]);
+  }, [profileId, location.state]);
+
+  useEffect(() => {
+    // Fetch health history khi chọn năm học
+    if (
+      activeTab === "history" &&
+      schoolYear &&
+      profile?.studentInfo?.studentId
+    ) {
+      setHistoryLoading(true);
+      setHistoryError("");
+      getStudentHealthProfileHistory(profile.studentInfo.studentId, schoolYear)
+        .then((data) => {
+          setHistoryData(data.data);
+        })
+        .catch((err) => {
+          setHistoryError("Không thể tải lịch sử sức khỏe");
+        })
+        .finally(() => setHistoryLoading(false));
+    }
+  }, [activeTab, schoolYear, profile?.studentInfo?.studentId]);
+
+  useEffect(() => {
+    // After profile is loaded, check health history for all years
+    if (profile?.studentInfo?.studentId) {
+      const checkAllYears = async () => {
+        for (const year of schoolYearOptions) {
+          try {
+            const res = await getStudentHealthProfileHistory(
+              profile.studentInfo.studentId,
+              year
+            );
+            if (
+              (res.data?.healthChecks && res.data.healthChecks.length > 0) ||
+              (res.data?.vaccinations && res.data.vaccinations.length > 0)
+            ) {
+              setHasHealthHistory(true);
+              return; // Found data, no need to check further
+            }
+          } catch (e) {
+            // Ignore errors for individual years
+          }
+        }
+        setHasHealthHistory(false); // No data found for any year
+      };
+      checkAllYears();
+    }
+  }, [profile?.studentInfo?.studentId]);
+
+  useEffect(() => {
+    // Check if any school year has health history data
+    const checkHistoryTab = async () => {
+      if (!profileId) return;
+      let found = false;
+      for (const year of schoolYearOptions) {
+        try {
+          const resp = await getStudentHealthProfileHistory(
+            location.state?.studentInfo?.studentId ||
+              profile?.studentInfo?.studentId,
+            year
+          );
+          if (
+            resp?.data &&
+            (resp.data.healthChecks?.length > 0 ||
+              resp.data.vaccinations?.length > 0)
+          ) {
+            found = true;
+            break;
+          }
+        } catch (e) {
+          // ignore errors for missing years
+        }
+      }
+      setShowHistoryTab(found);
+    };
+    checkHistoryTab();
+  }, [profileId, location.state, profile?.studentInfo?.studentId]);
+
   // Format API response to match our UI structure
   const formatProfileData = (apiData) => {
     // Basic structure for the profile
@@ -90,8 +203,6 @@ const ParentHealthProfileDetail = () => {
         allergies: apiData.allergies || [],
         chronicConditions: apiData.chronicConditions || [],
         medicalHistory: apiData.medicalHistory || [],
-        visionHistory: apiData.visionHistory || [],
-        hearingHistory: apiData.hearingHistory || [],
         vaccines: apiData.vaccines || [],
       },
       status: apiData.status || "complete",
@@ -299,108 +410,6 @@ const ParentHealthProfileDetail = () => {
             )}
           </div>
         );
-      case "vision":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
-              Thông tin thị lực
-            </h2>
-            {!profile.healthInfo.visionHistory ||
-            profile.healthInfo.visionHistory.length === 0 ? (
-              <div className="p-4 bg-gray-50 rounded-md text-gray-500">
-                Không có thông tin thị lực
-              </div>
-            ) : (
-              profile.healthInfo.visionHistory.map((vision, index) => (
-                <div key={index} className="p-4 border rounded-md">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-medium">Ngày kiểm tra</p>
-                      <p>
-                        {vision.checkupDate
-                          ? new Date(vision.checkupDate).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "Không có thông tin"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Thị lực mắt phải</p>
-                      <p>{vision.rightEyeVision || "Không có thông tin"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Thị lực mắt trái</p>
-                      <p>{vision.leftEyeVision || "Không có thông tin"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Đeo kính</p>
-                      <p>{vision.wearsGlasses ? "Có" : "Không"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Mù màu</p>
-                      <p>{vision.isColorblind ? "Có" : "Không"}</p>
-                    </div>
-                    {vision.notes && (
-                      <div className="md:col-span-2">
-                        <p className="font-medium">Ghi chú</p>
-                        <p>{vision.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        );
-      case "hearing":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
-              Thông tin thính lực
-            </h2>
-            {!profile.healthInfo.hearingHistory ||
-            profile.healthInfo.hearingHistory.length === 0 ? (
-              <div className="p-4 bg-gray-50 rounded-md text-gray-500">
-                Không có thông tin thính lực
-              </div>
-            ) : (
-              profile.healthInfo.hearingHistory.map((hearing, index) => (
-                <div key={index} className="p-4 border rounded-md">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-medium">Ngày kiểm tra</p>
-                      <p>
-                        {hearing.checkupDate
-                          ? new Date(hearing.checkupDate).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "Không có thông tin"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Tình trạng tai phải</p>
-                      <p>{hearing.rightEarStatus || "Không có thông tin"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Tình trạng tai trái</p>
-                      <p>{hearing.leftEarStatus || "Không có thông tin"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Sử dụng thiết bị trợ thính</p>
-                      <p>{hearing.usesHearingAid ? "Có" : "Không"}</p>
-                    </div>
-                    {hearing.notes && (
-                      <div className="md:col-span-2">
-                        <p className="font-medium">Ghi chú</p>
-                        <p>{hearing.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        );
       case "vaccination":
         return (
           <div className="space-y-4">
@@ -447,6 +456,141 @@ const ParentHealthProfileDetail = () => {
                   </div>
                 </div>
               ))
+            )}
+          </div>
+        );
+      case "history":
+        return (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold border-b pb-2">
+              Lịch sử khám & tiêm chủng
+            </h2>
+            <div className="mb-4 flex items-center gap-2">
+              <label className="font-medium">Năm học:</label>
+              <select
+                value={schoolYear}
+                onChange={(e) => setSchoolYear(e.target.value)}
+                className="px-2 py-1 border rounded"
+              >
+                <option value="">Chọn năm học</option>
+                {schoolYearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {historyLoading ? (
+              <div>Đang tải dữ liệu...</div>
+            ) : historyError ? (
+              <div className="text-red-600">{historyError}</div>
+            ) : historyData ? (
+              <>
+                {/* Khám sức khỏe */}
+                {historyData.healthChecks &&
+                  historyData.healthChecks.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-blue-700 mb-2">
+                        Khám sức khỏe
+                      </h3>
+                      {historyData.healthChecks.map((check, idx) => (
+                        <div key={idx} className="mb-4 p-4 border rounded-md">
+                          <div className="mb-2 font-medium">
+                            {check.campaignName}
+                          </div>
+                          <div>Lớp: {check.className}</div>
+                          <div>
+                            Ngày khám:{" "}
+                            {new Date(check.checkupDate).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </div>
+                          <div>Kết luận: {check.overallConclusion}</div>
+                          <div>Khuyến nghị: {check.recommendations}</div>
+                          <div>Y tá: {check.nurseName}</div>
+                          <div className="mt-2">
+                            <span className="font-medium">Chi tiết:</span>
+                            <ul className="list-disc ml-6">
+                              {check.details.map((item, i) => (
+                                <li key={i}>
+                                  {item.itemName}: {item.value} {item.unit}{" "}
+                                  {item.isAbnormal ? (
+                                    <span className="text-red-600">
+                                      (Bất thường)
+                                    </span>
+                                  ) : (
+                                    ""
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                {/* Tiêm chủng */}
+                {historyData.vaccinations &&
+                  historyData.vaccinations.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-green-700 mb-2">
+                        Tiêm chủng
+                      </h3>
+                      {historyData.vaccinations.map((vac, idx) => (
+                        <div key={idx} className="mb-4 p-4 border rounded-md">
+                          <div className="mb-2 font-medium">
+                            {vac.campaignName}
+                          </div>
+                          <div>Tên vắc-xin: {vac.vaccineName}</div>
+                          <div>Số mũi: {vac.doseNumber}</div>
+                          <div>
+                            Ngày tiêm:{" "}
+                            {new Date(vac.administeredAt).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </div>
+                          <div>Người tiêm: {vac.administeredBy}</div>
+                          <div>Đơn vị: {vac.organizationName}</div>
+                          <div className="mt-2">
+                            <span className="font-medium">
+                              Theo dõi sau tiêm:
+                            </span>
+                            <ul className="list-disc ml-6">
+                              {vac.observations.map((obs, i) => (
+                                <li key={i}>
+                                  {new Date(obs.observedAt).toLocaleString(
+                                    "vi-VN"
+                                  )}
+                                  : {obs.notes}{" "}
+                                  {obs.isAbnormal ? (
+                                    <span className="text-red-600">
+                                      (Bất thường)
+                                    </span>
+                                  ) : (
+                                    ""
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                {/* Nếu không có dữ liệu */}
+                {(!historyData.healthChecks ||
+                  historyData.healthChecks.length === 0) &&
+                  (!historyData.vaccinations ||
+                    historyData.vaccinations.length === 0) && (
+                    <div className="text-gray-500">
+                      Không có dữ liệu lịch sử cho năm học này.
+                    </div>
+                  )}
+              </>
+            ) : (
+              <div className="text-gray-500">
+                Vui lòng chọn năm học để xem lịch sử.
+              </div>
             )}
           </div>
         );
@@ -626,26 +770,6 @@ const ParentHealthProfileDetail = () => {
               <FileText className="w-4 h-4 inline mr-1" /> Tiền sử điều trị
             </button>
             <button
-              onClick={() => setActiveTab("vision")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "vision"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <Eye className="w-4 h-4 inline mr-1" /> Thị lực
-            </button>
-            <button
-              onClick={() => setActiveTab("hearing")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "hearing"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <Ear className="w-4 h-4 inline mr-1" /> Thính lực
-            </button>
-            <button
               onClick={() => setActiveTab("vaccination")}
               className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === "vaccination"
@@ -655,6 +779,18 @@ const ParentHealthProfileDetail = () => {
             >
               <Syringe className="w-4 h-4 inline mr-1" /> Tiêm chủng
             </button>
+            {showHistoryTab && (
+              <button
+                onClick={() => setActiveTab("history")}
+                className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
+                  activeTab === "history"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-1" /> Lịch sử sức khỏe
+              </button>
+            )}
           </nav>
         </div>
         {/* Nội dung tab */}
