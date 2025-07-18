@@ -11,8 +11,6 @@ import {
   Login,
   Register,
   ForgotPassword,
-  VerifyOTP,
-  ResetPassword,
   CompleteProfile,
   VaccinHistoryManagement,
   Message,
@@ -101,8 +99,6 @@ const authenticatedRoutes = [
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
-  { path: "/verify-otp", element: <VerifyOTP /> },
-  { path: "/reset-password", element: <ResetPassword /> },
   { path: "/complete-profile", element: <CompleteProfile /> },
 ];
 

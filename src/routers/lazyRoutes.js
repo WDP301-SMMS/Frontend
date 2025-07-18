@@ -28,12 +28,6 @@ const Register = React.lazy(() =>
 const ForgotPassword = React.lazy(() =>
   import("../pages/authentication/forgot-password/ForgotPassword")
 );
-const VerifyOTP = React.lazy(() =>
-  import("../pages/authentication/forgot-password/VerifyOTP")
-);
-const ResetPassword = React.lazy(() =>
-  import("../pages/authentication/forgot-password/ResetPassword")
-);
 const CompleteProfile = React.lazy(() =>
   import("../pages/authentication/complete-profile/complete-profile")
 );
@@ -110,8 +104,6 @@ export {
   Login,
   Register,
   ForgotPassword,
-  VerifyOTP,
-  ResetPassword,
   CompleteProfile,
   VaccinHistoryManagement,
   NurseDashboard,

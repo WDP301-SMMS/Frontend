@@ -15,7 +15,6 @@ import { useNavigate } from "react-router";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import api from "~/libs/hooks/axiosInstance";
 import { Loader } from "lucide-react";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -29,6 +28,7 @@ import {
   FormLabel,
   Typography,
 } from "@mui/material";
+import authService from "~/libs/api/services/authService";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -75,8 +75,7 @@ const Register = () => {
           phone: values.phoneNumber,
           gender: values.gender,
         };
-
-        await api.post("/auth/register", dataToSubmit);
+        await authService.register(dataToSubmit)
 
         toast.success(
           "Đăng ký thành công! Vui lòng xác nhận qua email bạn vừa đăng ký.",
@@ -187,8 +186,8 @@ const Register = () => {
               <div
                 onClick={() => setOpen(true)}
                 className={`flex items-center border rounded px-3 py-2 w-full cursor-pointer ${formik.touched.dob && formik.errors.dob
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  ? "border-red-500"
+                  : "border-gray-300"
                   }`}
               >
                 <FontAwesomeIcon icon={faCalendarDays} className="mr-2" />
