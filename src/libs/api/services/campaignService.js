@@ -263,6 +263,22 @@ class CampaignService {
     }
   }
 
+  async addObservation(consentId, observationData) {
+  if (!consentId || !observationData) {
+    throw new Error("Consent ID and observation data are required.");
+  }
+
+  try {
+    const url = endpoints.campaign.observations.replace("{consentId}", consentId);
+    const response = await api.post(url, observationData);
+    return response.data;
+  } catch (error) {
+    console.error("Add observation failed:", error);
+    throw error;
+  }
+}
+
+
 
 }
 

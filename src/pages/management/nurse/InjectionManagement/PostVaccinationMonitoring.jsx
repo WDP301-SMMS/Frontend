@@ -65,7 +65,7 @@ function PostVaccinationMonitoring() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [reactionData, setReactionData] = useState({
-    observedAt: new Date("2025-06-24T14:12:00+07:00").toISOString().slice(0, 16),
+    observedAt: new Date().toISOString().slice(0, 16),
     temperatureLevel: "",
     notes: "",
     isAbnormal: false,
@@ -73,18 +73,70 @@ function PostVaccinationMonitoring() {
   });
   const [reactions, setReactions] = useState([]);
   const [expandedStats, setExpandedStats] = useState(false);
+  const [temperatureError, setTemperatureError] = useState("");
+  const [openCompleteDialog, setOpenCompleteDialog] = useState(false);
   const itemsPerPage = 10;
 
+  const validateTemperature = (temperature) => {
+    const temp = parseFloat(temperature);
+    if (isNaN(temp)) return "Nhiệt độ phải là một số hợp lệ!";
+    if (temp < 35 || temp > 42)
+      return "Nhiệt độ phải nằm trong khoảng 35°C đến 42°C!";
+    return "";
+  };
+
+
+  // Handle opening completion dialog
+  const handleOpenCompleteDialog = () => {
+    setOpenCompleteDialog(true);
+  };
+  // Handle confirming completion
+const handleConfirmComplete = async () => {
+  if (!selectedCampaign) return;
+  setLoading(true);
+  try {
+    const nurseID= localStorage.getItem("nurseID");
+    const campaignData = {
+      status: "COMPLETED",
+      createdBy: nurseID, // Replace "userId" with actual user ID
+    };
+    const response = await campaignService.updateCampaign(selectedCampaign, campaignData);
+    setSnackbarMessage("Chiến dịch đã được hoàn tất thành công!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+    setOpenCompleteDialog(false);
+    // Optionally refresh campaigns or monitoring records
+    const refreshedResponse = await campaignService.getCampaignsByStatus("IN_PROGRESS", 1, 100);
+    if (refreshedResponse.success) {
+      setCampaigns(refreshedResponse.data || []);
+    }
+  } catch (error) {
+    setSnackbarMessage("Có lỗi xảy ra khi hoàn tất chiến dịch!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  } finally {
+    setLoading(false);
+  }
+};
+  // Handle closing dialogs
+  const handleCloseCompleteDialog = () => {
+    setOpenCompleteDialog(false);
+  };
   // Calculate statistics
   const getStats = useCallback(() => {
     const monitoring = monitoringRecords.filter(
-      (r) => r.status === "Đang theo dõi"
+      (r) => r.status === "Đang theo dõi" || r.status === "Phản ứng bất thường"
     );
     const completed = monitoringRecords.filter(
       (r) => r.status === "Đã hoàn thành"
     );
-    const withReactions = monitoringRecords.filter((r) =>
-      reactions.some((reaction) => reaction.student_id === r.student_id)
+    const withReactions = monitoringRecords.filter(
+      (r) =>
+        r.status === "Phản ứng bất thường" ||
+        reactions.some(
+          (reaction) =>
+            reaction.student_id === r.student_id && reaction.isAbnormal
+        )
     );
 
     return {
@@ -101,7 +153,16 @@ function PostVaccinationMonitoring() {
 
   // Load monitoring records
   const loadMonitoringRecords = useCallback((campaignId, classId, query) => {
+    console.log(
+      "Loading monitoring records for campaignId:",
+      campaignId,
+      "classId:",
+      classId,
+      "query:",
+      query
+    );
     if (!campaignId) {
+      console.log("No campaignId provided, resetting monitoringRecords");
       setMonitoringRecords([]);
       return;
     }
@@ -109,16 +170,39 @@ function PostVaccinationMonitoring() {
     setLoading(true);
     setTimeout(async () => {
       try {
+        console.log("Fetching data for campaignId:", campaignId);
         const response = await campaignService.getListVaccination(campaignId);
+        console.log("API Response:", response);
+
         if (!response.success) {
           throw new Error(
-            response.message || "Không thể tải danh sách tiêm chủng."
+            response.message || "API call failed without success flag"
           );
         }
 
-        const now = new Date("2025-06-24T14:12:00+07:00");
+        if (!Array.isArray(response.data) || response.data.length === 0) {
+          console.warn(
+            "No data or empty array returned from API:",
+            response.data
+          );
+          setMonitoringRecords([]);
+          return;
+        }
+        console.log("Raw records:", response.data);
+
         const filteredRecords = response.data
-          .filter((record) => record.vaccinationStatus === "COMPLETED")
+          .filter((record) =>
+            [
+              "PENDING",
+              "APPROVED",
+              "DECLINED",
+              "COMPLETED",
+              "REVOKED",
+              "UNDER_OBSERVATION",
+              "UNDER_OPSERVATION", // Handle typo in sample data
+              "ADVERSE_REACTION",
+            ].includes(record.vaccinationStatus)
+          )
           .filter((record) => (classId ? record.className === classId : true))
           .filter((record) =>
             record.fullName.toLowerCase().includes(query.toLowerCase())
@@ -128,23 +212,63 @@ function PostVaccinationMonitoring() {
             student_id: record.studentId,
             full_name: record.fullName,
             class_name: record.className,
-            health_notes: record.allergies || record.chronicConditions || "",
-            administration_date: new Date(record.dateOfBirth).toLocaleString(
-              "vi-VN"
-            ),
-            status: "Đã tiêm",
+            health_notes:
+              [
+                ...(record.allergies?.length > 0
+                  ? [`Dị ứng: ${record.allergies.join(", ")}`]
+                  : []),
+                ...(record.chronicConditions?.length > 0
+                  ? record.chronicConditions.map(
+                      (c) => `Bệnh mãn tính: ${c.conditionName}`
+                    )
+                  : []),
+              ].join("; ") || "Không có",
+            allergies: record.allergies || [],
+            chronicConditions: record.chronicConditions || [],
+            administration_date: record.administeredAt
+              ? new Date(record.administeredAt).toLocaleString("vi-VN")
+              : "Chưa có thông tin",
+            status:
+              record.vaccinationStatus === "PENDING"
+                ? "Chờ xử lý"
+                : record.vaccinationStatus === "APPROVED"
+                ? "Đã phê duyệt"
+                : record.vaccinationStatus === "DECLINED"
+                ? "Từ chối"
+                : record.vaccinationStatus === "COMPLETED"
+                ? "Đã hoàn thành"
+                : record.vaccinationStatus === "REVOKED"
+                ? "Đã thu hồi"
+                : record.vaccinationStatus === "UNDER_OBSERVATION" ||
+                  record.vaccinationStatus === "UNDER_OPSERVATION"
+                ? "Đang theo dõi"
+                : record.vaccinationStatus === "ADVERSE_REACTION"
+                ? "Phản ứng bất thường"
+                : "Không xác định",
             consentId: record.consentId || "",
           }))
           .sort((a, b) => {
-            if (a.status === "Đã tiêm" && b.status !== "Đã tiêm") return -1;
-            if (a.status !== "Đã tiêm" && b.status === "Đã tiêm") return 1;
-            return 0;
+            const statusOrder = {
+              "Phản ứng bất thường": 1,
+              "Đang theo dõi": 2,
+              "Chờ xử lý": 3,
+              "Đã phê duyệt": 4,
+              "Từ chối": 5,
+              "Đã hoàn thành": 6,
+              "Đã thu hồi": 7,
+              "Không xác định": 8,
+            };
+            return (
+              statusOrder[a.status] - statusOrder[b.status] || a.stt - b.stt
+            );
           });
 
-        setMonitoringRecords(filteredRecords);
+        console.log("Filtered records:", filteredRecords);
+        setMonitoringRecords([...filteredRecords]);
 
         const criticalStudents = filteredRecords.filter(
-          (r) => r.status === "Đang theo dõi"
+          (r) =>
+            r.status === "Đang theo dõi" || r.status === "Phản ứng bất thường"
         );
         if (criticalStudents.length > 0) {
           setSnackbarMessage(
@@ -152,12 +276,15 @@ function PostVaccinationMonitoring() {
           );
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
+        } else {
+          console.log("No critical students found.");
         }
       } catch (error) {
-        console.error("Error loading monitoring records:", error);
-        setSnackbarMessage("Có lỗi xảy ra khi tải dữ liệu!");
+        console.error("Error in loadMonitoringRecords:", error);
+        setSnackbarMessage("Có lỗi xảy ra khi tải dữ liệu: " + error.message);
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
+        setMonitoringRecords([]);
       } finally {
         setLoading(false);
       }
@@ -176,13 +303,14 @@ function PostVaccinationMonitoring() {
         );
         if (response.success) {
           setCampaigns(response.data || []);
-          setSelectedCampaign(response.data[0]?._id || "");
-          if (response.data[0]?._id) {
-            loadMonitoringRecords(
-              response.data[0]?._id,
-              selectedClass,
-              searchQuery
-            );
+          const firstCampaignId = response.data?.[0]?._id;
+          if (firstCampaignId) {
+            console.log("Setting initial campaign to:", firstCampaignId);
+            setSelectedCampaign(firstCampaignId);
+            loadMonitoringRecords(firstCampaignId, selectedClass, searchQuery);
+          } else {
+            console.warn("No campaigns found in response:", response.data);
+            setSelectedCampaign("");
           }
         } else {
           throw new Error(
@@ -201,7 +329,7 @@ function PostVaccinationMonitoring() {
     fetchCampaigns();
   }, [loadMonitoringRecords, selectedClass, searchQuery]);
 
-  // Fetch immunization history for details dialog
+  // Fetch immunization history
   useEffect(() => {
     const fetchImmunizationHistory = async () => {
       if (openDetailsDialog && selectedStudent?.consentId) {
@@ -215,6 +343,26 @@ function PostVaccinationMonitoring() {
               (record) => record.consentId === selectedStudent.consentId
             );
             setImmunizationHistory(matchedHistory || null);
+
+            // Sync postVaccinationChecks with reactions state
+            if (matchedHistory) {
+              setReactions(
+                matchedHistory.postVaccinationChecks.map((check) => ({
+                  id: `R${Date.now()}-${check.observedAt}`, // Unique ID
+                  student_id: selectedStudent.student_id,
+                  observedAt: new Date(check.observedAt).toLocaleString(
+                    "vi-VN"
+                  ),
+                  temperatureLevel: check.temperatureLevel,
+                  notes: check.notes,
+                  isAbnormal: check.isAbnormal,
+                  actionsTaken: check.actionsTaken || "Không có",
+                  recorded_date: new Date(check.observedAt).toLocaleString(
+                    "vi-VN"
+                  ),
+                }))
+              );
+            }
           } else {
             throw new Error(
               response.message || "Không thể tải lịch sử tiêm chủng."
@@ -223,11 +371,13 @@ function PostVaccinationMonitoring() {
         } catch (error) {
           console.error("Failed to load immunization history:", error);
           setImmunizationHistory(null);
+          setReactions([]);
         } finally {
           setHistoryLoading(false);
         }
       } else {
         setImmunizationHistory(null);
+        setReactions([]);
       }
     };
     fetchImmunizationHistory();
@@ -262,12 +412,13 @@ function PostVaccinationMonitoring() {
   const handleOpenReactionDialog = (record) => {
     setSelectedStudent(record);
     setReactionData({
-      observedAt: new Date("2025-06-24T14:12:00+07:00").toISOString().slice(0, 16),
+      observedAt: new Date().toISOString().slice(0, 16),
       temperatureLevel: "",
       notes: "",
       isAbnormal: false,
       actionsTaken: "",
     });
+    setTemperatureError("");
     setOpenReactionDialog(true);
   };
 
@@ -278,8 +429,19 @@ function PostVaccinationMonitoring() {
   };
 
   // Save reaction
-  const handleSaveReaction = (complete = false) => {
-    if (!selectedStudent || !reactionData.observedAt || !reactionData.notes) {
+  const handleSaveReaction = async () => {
+    const tempError = validateTemperature(reactionData.temperatureLevel);
+    if (tempError) {
+      setTemperatureError(tempError);
+      return;
+    }
+    if (
+      !selectedStudent ||
+      !reactionData.observedAt ||
+      !reactionData.temperatureLevel ||
+      !reactionData.notes ||
+      (reactionData.isAbnormal && !reactionData.actionsTaken)
+    ) {
       setSnackbarMessage("Vui lòng điền đầy đủ thông tin bắt buộc!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -287,21 +449,49 @@ function PostVaccinationMonitoring() {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const observationData = {
+        observedAt: new Date(reactionData.observedAt).toISOString(),
+        temperatureLevel: parseFloat(reactionData.temperatureLevel),
+        notes: reactionData.notes,
+        isAbnormal: reactionData.isAbnormal,
+        ...(reactionData.isAbnormal && {
+          actionsTaken: reactionData.actionsTaken,
+        }),
+      };
+
+      await campaignService.addObservation(
+        selectedStudent.consentId,
+        observationData
+      );
+
       const newReaction = {
         id: `R${Date.now()}`,
         student_id: selectedStudent.student_id,
         observedAt: new Date(reactionData.observedAt).toLocaleString("vi-VN"),
-        temperatureLevel: reactionData.temperatureLevel || "Không đo",
+        temperatureLevel: reactionData.temperatureLevel,
         notes: reactionData.notes,
         isAbnormal: reactionData.isAbnormal,
-        actionsTaken: reactionData.actionsTaken || "Không có",
+        actionsTaken: reactionData.isAbnormal
+          ? reactionData.actionsTaken
+          : "Không có",
         recorded_date: new Date().toLocaleString("vi-VN"),
       };
 
       setReactions((prev) => [...prev, newReaction]);
 
-      if (complete) {
+      if (reactionData.isAbnormal) {
+        setMonitoringRecords((prev) =>
+          prev.map((record) =>
+            record.student_id === selectedStudent.student_id
+              ? { ...record, status: "Phản ứng bất thường" }
+              : record
+          )
+        );
+        setSnackbarMessage(
+          `🏥 Đã ghi nhận phản ứng cho ${selectedStudent.full_name}`
+        );
+      } else {
         setMonitoringRecords((prev) =>
           prev.map((record) =>
             record.student_id === selectedStudent.student_id
@@ -309,18 +499,23 @@ function PostVaccinationMonitoring() {
               : record
           )
         );
-        setSnackbarMessage(`✅ Đã hoàn tất theo dõi cho ${selectedStudent.full_name}`);
-      } else {
         setSnackbarMessage(
-          `🏥 Đã ghi nhận phản ứng cho ${selectedStudent.full_name}`
+          `✅ Đã ghi nhận quan sát cho ${selectedStudent.full_name}`
         );
       }
 
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       setOpenReactionDialog(false);
+      setTemperatureError("");
+    } catch (error) {
+      console.error("Error saving reaction:", error);
+      setSnackbarMessage("Có lỗi xảy ra khi lưu phản ứng!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   // Dialog close handlers
@@ -373,23 +568,21 @@ function PostVaccinationMonitoring() {
       <Alert
         severity="info"
         icon={<Warning />}
-        sx={{
-          mb: 3,
-          fontWeight: "medium",
-          bgcolor: "info.light",
-          color: "info.contrastText",
-          borderRadius: 2,
-        }}
+        sx={{ mb: 3, fontWeight: "medium" }}
       >
-        Hệ thống theo dõi tự động với cảnh báo thời gian thực
+     Theo dõi sau tiêm là quá trình quan trọng để đảm bảo sức khỏe của học sinh sau khi tiêm chủng. Vui lòng chọn chiến dịch tiêm chủng và theo dõi tình trạng sức khỏe của học sinh.
       </Alert>
       {/* Filters */}
-      <Card sx={{ mb: 3, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", borderRadius: 2 }}>
+      <Card
+        sx={{ mb: 3, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", borderRadius: 2 }}
+      >
         <CardContent>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={4}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel sx={{ fontWeight: 500 }}>Chọn chiến dịch tiêm chủng</InputLabel>
+                <InputLabel sx={{ fontWeight: 500 }}>
+                  Chọn chiến dịch tiêm chủng
+                </InputLabel>
                 <Select
                   value={selectedCampaign}
                   onChange={handleCampaignChange}
@@ -404,7 +597,9 @@ function PostVaccinationMonitoring() {
                   </MenuItem>
                   {campaigns.map((campaign) => (
                     <MenuItem key={campaign._id} value={campaign._id}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <LocalHospital fontSize="small" />
                         {`${campaign.name} (${campaign.vaccineName})`}
                       </Box>
@@ -414,7 +609,12 @@ function PostVaccinationMonitoring() {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth sx={{width:"200px"}} disabled={!selectedCampaign} variant="outlined">
+              <FormControl
+                fullWidth
+                sx={{ width: "200px" }}
+                disabled={!selectedCampaign}
+                variant="outlined"
+              >
                 <InputLabel sx={{ fontWeight: 500 }}>Lọc theo lớp</InputLabel>
                 <Select
                   value={selectedClass}
@@ -427,10 +627,14 @@ function PostVaccinationMonitoring() {
                   </MenuItem>
                   {monitoringRecords
                     .map((r) => r.class_name)
-                    .filter((value, index, self) => self.indexOf(value) === index)
+                    .filter(
+                      (value, index, self) => self.indexOf(value) === index
+                    )
                     .map((className) => (
                       <MenuItem key={className} value={className}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           <LocalHospital fontSize="small" />
                           {className}
                         </Box>
@@ -453,116 +657,186 @@ function PostVaccinationMonitoring() {
           </Grid>
         </CardContent>
       </Card>
-
       {/* Statistics */}
-      <Card sx={{ mb: 3, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", borderRadius: 2 }}>
-        <CardContent>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography variant="h6" fontWeight="bold">
-              📈 Thống kê theo dõi
-            </Typography>
-            <IconButton onClick={() => setExpandedStats(!expandedStats)}>
-              {expandedStats ? <ExpandLess /> : <ExpandMore />}
-            </IconButton>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "primary.main",
-                  borderRadius: 2,
-                  color: "white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold">
-                  {stats.total}
-                </Typography>
-                <Typography variant="body2">Tổng số</Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "warning.main",
-                  borderRadius: 2,
-                  color: "white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold">
-                  {stats.monitoring}
-                </Typography>
-                <Typography variant="body2">Đang theo dõi</Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "success.main",
-                  borderRadius: 2,
-                  color: "white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold">
-                  {stats.completed}
-                </Typography>
-                <Typography variant="body2">Đã hoàn thành</Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "error.main",
-                  borderRadius: 2,
-                  color: "white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold">
-                  {stats.withReactions}
-                </Typography>
-                <Typography variant="body2">Có phản ứng</Typography>
-              </Box>
-            </Grid>
-          </Grid>
-          <Collapse in={expandedStats}>
-            <Box sx={{ mt: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Typography variant="body2">Tỷ lệ hoàn thành:</Typography>
-                    <Box sx={{ flex: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={parseFloat(stats.completionRate)}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          bgcolor: "grey.200",
-                          "& .MuiLinearProgress-bar": { bgcolor: "success.main" },
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {stats.completionRate}%
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          </Collapse>
-        </CardContent>
-      </Card>
+<Card
+  sx={{
+    mb: 3,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+    borderRadius: 3,
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.06)",
+  }}
+>
+  <CardContent sx={{ p: 3 }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        mb: 3,
+      }}
+    >
+      <Typography
+        variant="h5"
+        sx={{
+          fontWeight: "700",
+          color: "text.primary",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        📊 Thống kê theo dõi
+      </Typography>
+      <Button
+        variant="contained"
+        color="success"
+        onClick={handleOpenCompleteDialog}
+        disabled={!selectedCampaign || loading}
+        sx={{
+          textTransform: "none",
+          fontWeight: "600",
+          borderRadius: 2,
+          px: 3,
+          py: 1,
+          boxShadow: "0 4px 12px rgba(46, 125, 50, 0.3)",
+        }}
+      >
+        Hoàn tất tiêm chủng
+      </Button>
+    </Box>
+
+    <Grid container spacing={3}>
+      <Grid item xs={6} md={3}>
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 3,
+            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+            borderRadius: 3,
+            color: "white",
+            boxShadow: "0 6px 20px rgba(25, 118, 210, 0.3)",
+            transition: "transform 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+            {stats.total}
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
+            Tổng số
+          </Typography>
+        </Box>
+      </Grid>
+
+      <Grid item xs={6} md={3}>
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 3,
+            background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
+            borderRadius: 3,
+            color: "white",
+            boxShadow: "0 6px 20px rgba(245, 124, 0, 0.3)",
+            transition: "transform 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+            {stats.monitoring}
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
+            Đang theo dõi
+          </Typography>
+        </Box>
+      </Grid>
+
+      <Grid item xs={6} md={3}>
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 3,
+            background: "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
+            borderRadius: 3,
+            color: "white",
+            boxShadow: "0 6px 20px rgba(56, 142, 60, 0.3)",
+            transition: "transform 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+            {stats.completed}
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
+            Đã hoàn thành
+          </Typography>
+        </Box>
+      </Grid>
+
+      <Grid item xs={6} md={3}>
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 3,
+            background: "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
+            borderRadius: 3,
+            color: "white",
+            boxShadow: "0 6px 20px rgba(211, 47, 47, 0.3)",
+            transition: "transform 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+            {stats.withReactions}
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
+            Có phản ứng
+          </Typography>
+        </Box>
+      </Grid>
+    </Grid>
+
+    {/* Progress Bar */}
+    <Box sx={{ mt: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 1,
+        }}
+      >
+        <Typography variant="body1" fontWeight="600" color="text.secondary">
+          Tỷ lệ hoàn thành
+        </Typography>
+        <Typography variant="h6" fontWeight="700" color="success.main">
+          {stats.completionRate}%
+        </Typography>
+      </Box>
+      <LinearProgress
+        variant="determinate"
+        value={parseFloat(stats.completionRate)}
+        sx={{
+          height: 12,
+          borderRadius: 6,
+          bgcolor: "grey.200",
+          "& .MuiLinearProgress-bar": {
+            background: "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)",
+            borderRadius: 6,
+          },
+        }}
+      />
+    </Box>
+  </CardContent>
+</Card>
 
       {/* Main Table */}
       {loading ? (
@@ -575,7 +849,10 @@ function PostVaccinationMonitoring() {
           <CircularProgress size={60} />
         </Box>
       ) : (
-        <TableContainer component={Paper} sx={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)", borderRadius: 2 }}>
+        <TableContainer
+          component={Paper}
+          sx={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)", borderRadius: 2 }}
+        >
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
@@ -583,8 +860,12 @@ function PostVaccinationMonitoring() {
                 <TableCell sx={{ fontWeight: "bold", py: 3 }}>
                   Thông tin học sinh
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", py: 3 }}>Trạng thái</TableCell>
-                <TableCell sx={{ fontWeight: "bold", py: 3 }}>Hành động</TableCell>
+                <TableCell sx={{ fontWeight: "bold", py: 3 }}>
+                  Trạng thái
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", py: 3 }}>
+                  Hành động
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -601,11 +882,15 @@ function PostVaccinationMonitoring() {
                       transition: "all 0.2s ease-in-out",
                     }}
                   >
-                    <TableCell sx={{ width: "50px", textAlign: "center", p: 1.5 }}>
+                    <TableCell
+                      sx={{ width: "50px", textAlign: "center", p: 1.5 }}
+                    >
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
                     <TableCell sx={{ minWidth: "250px", p: 1.5 }}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
                         <Avatar
                           sx={{
                             bgcolor: "primary.main",
@@ -631,7 +916,7 @@ function PostVaccinationMonitoring() {
                           <Typography variant="caption" color="text.secondary">
                             ID: {record.student_id}
                           </Typography>
-                          <Typography>
+                          <Box>
                             <Chip
                               label={record.class_name}
                               size="small"
@@ -643,6 +928,16 @@ function PostVaccinationMonitoring() {
                                 borderColor: "primary.main",
                               }}
                             />
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            color={
+                              record.health_notes !== "Không có"
+                                ? "error.main"
+                                : "text.secondary"
+                            }
+                          >
+                            {record.health_notes}
                           </Typography>
                         </Box>
                       </Box>
@@ -650,7 +945,13 @@ function PostVaccinationMonitoring() {
                     <TableCell sx={{ width: "120px", p: 1 }}>
                       <Chip
                         label={record.status}
-                        color={record.status === "Đã tiêm" ? "warning" : "success"}
+                        color={
+                          record.status === "Đang theo dõi"
+                            ? "warning"
+                            : record.status === "Phản ứng bất thường"
+                            ? "error"
+                            : "success"
+                        }
                         variant="outlined"
                         size="small"
                         sx={{
@@ -663,7 +964,7 @@ function PostVaccinationMonitoring() {
                     </TableCell>
                     <TableCell sx={{ minWidth: "180px", p: 1.5 }}>
                       <Stack spacing={1} direction="row">
-                        <Tooltip title="Ghi nhận phản ứng" arrow>
+                        <Tooltip title="Ghi nhận反応" arrow>
                           <Button
                             variant="outlined"
                             color="warning"
@@ -725,18 +1026,18 @@ function PostVaccinationMonitoring() {
                         color="text.secondary"
                         sx={{ fontWeight: "medium" }}
                       >
-                        {!selectedCampaign
-                          ? "Vui lòng chọn chiến dịch tiêm chủng"
-                          : "Không có học sinh nào cần theo dõi"}
+                        {monitoringRecords.length === 0
+                          ? "Không có học sinh nào cần theo dõi"
+                          : "Không có dữ liệu trên trang hiện tại"}
                       </Typography>
                       <Typography
                         variant="body2"
                         color="text.disabled"
                         sx={{ maxWidth: 400, textAlign: "center" }}
                       >
-                        {!selectedCampaign
-                          ? "Chọn một chiến dịch từ danh sách để xem các học sinh cần theo dõi sau tiêm chủng"
-                          : "Tất cả học sinh trong chiến dịch này đã hoàn thành thời gian theo dõi"}
+                        {monitoringRecords.length === 0
+                          ? "Tất cả học sinh trong chiến dịch này đã hoàn thành thời gian theo dõi hoặc không khớp với bộ lọc."
+                          : "Chuyển sang trang khác để xem thêm dữ liệu."}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -767,7 +1068,12 @@ function PostVaccinationMonitoring() {
         onClose={handleCloseReactionDialog}
         maxWidth="md"
         fullWidth
-        sx={{ "& .MuiDialog-paper": { borderRadius: 2, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" } }}
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: 2,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle sx={{ bgcolor: "warning.main", color: "white", py: 2 }}>
           <Box display="flex" alignItems="center" gap={1}>
@@ -777,7 +1083,15 @@ function PostVaccinationMonitoring() {
         </DialogTitle>
         <DialogContent sx={{ mt: 3, bgcolor: "#fafafa" }}>
           {selectedStudent && (
-            <Box sx={{ mb: 3, p: 2, bgcolor: "white", borderRadius: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                bgcolor: "white",
+                borderRadius: 2,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              }}
+            >
               <Box display="flex" gap={2} alignItems="center">
                 <Avatar sx={{ width: 50, height: 50, bgcolor: "primary.main" }}>
                   {selectedStudent.full_name.charAt(0)}
@@ -803,7 +1117,10 @@ function PostVaccinationMonitoring() {
                 type="datetime-local"
                 value={reactionData.observedAt}
                 onChange={(e) =>
-                  setReactionData({ ...reactionData, observedAt: e.target.value })
+                  setReactionData({
+                    ...reactionData,
+                    observedAt: e.target.value,
+                  })
                 }
                 fullWidth
                 variant="outlined"
@@ -816,13 +1133,21 @@ function PostVaccinationMonitoring() {
               <TextField
                 label="Nhiệt độ cơ thể (°C)"
                 value={reactionData.temperatureLevel}
-                onChange={(e) =>
-                  setReactionData({ ...reactionData, temperatureLevel: e.target.value })
-                }
+                onChange={(e) => {
+                  const newTemp = e.target.value;
+                  setReactionData({
+                    ...reactionData,
+                    temperatureLevel: newTemp,
+                  });
+                  setTemperatureError(validateTemperature(newTemp));
+                }}
                 fullWidth
                 variant="outlined"
                 type="number"
-                inputProps={{ step: "0.1" }}
+                inputProps={{ step: "0.1", min: "35", max: "42" }}
+                required
+                error={!!temperatureError}
+                helperText={temperatureError}
                 sx={{ bgcolor: "white", borderRadius: 2 }}
               />
             </Grid>
@@ -831,7 +1156,10 @@ function PostVaccinationMonitoring() {
                 label="Ghi chú triệu chứng"
                 value={reactionData.notes}
                 onChange={(e) =>
-                  setReactionData({ ...reactionData, notes: e.target.value })
+                  setReactionData({
+                    ...reactionData,
+                    notes: e.target.value,
+                  })
                 }
                 fullWidth
                 multiline
@@ -848,7 +1176,10 @@ function PostVaccinationMonitoring() {
                   <Checkbox
                     checked={reactionData.isAbnormal}
                     onChange={(e) =>
-                      setReactionData({ ...reactionData, isAbnormal: e.target.checked })
+                      setReactionData({
+                        ...reactionData,
+                        isAbnormal: e.target.checked,
+                      })
                     }
                     color="warning"
                   />
@@ -862,7 +1193,10 @@ function PostVaccinationMonitoring() {
                 label="Biện pháp xử trí"
                 value={reactionData.actionsTaken}
                 onChange={(e) =>
-                  setReactionData({ ...reactionData, actionsTaken: e.target.value })
+                  setReactionData({
+                    ...reactionData,
+                    actionsTaken: e.target.value,
+                  })
                 }
                 fullWidth
                 multiline
@@ -870,6 +1204,8 @@ function PostVaccinationMonitoring() {
                 variant="outlined"
                 sx={{ bgcolor: "white", borderRadius: 2 }}
                 placeholder="Ví dụ: Đã cho uống thuốc hạ sốt và tiếp tục theo dõi..."
+                disabled={!reactionData.isAbnormal}
+                required={reactionData.isAbnormal}
               />
             </Grid>
           </Grid>
@@ -884,205 +1220,673 @@ function PostVaccinationMonitoring() {
             Hủy
           </Button>
           <Button
-            onClick={() => handleSaveReaction(false)}
+            onClick={handleSaveReaction}
             variant="contained"
             color="warning"
             startIcon={loading ? <CircularProgress size={20} /> : <Save />}
-            disabled={loading}
+            disabled={loading || !!temperatureError}
             sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
           >
             {loading ? "Đang lưu..." : "Lưu phản ứng"}
           </Button>
-          <Button
-            onClick={() => handleSaveReaction(true)}
-            variant="contained"
-            color="success"
-            startIcon={loading ? <CircularProgress size={20} /> : <CheckCircle />}
-            disabled={loading}
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
-          >
-            {loading ? "Đang lưu..." : "Hoàn tất theo dõi"}
-          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Details Dialog */}
+      {/* Enhanced Details Dialog */}
       <Dialog
         open={openDetailsDialog}
         onClose={handleCloseDetailsDialog}
         maxWidth="lg"
         fullWidth
-        sx={{ "& .MuiDialog-paper": { borderRadius: 2, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" } }}
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            overflow: "hidden",
+            maxHeight: "90vh",
+          },
+        }}
       >
-        <DialogTitle sx={{ bgcolor: "info.main", color: "white", py: 2 }}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Info />
-            Chi tiết theo dõi - {selectedStudent?.full_name}
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            py: 3,
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255,255,255,0.1)",
+              backdropFilter: "blur(10px)",
+            },
+          }}
+        >
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={2}
+            position="relative"
+            zIndex={1}
+          >
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                backgroundColor: "rgba(255,255,255,0.2)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <Info sx={{ fontSize: 24 }} />
+            </Box>
+            <Box>
+              <Typography variant="h5" fontWeight="600" mb={0.5}>
+                Chi tiết theo dõi
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                {selectedStudent?.full_name}
+              </Typography>
+            </Box>
           </Box>
         </DialogTitle>
-        <DialogContent sx={{ mt: 3, bgcolor: "#fafafa" }}>
+
+        <DialogContent sx={{ p: 0, bgcolor: "#f8fafc" }}>
           {historyLoading ? (
             <Box
               display="flex"
+              flexDirection="column"
               justifyContent="center"
               alignItems="center"
-              minHeight="200px"
+              minHeight="300px"
+              gap={2}
             >
-              <CircularProgress />
+              <CircularProgress size={40} thickness={4} />
+              <Typography color="text.secondary">
+                Đang tải thông tin...
+              </Typography>
             </Box>
-          ) : (
-            selectedStudent && (
-              <Box>
-                <Box display="flex" gap={2} alignItems="center" mb={3}>
+          ) : selectedStudent && immunizationHistory ? (
+            <Box>
+              {/* Student Info Header */}
+              <Box
+                sx={{
+                  background:
+                    "linear-gradient(135deg,rgb(12, 63, 107) 0%,rgb(7, 96, 100) 100%)",
+                  p: 3,
+                  color: "white",
+                  position: "relative",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(10px)",
+                  },
+                }}
+              >
+                <Box
+                  display="flex"
+                  gap={3}
+                  alignItems="center"
+                  position="relative"
+                  zIndex={1}
+                >
                   <Avatar
-                    sx={{ width: 60, height: 60, bgcolor: "primary.main" }}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      bgcolor: "rgba(255,255,255,0.3)",
+                      backdropFilter: "blur(10px)",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      fontSize: "2rem",
+                      fontWeight: "bold",
+                    }}
                   >
                     {selectedStudent.full_name.charAt(0)}
                   </Avatar>
                   <Box>
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography variant="h5" fontWeight="700" mb={1}>
                       {selectedStudent.full_name}
                     </Typography>
-                    <Typography color="text.secondary">
-                      Mã HS: {selectedStudent.student_id}
-                    </Typography>
-                    <Typography color="text.secondary">
-                      Lớp: {selectedStudent.class_name}
-                    </Typography>
+                    <Box display="flex" gap={4}>
+                      <Box>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Mã học sinh
+                        </Typography>
+                        <Typography variant="h6" fontWeight="600">
+                          {selectedStudent.student_id}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Lớp học
+                        </Typography>
+                        <Typography variant="h6" fontWeight="600">
+                          {selectedStudent.class_name}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
                 </Box>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  Thông tin theo dõi
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Thời gian tiêm
-                    </Typography>
-                    <Typography variant="body1">
-                      {immunizationHistory?.administeredAt
-                        ? new Date(
-                            immunizationHistory.administeredAt
-                          ).toLocaleString("vi-VN")
-                        : "Chưa có thông tin"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Trạng thái
-                    </Typography>
-                    <Typography variant="body1">
-                      {selectedStudent.status}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">
-                      Ghi chú sức khỏe
-                    </Typography>
-                    <Typography variant="body1">
-                      {selectedStudent.health_notes || "Không có"}
-                    </Typography>
-                  </Grid>
-                  {immunizationHistory && (
-                    <>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="text.secondary">
-                          Người tiêm
-                        </Typography>
-                        <Typography variant="body1">
-                          {immunizationHistory.administeredByStaffId
-                            ?.fullName || "Không xác định"}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="text.secondary">
-                          Vaccine
-                        </Typography>
-                        <Typography variant="body1">
-                          {immunizationHistory.vaccineName || "Không xác định"}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                </Grid>
-                <Typography variant="h6" fontWeight="bold" mt={4} mb={2}>
-                  Phản ứng sau tiêm
-                </Typography>
-                <TableContainer
-                  component={Paper}
-                  sx={{ boxShadow: "0 2px 4px rgba(0,0,0,0.1)", borderRadius: 2 }}
-                >
-                  <Table>
-                    <TableHead>
-                      <TableRow sx={{ backgroundColor: "grey.100" }}>
-                        <TableCell sx={{ fontWeight: "bold" }}>STT</TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>Ngày/Giờ</TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>
-                          Nhiệt độ (°C)
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>
-                          Triệu chứng
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>
-                          Bất thường
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>
-                          Biện pháp xử lý
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold" }}>
-                          Ngày ghi nhận
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {reactions
-                        .filter(
-                          (reaction) =>
-                            reaction.student_id === selectedStudent.student_id
-                        )
-                        .map((reaction, index) => (
-                          <TableRow
-                            key={reaction.id}
-                            sx={{ "&:hover": { backgroundColor: "#f0f0f0" } }}
-                          >
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>{reaction.observedAt}</TableCell>
-                            <TableCell>{reaction.temperatureLevel}</TableCell>
-                            <TableCell>{reaction.notes}</TableCell>
-                            <TableCell>
-                              {reaction.isAbnormal ? "Có" : "Không"}
-                            </TableCell>
-                            <TableCell>{reaction.actionsTaken}</TableCell>
-                            <TableCell>{reaction.recorded_date}</TableCell>
-                          </TableRow>
-                        ))}
-                      {reactions.filter(
-                        (reaction) =>
-                          reaction.student_id === selectedStudent.student_id
-                      ).length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={7} align="center">
-                            <Typography color="text.secondary" py={2}>
-                              Chưa có phản ứng nào được ghi nhận.
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
               </Box>
-            )
+
+              {/* Main Content */}
+              <Box p={3}>
+                {/* Monitoring Information */}
+                <Box mb={4}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="700"
+                    mb={3}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      color: "primary.main",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 4,
+                        height: 24,
+                        backgroundColor: "primary.main",
+                        borderRadius: 1,
+                      }}
+                    />
+                    Thông tin theo dõi
+                  </Typography>
+
+                  <Grid container spacing={3}>
+                    {/* Left: Health Information */}
+                    <Grid item xs={12} md={6} sx={{ width: "48%" }}>
+                      <Box
+                        sx={{
+                          p: 3,
+                          bgcolor: "white",
+                          borderRadius: 2,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                          border: "1px solid rgba(0,0,0,0.05)",
+                          height: "100%",
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          fontWeight="700"
+                          mb={2}
+                          sx={{
+                            color: "error.main",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 4,
+                              height: 20,
+                              backgroundColor: "error.main",
+                              borderRadius: 1,
+                            }}
+                          />
+                          Thông tin y tế
+                        </Typography>
+
+                        <Box mb={3}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Vaccine
+                          </Typography>
+                          <Typography variant="body1" fontWeight="600">
+                            {immunizationHistory.vaccineName ||
+                              "Không xác định"}
+                          </Typography>
+                        </Box>
+
+                        <Box mb={3}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Dị ứng
+                          </Typography>
+                          <Typography
+                            variant="body1"
+                            fontWeight="600"
+                            color={
+                              selectedStudent.allergies?.length > 0
+                                ? "error.main"
+                                : "success.main"
+                            }
+                          >
+                            {selectedStudent.allergies?.length > 0
+                              ? selectedStudent.allergies.join(", ")
+                              : "Không có"}
+                          </Typography>
+                        </Box>
+
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Bệnh mãn tính
+                          </Typography>
+                          {selectedStudent.chronicConditions?.length > 0 ? (
+                            <Box sx={{ maxHeight: 150, overflowY: "auto" }}>
+                              {selectedStudent.chronicConditions.map(
+                                (condition, index) => (
+                                  <Box
+                                    key={index}
+                                    sx={{
+                                      mb: 1.5,
+                                      p: 1.5,
+                                      bgcolor: "#fff4e6",
+                                      borderRadius: 1,
+                                      border: "1px solid #ffd6a3",
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      color="warning.main"
+                                      fontWeight="600"
+                                    >
+                                      {condition.conditionName}
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      display="block"
+                                    >
+                                      Ngày chẩn đoán:{" "}
+                                      {condition.diagnosedDate
+                                        ? new Date(
+                                            condition.diagnosedDate
+                                          ).toLocaleDateString("vi-VN")
+                                        : "Không xác định"}
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      display="block"
+                                    >
+                                      Thuốc:{" "}
+                                      {condition.medication || "Không có"}
+                                    </Typography>
+                                    {condition.notes && (
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        display="block"
+                                      >
+                                        Ghi chú: {condition.notes}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                )
+                              )}
+                            </Box>
+                          ) : (
+                            <Typography
+                              variant="body1"
+                              fontWeight="600"
+                              color="success.main"
+                            >
+                              Không có
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    {/* Right: Vaccination Information */}
+                    <Grid item xs={12} md={6} sx={{ width: "49%" }}>
+                      <Box
+                        sx={{
+                          p: 3,
+                          bgcolor: "white",
+                          borderRadius: 2,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                          border: "1px solid rgba(0,0,0,0.05)",
+                          height: "100%",
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          fontWeight="700"
+                          mb={2}
+                          sx={{
+                            color: "info.main",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 4,
+                              height: 20,
+                              backgroundColor: "info.main",
+                              borderRadius: 1,
+                            }}
+                          />
+                          Thông tin tiêm chủng
+                        </Typography>
+
+                        <Box mb={3}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Thời gian tiêm
+                          </Typography>
+                          <Typography variant="body1" fontWeight="600">
+                            {immunizationHistory.administeredAt
+                              ? new Date(
+                                  immunizationHistory.administeredAt
+                                ).toLocaleString("vi-VN")
+                              : "Chưa có thông tin"}
+                          </Typography>
+                        </Box>
+
+                        <Box mb={3}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Trạng thái
+                          </Typography>
+                          <Chip
+                            label={selectedStudent.status}
+                            color={
+                              selectedStudent.status === "Đã hoàn thành"
+                                ? "success"
+                                : selectedStudent.status ===
+                                  "Phản ứng bất thường"
+                                ? "error"
+                                : "warning"
+                            }
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Box>
+
+                        <Box mb={3}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Người tiêm
+                          </Typography>
+                          <Typography variant="body1" fontWeight="600">
+                            {immunizationHistory.administeredByStaffId
+                              ?.fullName || "Không xác định"}
+                          </Typography>
+                        </Box>
+
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1}
+                          >
+                            Liều số
+                          </Typography>
+                          <Typography variant="body1" fontWeight="600">
+                            {immunizationHistory.doseNumber || "Không xác định"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Reactions Table */}
+                <Box>
+                  <Typography
+                    variant="h6"
+                    fontWeight="700"
+                    mb={3}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      color: "primary.main",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 4,
+                        height: 24,
+                        backgroundColor: "primary.main",
+                        borderRadius: 1,
+                      }}
+                    />
+                    Phản ứng sau tiêm
+                  </Typography>
+
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+                      borderRadius: 3,
+                      overflow: "hidden",
+                      border: "1px solid rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow
+                          sx={{
+                            background:
+                              "linear-gradient(135deg,rgb(12, 63, 107) 0%,rgb(7, 96, 100) 100%)",
+                            "& th": {
+                              color: "white",
+                              fontWeight: "700",
+                              py: 2,
+                            },
+                          }}
+                        >
+                          <TableCell>STT</TableCell>
+                          <TableCell>Ngày/Giờ</TableCell>
+                          <TableCell>Nhiệt độ (°C)</TableCell>
+                          <TableCell>Triệu chứng</TableCell>
+                          <TableCell>Bất thường</TableCell>
+                          <TableCell>Biện pháp xử lý</TableCell>
+                          <TableCell>Ngày ghi nhận</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {immunizationHistory.postVaccinationChecks.map(
+                          (reaction, index) => (
+                            <TableRow
+                              key={index}
+                              sx={{
+                                "&:hover": {
+                                  backgroundColor: "rgba(79, 172, 254, 0.04)",
+                                },
+                                "&:nth-of-type(odd)": {
+                                  backgroundColor: "rgba(0,0,0,0.02)",
+                                },
+                              }}
+                            >
+                              <TableCell sx={{ fontWeight: 600 }}>
+                                {index + 1}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(reaction.observedAt).toLocaleString(
+                                  "vi-VN"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={reaction.temperatureLevel}
+                                  size="small"
+                                  color={
+                                    parseFloat(reaction.temperatureLevel) > 37.5
+                                      ? "error"
+                                      : "success"
+                                  }
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </TableCell>
+                              <TableCell>{reaction.notes}</TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={reaction.isAbnormal ? "Có" : "Không"}
+                                  size="small"
+                                  color={
+                                    reaction.isAbnormal ? "error" : "success"
+                                  }
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                {reaction.actionsTaken || "Không có"}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(reaction.observedAt).toLocaleString(
+                                  "vi-VN"
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
+                        {immunizationHistory.postVaccinationChecks.length ===
+                          0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={7}
+                              align="center"
+                              sx={{ py: 4 }}
+                            >
+                              <Box
+                                display="flex"
+                                flexDirection="column"
+                                alignItems="center"
+                                gap={2}
+                              >
+                                <Typography color="text.secondary" variant="h6">
+                                  Chưa có phản ứng nào được ghi nhận
+                                </Typography>
+                                <Typography
+                                  color="text.secondary"
+                                  variant="body2"
+                                >
+                                  Học sinh chưa có phản ứng bất thường nào sau
+                                  khi tiêm vaccine
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              minHeight="300px"
+              gap={2}
+            >
+              <Typography color="error" variant="h6">
+                Không thể tải thông tin học sinh
+              </Typography>
+              <Typography color="text.secondary">
+                Vui lòng thử lại sau
+              </Typography>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 3, bgcolor: "#fafafa" }}>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            bgcolor: "white",
+            borderTop: "1px solid rgba(0,0,0,0.08)",
+            gap: 2,
+          }}
+        >
           <Button
             onClick={handleCloseDetailsDialog}
             variant="contained"
-            color="primary"
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
+            size="large"
+            sx={{
+              borderRadius: 2.5,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 4,
+              py: 1.5,
+              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+              boxShadow: "0 4px 16px rgba(79, 172, 254, 0.3)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",
+                boxShadow: "0 6px 20px rgba(79, 172, 254, 0.4)",
+                transform: "translateY(-1px)",
+              },
+            }}
           >
             Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openCompleteDialog}
+        onClose={handleCloseCompleteDialog}
+        maxWidth="xs"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: 2,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ bgcolor: "success.main", color: "white", py: 2 }}>
+          Xác nhận hoàn tất
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, bgcolor: "#fafafa" }}>
+          <Typography>
+            Bạn có chắc muốn hoàn tất chiến dịch tiêm chủng? Hành động này không
+            thể hoàn tác.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, bgcolor: "#fafafa" }}>
+          <Button
+            onClick={handleCloseCompleteDialog}
+            color="secondary"
+            variant="outlined"
+            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmComplete}
+            variant="contained"
+            color="success"
+            startIcon={loading ? <CircularProgress size={20} /> : null}
+            disabled={loading}
+            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
+          >
+            {loading ? "Đang xử lý..." : "Xác nhận"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -4,7 +4,7 @@ import { endpoints } from "../endpoints";
 class HealthCheckTemplateService {
   /**
    * Lấy danh sách tất cả các mẫu khám sức khỏe.
-   * GET /admin/health-check-templates
+   * GET /health-check/templates
    * @param {object} params - Tham số truy vấn.
    * @param {number} [params.page=1] - Số trang (mặc định là 1).
    * @param {number} [params.limit=10] - Số lượng mục trên mỗi trang (mặc định là 10).
@@ -13,7 +13,6 @@ class HealthCheckTemplateService {
    */
   async getListHealthCheckTemplates({ page = 1, limit = 10, search = '' } = {}) {
     try {
-      // Sử dụng endpoint cho việc lấy danh sách
       const baseUrl = endpoints.healthCheck.getTemplate;
       const url = `${baseUrl}?page=${page}&limit=${limit}${
         search ? `&search=${encodeURIComponent(search)}` : ''
@@ -28,14 +27,13 @@ class HealthCheckTemplateService {
 
   /**
    * Lấy thông tin chi tiết của một mẫu khám sức khỏe theo ID.
-   * GET /admin/health-check-templates/{templateId}
+   * GET /health-check/templates/{id}
    * @param {string} templateId - ID của mẫu khám sức khỏe.
    * @returns {Promise<object>} Dữ liệu chi tiết của mẫu khám sức khỏe.
    */
   async getHealthCheckTemplateById(templateId) {
     try {
-      // Thay thế {templateId} trong chuỗi endpoint bằng giá trị templateId thực tế
-      const url = endpoints.healthCheck.getDetailTemplate.replace('{templateId}', templateId);
+      const url = endpoints.healthCheck.getDetailTemplate.replace('{id}', templateId);
       const response = await api.get(url);
       return response.data;
     } catch (error) {
@@ -46,7 +44,7 @@ class HealthCheckTemplateService {
 
   /**
    * Tạo một mẫu khám mới.
-   * POST /admin/health-check-templates
+   * POST /health-check/templates
    * @param {object} templateData - Dữ liệu của mẫu khám sức khỏe mới.
    * @param {string} templateData.name - Tên của mẫu khám.
    * @param {string} templateData.description - Mô tả của mẫu khám.
@@ -61,7 +59,6 @@ class HealthCheckTemplateService {
    */
   async createHealthCheckTemplate(templateData) {
     try {
-      // Sử dụng endpoint cho việc thêm mới
       const url = endpoints.healthCheck.addTemplate;
       const response = await api.post(url, templateData);
       return response.data;
@@ -73,7 +70,7 @@ class HealthCheckTemplateService {
 
   /**
    * Cập nhật thông tin một mẫu khám đã có.
-   * PUT /admin/health-check-templates/{templateId}
+   * PUT /health-check/templates/{id}
    * @param {string} templateId - ID của mẫu khám sức khỏe cần cập nhật.
    * @param {object} updatedTemplateData - Dữ liệu cập nhật cho mẫu khám sức khỏe.
    * @param {string} updatedTemplateData.name - Tên của mẫu khám.
@@ -89,8 +86,7 @@ class HealthCheckTemplateService {
    */
   async updateHealthCheckTemplate(templateId, updatedTemplateData) {
     try {
-      // Thay thế {templateId} trong chuỗi endpoint bằng giá trị templateId thực tế
-      const url = endpoints.healthCheck.updateTemplate.replace('{templateId}', templateId);
+      const url = endpoints.healthCheck.updateTemplate.replace('{id}', templateId);
       const response = await api.put(url, updatedTemplateData);
       return response.data;
     } catch (error) {
@@ -101,18 +97,34 @@ class HealthCheckTemplateService {
 
   /**
    * Xóa một mẫu khám.
-   * DELETE /admin/health-check-templates/{templateId}
+   * DELETE /health-check/templates/{id}
    * @param {string} templateId - ID của mẫu khám sức khỏe cần xóa.
    * @returns {Promise<object>} Dữ liệu phản hồi từ API (thường là rỗng hoặc thông báo thành công).
    */
   async deleteHealthCheckTemplate(templateId) {
     try {
-      // Thay thế {templateId} trong chuỗi endpoint bằng giá trị templateId thực tế
-      const url = endpoints.healthCheck.deleteTemplate.replace('{templateId}', templateId);
+      const url = endpoints.healthCheck.deleteTemplate.replace('{id}', templateId);
       const response = await api.delete(url);
       return response.data;
     } catch (error) {
       console.error(`Delete health check template with ID ${templateId} failed:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Đặt mẫu khám sức khỏe làm mặc định.
+   * POST /health-check/templates/set-default
+   * @param {string} templateId - ID của mẫu khám sức khỏe cần đặt làm mặc định.
+   * @returns {Promise<object>} Dữ liệu phản hồi từ API.
+   */
+  async setDefaultHealthCheckTemplate(templateId) {
+    try {
+      const url = endpoints.healthCheck.setDefault;
+      const response = await api.post(url, { id: templateId });
+      return response.data;
+    } catch (error) {
+      console.error(`Set health check template with ID ${templateId} as default failed:`, error);
       throw error;
     }
   }
