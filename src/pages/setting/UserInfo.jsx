@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '~/libs/api';
+import { api, userService } from '~/libs/api';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Swal from 'sweetalert2';
@@ -69,7 +69,7 @@ export default function UserInfo() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await api.get('/user/me');
+        const response = await userService.getProfile();
         if (response.data && response.data.success) {
           setUserData(response.data.data);
         } else {
@@ -92,7 +92,7 @@ export default function UserInfo() {
       username: values.username,
       phone: values.phone,
       gender: values.gender === 'MALE' ? 'Male' : 'Female',
-      dob: formattedDob,
+      dob: formattedDob, 
     };
 
     const result = await Swal.fire({
