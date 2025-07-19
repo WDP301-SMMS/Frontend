@@ -8,6 +8,11 @@ import {
   Alert,
   Stack,
   Avatar,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
 } from "@mui/material";
 import Background from "~assets/images/completeProfile.png";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -38,6 +43,7 @@ const CompleteProfile = () => {
     phone: Yup.string()
       .matches(/^[0-9]{10,11}$/, "Số điện thoại không hợp lệ")
       .required("Vui lòng nhập số điện thoại"),
+    gender: Yup.string().required("Vui lòng chọn giới tính"),
   });
 
   const formik = useFormik({
@@ -46,6 +52,7 @@ const CompleteProfile = () => {
       confirmPassword: "",
       dob: null,
       phone: "",
+      gender: "",
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -55,6 +62,7 @@ const CompleteProfile = () => {
           password: values.password,
           dob: values.dob ? dayjs(values.dob).format("DD/MM/YYYY") : null,
           phone: values.phone,
+          gender: values.gender,
         });
 
         toast.success("Cập nhật thành công!", { autoClose: 3000 });
@@ -97,19 +105,12 @@ const CompleteProfile = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
-            <Box
-              className="w-full rounded-xl shadow-xl bg-white p-6 sm:p-10 border-t-[6px] border-primary"
-            >
+            <Box className="w-full rounded-xl shadow-xl bg-white p-6 sm:p-10 border-t-[6px] border-primary">
               <Stack alignItems="center" spacing={1} mb={4}>
-                <Avatar
-                  sx={{ bgcolor: "#3b82f6", width: 64, height: 64 }}
-                >
+                <Avatar sx={{ bgcolor: "#3b82f6", width: 64, height: 64 }}>
                   <HealthIcon />
                 </Avatar>
-                <Typography
-                  variant="h5"
-                  className="font-bold text-primary"
-                >
+                <Typography variant="h5" className="font-bold text-primary">
                   Hoàn thiện hồ sơ y tế
                 </Typography>
                 <Typography variant="body2" color="text.secondary" align="center">
@@ -172,6 +173,30 @@ const CompleteProfile = () => {
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                     helperText={formik.touched.phone && formik.errors.phone}
                   />
+
+                  {/* Giới tính */}
+                  <FormControl
+                    component="fieldset"
+                    error={formik.touched.gender && Boolean(formik.errors.gender)}
+                  >
+                    <FormLabel component="legend">Giới tính</FormLabel>
+                    <RadioGroup
+                      row
+                      id="gender"
+                      name="gender"
+                      value={formik.values.gender}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    >
+                      <FormControlLabel value="MALE" control={<Radio />} label="Nam" />
+                      <FormControlLabel value="FEMALE" control={<Radio />} label="Nữ" />
+                    </RadioGroup>
+                    {formik.touched.gender && formik.errors.gender && (
+                      <Typography variant="caption" color="error">
+                        {formik.errors.gender}
+                      </Typography>
+                    )}
+                  </FormControl>
 
                   {error && <Alert severity="error">{error}</Alert>}
 
