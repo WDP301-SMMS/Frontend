@@ -1,8 +1,7 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
-import api from '../hooks/axiosInstance';
-import { useNavigate } from 'react-router-dom';
-import { userService } from "~/libs/api/services/userService"
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import api from "../hooks/axiosInstance";
+import { decodeToken, isTokenExpired } from "~/libs/utils/auth";
 
 const AuthContext = createContext();
 
@@ -14,16 +13,15 @@ export const AuthProvider = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const checkLoginStatus = useCallback(async () => {
-    try {
-      const response = await userService.getProfile();
-      setUser(response.data.data);
-      setRole(response.data.data.role);
+  const checkLoginStatus = useCallback(() => {
+    const token = localStorage.getItem("token");
+    if (!token || isTokenExpired(token)) {
+      logout();
+    } else {
+      const decoded = decodeToken(token);
+      setUser(decoded);
+      setRole(decoded.role);
       setIsLoggedIn(true);
-    } catch (error) {
-      setUser(null);
-      setIsLoggedIn(false);
-    } finally {
       setLoading(false);
     }
   }, []);
@@ -32,18 +30,17 @@ export const AuthProvider = ({ children }) => {
     checkLoginStatus();
   }, [location.pathname, checkLoginStatus]);
 
-  const login = async (token) => {
+  const login = (token) => {
     setLoading(true);
     localStorage.setItem("token", token);
 
-    try {
-      const response = await userService.getProfile();
-      const userData = response.data.data;
-      setUser(userData);
-      setRole(userData.role);
+    const decoded = decodeToken(token);
+    if (decoded) {
+      setUser(decoded);
+      setRole(decoded.role);
       setIsLoggedIn(true);
 
-      switch (userData.role) {
+      switch (decoded.role) {
         case "Parent":
           navigate("/health-profiles");
           break;
@@ -59,13 +56,13 @@ export const AuthProvider = ({ children }) => {
         default:
           navigate("/");
       }
-    } catch (error) {
+    } else {
       setIsLoggedIn(false);
       setUser(null);
       setRole(null);
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   const logout = async () => {
@@ -78,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setRole(null);
       setIsLoggedIn(false);
+      setLoading(false);
       navigate("/");
     }
   };
