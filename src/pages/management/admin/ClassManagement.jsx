@@ -4,6 +4,7 @@ import {
   createClass,
   addStudentsToClass,
   removeStudentsFromClass,
+  getAllStudents,
 } from "../../../libs/api/adminService";
 import { Dialog, Transition } from "@headlessui/react";
 import {
@@ -26,6 +27,8 @@ const ClassManagement = () => {
     schoolYear: "",
     description: "",
   });
+  const [gradeFilter, setGradeFilter] = useState("");
+  const [schoolYearFilter, setSchoolYearFilter] = useState("");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -40,22 +43,33 @@ const ClassManagement = () => {
     classId: null,
     className: "",
     operation: "add", // 'add', 'remove', or 'view'
-    studentIds: "",
+    studentIds: [],
     students: [],
+    availableStudents: [],
     loading: false,
   });
+
   useEffect(() => {
     fetchClasses();
-  }, [pagination.currentPage]);
+  }, [pagination.currentPage, gradeFilter, schoolYearFilter]);
+
+  useEffect(() => {
+    if (studentModal.isOpen && studentModal.operation === "add") {
+      fetchAvailableStudents();
+    }
+  }, [studentModal.isOpen, studentModal.operation]);
+
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const response = await getAllClasses({
+      const params = {
         page: pagination.currentPage,
         limit: 10,
-      });
+      };
+      if (gradeFilter) params.gradeLevel = gradeFilter;
+      if (schoolYearFilter) params.schoolYear = schoolYearFilter;
+      const response = await getAllClasses(params);
 
-      console.log("Classes fetched:", response);
       setClasses(response.classes || []);
       setPagination({
         currentPage: response.currentPage || 1,
@@ -70,14 +84,35 @@ const ClassManagement = () => {
       setLoading(false);
     }
   };
+
+  const fetchAvailableStudents = async () => {
+    try {
+      setStudentModal((prev) => ({ ...prev, loading: true }));
+      const response = await getAllStudents();
+      const allStudents = response.students || [];
+      // Filter students who are not in any class (classes array is empty or undefined)
+      const availableStudents = allStudents.filter(
+        (student) => !student.class || Object.keys(student.class).length === 0
+      );
+      setStudentModal((prev) => ({
+        ...prev,
+        availableStudents,
+        loading: false,
+      }));
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setDialogMessage("Không thể tải danh sách học sinh. Vui lòng thử lại.");
+      setIsErrorDialogOpen(true);
+      setStudentModal((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Convert gradeLevel to a number if it's not empty
     if (name === "gradeLevel" && value !== "") {
       setFormData({
         ...formData,
-        [name]: parseInt(value, 10), // Convert to integer
+        [name]: parseInt(value, 10),
       });
     } else {
       setFormData({
@@ -88,27 +123,29 @@ const ClassManagement = () => {
   };
 
   const handleStudentModalInputChange = (e) => {
-    const { name, value } = e.target;
+    const selected = Array.from(e.target.selectedOptions).map(
+      (opt) => opt.value
+    );
     setStudentModal({
       ...studentModal,
-      [name]: value,
+      studentIds: selected,
     });
-  };  const handleSubmit = async (e) => {
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      
-      // Create a properly formatted class object
       const classData = {
         className: formData.className,
-        gradeLevel: parseInt(formData.gradeLevel, 10), // Ensure gradeLevel is a number
+        gradeLevel: parseInt(formData.gradeLevel, 10),
         schoolYear: formData.schoolYear,
         description: formData.description || "",
       };
-      
+
       console.log("Creating class with data:", classData);
       await createClass(classData);
-      
+
       setDialogMessage("Tạo lớp học mới thành công!");
       setIsSuccessDialogOpen(true);
       resetForm();
@@ -122,17 +159,15 @@ const ClassManagement = () => {
       setLoading(false);
     }
   };
+
   const handleStudentOperation = async (e) => {
     e.preventDefault();
     try {
       setStudentModal((prev) => ({ ...prev, loading: true }));
-      const studentIdsArray = studentModal.studentIds
-        .split(",")
-        .map((id) => id.trim())
-        .filter((id) => id);
+      const studentIdsArray = studentModal.studentIds;
 
       if (studentIdsArray.length === 0) {
-        setError("Vui lòng nhập ít nhất một ID học sinh");
+        setError("Vui lòng chọn ít nhất một học sinh");
         setStudentModal((prev) => ({ ...prev, loading: false }));
         return;
       }
@@ -159,36 +194,42 @@ const ClassManagement = () => {
       setStudentModal((prev) => ({ ...prev, loading: false }));
     }
   };
+
   const openAddStudentsModal = (classObj) => {
     setStudentModal({
       isOpen: true,
       classId: classObj._id,
       className: classObj.className,
       operation: "add",
-      studentIds: "",
+      studentIds: [],
       students: classObj.students || [],
+      availableStudents: [],
       loading: false,
     });
   };
+
   const openRemoveStudentsModal = (classObj) => {
     setStudentModal({
       isOpen: true,
       classId: classObj._id,
       className: classObj.className,
       operation: "remove",
-      studentIds: "",
+      studentIds: [],
       students: classObj.students || [],
+      availableStudents: [],
       loading: false,
     });
   };
+
   const closeStudentModal = () => {
     setStudentModal({
       isOpen: false,
       classId: null,
       className: "",
       operation: "add",
-      studentIds: "",
+      studentIds: [],
       students: [],
+      availableStudents: [],
       loading: false,
     });
   };
@@ -202,10 +243,11 @@ const ClassManagement = () => {
     setIsDialogOpen(false);
     resetForm();
   };
+
   const resetForm = () => {
     setFormData({
       className: "",
-      gradeLevel: "",  // Will be converted to a number when selected
+      gradeLevel: "",
       schoolYear: "",
       description: "",
     });
@@ -216,6 +258,7 @@ const ClassManagement = () => {
       setPagination({ ...pagination, currentPage: newPage });
     }
   };
+
   if (loading && classes.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -223,6 +266,7 @@ const ClassManagement = () => {
       </div>
     );
   }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Quản lý lớp học</h1>
@@ -239,6 +283,57 @@ const ClassManagement = () => {
             <PlusCircle size={20} />
             Thêm lớp học
           </button>
+        </div>
+
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1 md:max-w-xs">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lọc theo khối:
+            </label>
+            <select
+              value={gradeFilter}
+              onChange={(e) => {
+                setGradeFilter(e.target.value);
+                setPagination((p) => ({ ...p, currentPage: 1 }));
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Tất cả khối</option>
+              <option value="1">Khối 1</option>
+              <option value="2">Khối 2</option>
+              <option value="3">Khối 3</option>
+              <option value="4">Khối 4</option>
+              <option value="5">Khối 5</option>
+            </select>
+          </div>
+          <div className="flex-1 md:max-w-xs">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lọc theo năm học:
+            </label>
+            <input
+              type="text"
+              value={schoolYearFilter}
+              onChange={(e) => {
+                setSchoolYearFilter(e.target.value);
+                setPagination((p) => ({ ...p, currentPage: 1 }));
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: 2024-2025"
+            />
+          </div>
+          {(gradeFilter || schoolYearFilter) && (
+            <button
+              onClick={() => {
+                setGradeFilter("");
+                setSchoolYearFilter("");
+                setPagination((p) => ({ ...p, currentPage: 1 }));
+              }}
+              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors md:mb-0 mb-2"
+            >
+              Xóa bộ lọc
+            </button>
+          )}
         </div>
 
         {classes.length === 0 ? (
@@ -280,7 +375,7 @@ const ClassManagement = () => {
                           title="Xóa học sinh"
                         >
                           <UserMinus size={18} />
-                        </button>{" "}
+                        </button>
                         <button
                           onClick={() => {
                             setStudentModal({
@@ -288,8 +383,9 @@ const ClassManagement = () => {
                               classId: classObj._id,
                               className: classObj.className,
                               operation: "view",
-                              studentIds: "",
+                              studentIds: [],
                               students: classObj.students || [],
+                              availableStudents: [],
                               loading: false,
                             });
                           }}
@@ -303,7 +399,7 @@ const ClassManagement = () => {
                   ))}
                 </tbody>
               </table>
-            </div>{" "}
+            </div>
             <div className="flex justify-between items-center mt-6">
               <div>
                 Hiển thị {classes.length} / {pagination.totalClasses} lớp học
@@ -338,7 +434,8 @@ const ClassManagement = () => {
             </div>
           </>
         )}
-      </div>{" "}
+      </div>
+
       {/* Add Class Dialog */}
       <Transition appear show={isDialogOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={handleDialogClose}>
@@ -400,7 +497,8 @@ const ClassManagement = () => {
                     <div>
                       <label className="block text-gray-700 mb-1 text-sm font-medium">
                         Khối
-                      </label>                      <select
+                      </label>
+                      <select
                         name="gradeLevel"
                         value={formData.gradeLevel}
                         onChange={handleInputChange}
@@ -493,6 +591,7 @@ const ClassManagement = () => {
           </div>
         </Dialog>
       </Transition>
+
       {/* Student Modal */}
       <Transition appear show={studentModal.isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeStudentModal}>
@@ -543,7 +642,6 @@ const ClassManagement = () => {
 
                   {studentModal.operation === "view" ? (
                     <div>
-                      {" "}
                       <div className="mb-4">
                         <h4 className="font-medium text-gray-700 mb-2">
                           Danh sách học sinh ({studentModal.students.length})
@@ -582,42 +680,53 @@ const ClassManagement = () => {
                     <form onSubmit={handleStudentOperation}>
                       <div className="mb-4">
                         <label className="block text-gray-700 mb-2 text-sm font-medium">
-                          ID học sinh (phân cách bằng dấu phẩy)
+                          {studentModal.operation === "add"
+                            ? "Chọn học sinh để thêm"
+                            : "Chọn học sinh để xóa"}
                         </label>
-                        <textarea
+                        <select
                           name="studentIds"
+                          multiple
                           value={studentModal.studentIds}
                           onChange={handleStudentModalInputChange}
                           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          rows="3"
-                          placeholder="VD: 6857dc30369551d37ca86e13, 6857dc30369551d37ca86e14"
+                          size={Math.min(
+                            8,
+                            (studentModal.operation === "add"
+                              ? studentModal.availableStudents
+                              : studentModal.students
+                            ).length
+                          )}
                           required
-                        ></textarea>
+                        >
+                          {studentModal.operation === "add" ? (
+                            studentModal.availableStudents.length === 0 ? (
+                              <option disabled>
+                                Không có học sinh nào chưa được phân lớp
+                              </option>
+                            ) : (
+                              studentModal.availableStudents.map((student) => (
+                                <option key={student._id} value={student._id}>
+                                  {student.fullName}
+                                </option>
+                              ))
+                            )
+                          ) : studentModal.students.length === 0 ? (
+                            <option disabled>
+                              Không có học sinh nào trong lớp
+                            </option>
+                          ) : (
+                            studentModal.students.map((student) => (
+                              <option key={student._id} value={student._id}>
+                                {student.fullName}
+                              </option>
+                            ))
+                          )}
+                        </select>
                         <p className="text-sm text-gray-500 mt-1">
-                          Nhập danh sách ID học sinh, phân cách bằng dấu phẩy
+                          Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều học sinh
                         </p>
-                      </div>{" "}
-                      {studentModal.operation === "remove" &&
-                        studentModal.students.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="font-medium text-gray-700 mb-2">
-                              Học sinh hiện tại
-                            </h4>
-                            <ul className="border rounded-md divide-y text-sm max-h-40 overflow-y-auto">
-                              {studentModal.students.map((student) => (
-                                <li
-                                  key={student._id}
-                                  className="px-3 py-1.5 flex justify-between items-center"
-                                >
-                                  <span>{student.fullName}</span>
-                                  <span className="text-xs text-gray-500">
-                                    {student._id}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                      </div>
                       <div className="mt-6 flex justify-end space-x-3">
                         <button
                           type="button"
@@ -674,6 +783,7 @@ const ClassManagement = () => {
           </div>
         </Dialog>
       </Transition>
+
       {/* Success Dialog */}
       <Transition appear show={isSuccessDialogOpen} as={Fragment}>
         <Dialog
@@ -715,7 +825,6 @@ const ClassManagement = () => {
                     Thành công
                   </Dialog.Title>
                   <p className="text-gray-600 mb-6">{dialogMessage}</p>
-
                   <div className="mt-4">
                     <button
                       type="button"
@@ -731,6 +840,7 @@ const ClassManagement = () => {
           </div>
         </Dialog>
       </Transition>
+
       {/* Error Dialog */}
       <Transition appear show={isErrorDialogOpen} as={Fragment}>
         <Dialog
@@ -772,7 +882,6 @@ const ClassManagement = () => {
                     Lỗi
                   </Dialog.Title>
                   <p className="text-gray-600 mb-6">{dialogMessage}</p>
-
                   <div className="mt-4">
                     <button
                       type="button"

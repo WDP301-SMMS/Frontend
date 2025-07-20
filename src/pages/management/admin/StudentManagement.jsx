@@ -6,20 +6,24 @@ import {
   getAllClasses,
 } from "../../../libs/api/adminService";
 import { Dialog, Transition } from "@headlessui/react";
-import { PlusCircle, CheckCircle, AlertCircle, X } from "lucide-react";
+import { PlusCircle, CheckCircle, AlertCircle, X, Search } from "lucide-react";
 
-const StudentManagement = () => {  const [students, setStudents] = useState([]);
+const StudentManagement = () => {
+  const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedClassFilter, setSelectedClassFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
     gender: "",
     status: "ACTIVE",
     classId: "",
-  });  const [isEditing, setIsEditing] = useState(false);
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -30,10 +34,11 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+
   useEffect(() => {
     fetchStudents();
     fetchClasses();
-  }, [pagination.currentPage, selectedClassFilter]);
+  }, [pagination.currentPage, selectedClassFilter, searchTerm]);
 
   const fetchStudents = async () => {
     try {
@@ -42,12 +47,17 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
         page: pagination.currentPage,
         limit: 10,
       };
-      
-      // Thêm classId vào query params nếu có lựa chọn lớp
+
+      // Add classId to query params if class filter is selected
       if (selectedClassFilter) {
         queryParams.classId = selectedClassFilter;
       }
-      
+
+      // Add search term to query params if search is active
+      if (searchTerm.trim()) {
+        queryParams.search = searchTerm.trim();
+      }
+
       const response = await getAllStudents(queryParams);
 
       setStudents(response.students || []);
@@ -73,13 +83,16 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
       console.error("Error fetching classes:", err);
     }
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
-  };  const handleSubmit = async (e) => {
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -99,7 +112,7 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
       } else {
         await createStudent(payload);
         console.log("New student created:", payload);
-        
+
         setDialogMessage("Thêm học sinh mới thành công!");
       }
       setIsSuccessDialogOpen(true);
@@ -113,7 +126,9 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
     } finally {
       setLoading(false);
     }
-  };  const handleEdit = async (student) => {
+  };
+
+  const handleEdit = async (student) => {
     setIsEditing(true);
     setSelectedStudentId(student._id);
     const formattedDate = student.dateOfBirth
@@ -138,6 +153,7 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
     console.log("Editing student:", student);
     setIsDialogOpen(true);
   };
+
   const openAddStudentDialog = async () => {
     setIsEditing(false);
     resetForm();
@@ -150,7 +166,9 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
       console.error("Error fetching classes for dialog:", err);
     }
     setIsDialogOpen(true);
-  };  const resetForm = () => {
+  };
+
+  const resetForm = () => {
     setIsEditing(false);
     setSelectedStudentId(null);
     setFormData({
@@ -166,6 +184,7 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
     setIsDialogOpen(false);
     resetForm();
   };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setPagination({ ...pagination, currentPage: newPage });
@@ -175,7 +194,24 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
   const handleClassFilterChange = (e) => {
     setSelectedClassFilter(e.target.value);
     // Reset to page 1 when filter changes
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    // Reset to page 1 when search changes
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setSelectedClassFilter("");
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
   };
 
   if (loading && students.length === 0) {
@@ -194,7 +230,8 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
       )}
 
-      <div className="bg-white p-6 rounded-lg shadow-md">        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Danh sách học sinh</h2>
           <button
             onClick={openAddStudentDialog}
@@ -205,35 +242,124 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
           </button>
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="classFilter" className="block text-sm font-medium text-gray-700 mb-1">
-            Lọc theo lớp:
-          </label>
-          <select
-            id="classFilter"
-            name="classFilter"
-            value={selectedClassFilter}
-            onChange={handleClassFilterChange}
-            className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Tất cả lớp</option>
-            {classes.map((classItem) => (
-              <option key={classItem._id} value={classItem._id}>
-                {classItem.name || classItem.className}
-              </option>
-            ))}
-          </select>
+        {/* Search and Filter Section */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar and Class Filter in one row */}
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+            {/* Search Bar */}
+            <div className="flex-1">
+              <label
+                htmlFor="search"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Tìm kiếm học sinh:
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="search"
+                  name="search"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="Nhập tên học sinh..."
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Class Filter */}
+            <div className="w-full md:w-64">
+              <label
+                htmlFor="classFilter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Lọc theo lớp:
+              </label>
+              <select
+                id="classFilter"
+                name="classFilter"
+                value={selectedClassFilter}
+                onChange={handleClassFilterChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Tất cả lớp</option>
+                {classes.map((classItem) => (
+                  <option key={classItem._id} value={classItem._id}>
+                    {classItem.name || classItem.className}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear All Filters Button */}
+            {(searchTerm || selectedClassFilter) && (
+              <button
+                onClick={clearAllFilters}
+                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                Xóa tất cả bộ lọc
+              </button>
+            )}
+          </div>
+
+          {/* Active Filters Display */}
+          {(searchTerm || selectedClassFilter) && (
+            <div className="flex flex-wrap gap-2 text-sm">
+              <span className="text-gray-600">Đang áp dụng:</span>
+              {searchTerm && (
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md">
+                  Tìm kiếm: "{searchTerm}"
+                </span>
+              )}
+              {selectedClassFilter && (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md">
+                  Lớp:{" "}
+                  {classes.find((c) => c._id === selectedClassFilter)?.name ||
+                    classes.find((c) => c._id === selectedClassFilter)
+                      ?.className ||
+                    selectedClassFilter}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {students.length === 0 ? (
-          <p>Không tìm thấy học sinh nào.</p>
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              {searchTerm || selectedClassFilter
+                ? "Không tìm thấy học sinh nào phù hợp với điều kiện tìm kiếm."
+                : "Không tìm thấy học sinh nào."}
+            </p>
+            {(searchTerm || selectedClassFilter) && (
+              <button
+                onClick={clearAllFilters}
+                className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+              >
+                Xóa bộ lọc để xem tất cả học sinh
+              </button>
+            )}
+          </div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Họ và tên</th>                    <th className="py-2 px-4 text-left">Ngày sinh</th>
+                    <th className="py-2 px-4 text-left">Họ và tên</th>
+                    <th className="py-2 px-4 text-left">Ngày sinh</th>
                     <th className="py-2 px-4 text-left">Giới tính</th>
                     <th className="py-2 px-4 text-left">Lớp</th>
                     <th className="py-2 px-4 text-left">Thao tác</th>
@@ -258,7 +384,8 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
                           : student.gender === "OTHER"
                           ? "Khác"
                           : "-"}
-                      </td>                      <td className="py-2 px-4">
+                      </td>
+                      <td className="py-2 px-4">
                         {student.class?.name || student.class?.className || "-"}
                       </td>
                       <td className="py-2 px-4">
@@ -278,6 +405,7 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
             <div className="flex justify-between items-center mt-6">
               <div>
                 Hiển thị {students.length} / {pagination.totalStudents} học sinh
+                {(searchTerm || selectedClassFilter) && " (đã lọc)"}
               </div>
               <div className="flex space-x-2">
                 <button
@@ -308,7 +436,7 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
               </div>
             </div>
           </>
-        )}{" "}
+        )}
       </div>
 
       {/* Custom Student Form Dialog */}
@@ -416,7 +544,8 @@ const StudentManagement = () => {  const [students, setStudents] = useState([]);
                           <option key={classItem._id} value={classItem._id}>
                             {classItem.name || classItem.className}
                           </option>
-                        ))}                      </select>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="mt-6 flex justify-end space-x-3">

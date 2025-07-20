@@ -166,20 +166,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             collapsed={isCollapsed}
             active={path === "/management/admin/partners"}
           />
-          <SidebarItem
-            to="/management/admin/blogs"
-            icon={faBell}
-            label="Quản lý bài viết"
-            collapsed={isCollapsed}
-            active={path === "/management/admin/blogs"}
-          />
-          <SidebarItem
-            to="/management/notification"
-            icon={faSchool}
-            label="Thông báo"
-            collapsed={isCollapsed}
-            active={path === "/management/notification"}
-          />
+          
         </>
       );
     }

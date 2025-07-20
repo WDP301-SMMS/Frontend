@@ -680,7 +680,11 @@ const StaffFormDialog = ({ isOpen, onClose, onSubmit, loading }) => {
 
 // Manager Form Dialog
 const ManagerFormDialog = ({ isOpen, onClose, onSubmit, loading }) => {
-  const [formData, setFormData] = useState({ managerId: "" });
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -706,12 +710,38 @@ const ManagerFormDialog = ({ isOpen, onClose, onSubmit, loading }) => {
       <form onSubmit={handleSubmit} className="text-left space-y-4">
         <div>
           <label className="block text-gray-700 mb-1 text-sm font-medium">
-            ID quản lý
+            Họ và tên
           </label>
           <input
             type="text"
-            name="managerId"
-            value={formData.managerId}
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm font-medium">
+            Email
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm font-medium">
+            Điện thoại
+          </label>
+          <input
+            type="text"
+            name="phone"
+            value={formData.phone}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
             required

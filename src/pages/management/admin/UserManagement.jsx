@@ -11,6 +11,11 @@ const UserManagement = () => {
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
+  // Confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
   useEffect(() => {
     fetchUsers();
   }, [currentPage, roleFilter, statusFilter]);
@@ -45,20 +50,39 @@ const UserManagement = () => {
     fetchUsers();
   };
 
-  const handleStatusChange = async (userId, currentStatus) => {
+  const openConfirmModal = (user) => {
+    setSelectedUser(user);
+    setShowConfirmModal(true);
+  };
+
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+    setSelectedUser(null);
+    setActionLoading(false);
+  };
+
+  const handleStatusChange = async () => {
+    if (!selectedUser) return;
+
     try {
-      const newStatus = !currentStatus;
-      await updateUserStatus(userId, { isActive: newStatus });
+      setActionLoading(true);
+      const newStatus = !selectedUser.isActive;
+      await updateUserStatus(selectedUser._id, { isActive: newStatus });
 
       // Update local state
       setUsers(
         users.map((user) =>
-          user._id === userId ? { ...user, isActive: newStatus } : user
+          user._id === selectedUser._id
+            ? { ...user, isActive: newStatus }
+            : user
         )
       );
+
+      closeConfirmModal();
     } catch (err) {
       console.error("Error updating user status:", err);
       setError("Failed to update user status. Please try again.");
+      setActionLoading(false);
     }
   };
 
@@ -79,6 +103,50 @@ const UserManagement = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Confirmation Modal Component
+  const ConfirmModal = () => {
+    if (!showConfirmModal || !selectedUser) return null;
+
+    const action = selectedUser.isActive ? "vô hiệu hóa" : "kích hoạt";
+    const actionColor = selectedUser.isActive
+      ? "text-red-600"
+      : "text-green-600";
+
+    return (
+      <div className="fixed inset-0 bg-gray-100 bg-opacity-10 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <h3 className="text-lg font-semibold mb-4">Xác nhận thay đổi</h3>
+          <p className="text-gray-700 mb-6">
+            Bạn có chắc chắn muốn{" "}
+            <span className={`font-semibold ${actionColor}`}>{action}</span> tài
+            khoản của người dùng{" "}
+            <span className="font-semibold">{selectedUser.username}</span>?
+          </p>
+          <div className="flex space-x-3 justify-end">
+            <button
+              onClick={closeConfirmModal}
+              disabled={actionLoading}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={handleStatusChange}
+              disabled={actionLoading}
+              className={`px-4 py-2 text-white rounded-md disabled:opacity-50 ${
+                selectedUser.isActive
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {actionLoading ? "Đang xử lý..." : "Xác nhận"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -203,9 +271,7 @@ const UserManagement = () => {
                       </td>
                       <td className="py-2 px-4">
                         <button
-                          onClick={() =>
-                            handleStatusChange(user._id, user.isActive)
-                          }
+                          onClick={() => openConfirmModal(user)}
                           className={`text-sm px-3 py-1 rounded ${
                             user.isActive
                               ? "bg-red-600 text-white hover:bg-red-700"
@@ -278,6 +344,9 @@ const UserManagement = () => {
           </>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal />
     </div>
   );
 };
