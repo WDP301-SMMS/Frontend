@@ -105,6 +105,10 @@ export const endpoints = {
     addPartnerStaff: "/admin/partners/{partnerId}/staff", // POST
     deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}", // DELETE
   },
+  chat: {
+    getAllMessagesByRoomId: "/messages/{roomId}", // GET
+    getAllRoomsByUserId: "/messages/user/{userId}", // GET
+  },
   medication: {
     create: "/medication/requests", // POST: Tạo yêu cầu uống thuốc
     getAll: "/medication/allRequests", // GET: Lấy tất cả yêu cầu (nurse)

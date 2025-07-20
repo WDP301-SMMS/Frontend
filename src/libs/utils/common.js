@@ -159,7 +159,7 @@ export const mockData = {
       active: false,
     },
   ],
-  menuItemsNurse: [
+   menuItemsNurse: [
     {
       id: 'home',
       label: 'Trang chủ',
@@ -377,6 +377,12 @@ export const mockData = {
           route: '/management/manager/manage-partner',
         },
       ],
+    },
+     {
+      id: 'manage-blogs',
+      label: 'Quản lí blog',
+      icon: 'Book',
+      route: '/management/manager/manage-blogs',
     },
     {
       id: 'settings',

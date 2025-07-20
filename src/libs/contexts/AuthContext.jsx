@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
       switch (userData.role) {
         case "Parent":
-          navigate("/health-profiles");
+          navigate("/");
           break;
         case "Nurse":
           navigate("/management/nurse");
@@ -83,7 +83,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, role, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, user, role, login, logout, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
