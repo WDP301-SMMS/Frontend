@@ -20,9 +20,6 @@ import {
 
 const ParentHealthProfileForm = () => {
   const location = useLocation();
-  const studentInfoFromState = location.state?.studentInfo;
-  console.log("Student Info from State:", studentInfoFromState);
-
   const [activeTab, setActiveTab] = useState("basic");
   const [studentInfo, setStudentInfo] = useState({
     studentId: "",
@@ -58,92 +55,81 @@ const ParentHealthProfileForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  console.log("Current User:", user);
-
-  // Tải thông tin hồ sơ nếu đang ở chế độ chỉnh sửa
+  // Tải thông tin hồ sơ
   useEffect(() => {
-    // Check for claimed student data or studentInfo passed from navigation state
+    console.log("Current Profile ID:", profileId);
+    console.log("Location state:", location.state);
+    console.log("claimedStudent:", location.state?.claimedStudent);
+    console.log("studentInfoFromState:", location.state?.studentInfo);
+
     const claimedStudent = location.state?.claimedStudent;
     const studentInfoFromState = location.state?.studentInfo;
-    if (claimedStudent) {
-      const formattedDate = claimedStudent.dateOfBirth
-        ? new Date(claimedStudent.dateOfBirth).toISOString().split("T")[0]
-        : "";
-      setStudentInfo({
-        studentId: claimedStudent._id || "",
-        studentName: claimedStudent.fullName || "",
-        class: claimedStudent.classId?.className || "",
-        dateOfBirth: formattedDate,
-        parentName: user?.username || "",
-        contactNumber: user?.phone || "",
-        relationship: "father",
-      });
-    } else if (studentInfoFromState) {
-      // Use studentInfo from navigation state
+
+    // Hàm để điền thông tin học sinh/phụ huynh
+    const setStudentInfoData = (data) => {
       let formattedDate = "";
-      if (studentInfoFromState.dateOfBirth) {
-        // Chỉ chuyển đổi thủ công nếu đúng định dạng dd/mm/yyyy hoặc d/m/yyyy
+      if (data.dateOfBirth) {
         const regex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
-        if (regex.test(studentInfoFromState.dateOfBirth)) {
-          const parts = studentInfoFromState.dateOfBirth.split("/");
+        if (regex.test(data.dateOfBirth)) {
+          const parts = data.dateOfBirth.split("/");
           let day = parts[0].padStart(2, "0");
           let month = parts[1].padStart(2, "0");
           let year = parts[2];
-          // Nếu day > 12 thì chắc chắn là dd/mm/yyyy
-          // Nếu month > 12 thì cũng là dd/mm/yyyy
           if (parseInt(day) > 12 || parseInt(month) > 12) {
             formattedDate = `${year}-${month}-${day}`;
           } else {
-            // Nếu cả day và month <= 12, không chắc chắn, trả về ""
             formattedDate = "";
           }
-        } else {
-          formattedDate = "";
+        } else if (new Date(data.dateOfBirth).toString() !== "Invalid Date") {
+          formattedDate = new Date(data.dateOfBirth)
+            .toISOString()
+            .split("T")[0];
         }
       }
       setStudentInfo({
-        studentId: studentInfoFromState.studentId || "",
-        studentName: studentInfoFromState.studentName || "",
-        class: studentInfoFromState.class || "",
+        studentId: data.studentId || data._id || "",
+        studentName: data.studentName || data.fullName || "",
+        class: data.class || data.classId?.className || "",
         dateOfBirth: formattedDate,
         parentName: user?.username || "",
         contactNumber: user?.phone || "",
-        relationship: studentInfoFromState.relationship || "father",
+        relationship: data.relationship || user?.relationship || "father",
       });
-    } else if (profileId && profileId !== "new") {
+    };
+
+    // Điền thông tin học sinh/phụ huynh từ claimedStudent hoặc studentInfoFromState
+    if (claimedStudent) {
+      console.log("Processing claimedStudent:", claimedStudent);
+      setStudentInfoData(claimedStudent);
+    } else if (studentInfoFromState) {
+      console.log("Processing studentInfoFromState:", studentInfoFromState);
+      setStudentInfoData(studentInfoFromState);
+    } else {
+      console.log("No student data provided, setting default parent info");
+      setStudentInfo((prev) => ({
+        ...prev,
+        parentName: user?.username || "",
+        contactNumber: user?.phone || "",
+      }));
+    }
+
+    // Tải thông tin sức khỏe nếu có profileId hợp lệ
+    if (profileId && profileId !== "new") {
+      console.log("Editing existing profile with ID:", profileId);
       setIsEditing(true);
       const fetchProfileData = async () => {
+        console.log("Starting fetchProfileData with profileId:", profileId);
         try {
           const response = await getStudentHealthProfile(profileId);
-          console.log("Fetched profile data:", response);
-
+          console.log("Raw API response:", response);
           if (response.success) {
+            console.log("Fetched profile data:", response.data);
             const apiData = response.data;
-
-            // Format the date for input field
-            const formattedDate = apiData.dateOfBirth
-              ? new Date(apiData.dateOfBirth).toISOString().split("T")[0]
-              : "";
-
-            // Format student info
-            setStudentInfo({
-              studentId: apiData.studentId?._id || apiData.studentId,
-              studentName:
-                apiData.studentName || apiData.studentId?.fullName || "",
-              class: apiData.className || apiData.studentId?.class?.name || "",
-              dateOfBirth: formattedDate,
-              parentName: user?.username || "",
-              contactNumber: user?.phone || "",
-              relationship: user?.relationship || "father",
-            });
-
-            // Format health info
             setHealthInfo({
               allergies:
                 apiData.allergies?.length > 0
                   ? apiData.allergies
                   : [{ type: "", reaction: "", severity: "Mild", notes: "" }],
-
               chronicConditions:
                 apiData.chronicConditions?.length > 0
                   ? apiData.chronicConditions
@@ -155,7 +141,6 @@ const ParentHealthProfileForm = () => {
                         notes: "",
                       },
                     ],
-
               medicalHistory:
                 apiData.medicalHistory?.length > 0
                   ? apiData.medicalHistory
@@ -182,6 +167,7 @@ const ParentHealthProfileForm = () => {
                     ],
             });
           } else {
+            console.log("API response failed:", response.message);
             setErrorMessage(
               response.message || "Không tìm thấy hồ sơ với ID đã cung cấp"
             );
@@ -194,50 +180,30 @@ const ParentHealthProfileForm = () => {
           );
         }
       };
-
       fetchProfileData();
-    } else {
-      // Điền sẵn thông tin phụ huynh nếu đang tạo mới
-      setStudentInfo((prev) => ({
-        ...prev,
-        parentName: user?.username || "",
-        contactNumber: user?.phone || "",
-      }));
     }
   }, [profileId, location.state, user]);
 
-  const handleStudentInfoChange = (e) => {
-    const { name, value } = e.target;
-    setStudentInfo({
-      ...studentInfo,
-      [name]: value,
-    });
-  };
   const handleHealthInfoChange = (category, index, field, value) => {
-    // Convert string 'true'/'false' to boolean for checkbox fields
     if (field === "wearsGlasses" || field === "isColorblind") {
       value = value === "true" || value === true;
     }
-
-    // Convert doseNumber to number
     if (field === "doseNumber") {
       value = Number(value) || 1;
     }
-
     const updatedItems = [...healthInfo[category]];
     updatedItems[index] = {
       ...updatedItems[index],
       [field]: value,
     };
-
     setHealthInfo({
       ...healthInfo,
       [category]: updatedItems,
     });
   };
+
   const addItemToCategory = (category) => {
     const newItems = [...healthInfo[category]];
-
     if (category === "allergies") {
       newItems.push({ type: "", reaction: "", severity: "Mild", notes: "" });
     } else if (category === "chronicConditions") {
@@ -264,19 +230,18 @@ const ParentHealthProfileForm = () => {
         note: "",
       });
     }
-
     setHealthInfo({
       ...healthInfo,
       [category]: newItems,
     });
   };
+
   const handleCheckboxChange = (category, index, field) => {
     const updatedItems = [...healthInfo[category]];
     updatedItems[index] = {
       ...updatedItems[index],
       [field]: !updatedItems[index][field],
     };
-
     setHealthInfo({
       ...healthInfo,
       [category]: updatedItems,
@@ -287,29 +252,12 @@ const ParentHealthProfileForm = () => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
-
     try {
-      // Kiểm tra các trường bắt buộc
-      if (
-        !studentInfo.studentId ||
-        !studentInfo.studentName ||
-        !studentInfo.class ||
-        !studentInfo.dateOfBirth ||
-        !studentInfo.parentName
-      ) {
-        setErrorMessage("Vui lòng điền đầy đủ thông tin học sinh");
-        setActiveTab("basic");
-        return;
-      }
-
-      // Format data for API
       const hasAllergies =
         healthInfo.allergies.length > 0 && healthInfo.allergies[0].type !== "";
       const hasChronicConditions =
         healthInfo.chronicConditions.length > 0 &&
         healthInfo.chronicConditions[0].conditionName !== "";
-
-      // Create API request body
       const apiData = {
         studentId: studentInfo.studentId,
         allergies: hasAllergies ? healthInfo.allergies : [],
@@ -321,10 +269,8 @@ const ParentHealthProfileForm = () => {
         ),
         vaccines: healthInfo.vaccines.filter((item) => item.vaccineName !== ""),
       };
-
       console.log("Submitting health profile data:", apiData);
       let response;
-      // Call the API
       if (isEditing) {
         response = await updateStudentHealthProfile(profileId, apiData);
         console.log("Profile updated successfully:", response);
@@ -334,8 +280,6 @@ const ParentHealthProfileForm = () => {
         console.log("Profile created successfully:", response);
         setSuccessMessage("Hồ sơ sức khỏe đã được tạo mới thành công!");
       }
-
-      // Hiển thị thông báo thành công
       setTimeout(() => {
         navigate("/health-profiles");
       }, 2000);
@@ -385,23 +329,17 @@ const ParentHealthProfileForm = () => {
             </div>
           </div>
         </div>
-
-        {/* Thông báo thành công/lỗi */}
         {successMessage && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md">
             {successMessage}
           </div>
         )}
-
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
             {errorMessage}
           </div>
         )}
-
         <form onSubmit={handleSubmit}>
-          {" "}
-          {/* Tabs điều hướng */}
           <div className="flex flex-wrap gap-2 mb-6">
             <TabButton
               id="basic"
@@ -429,7 +367,6 @@ const ParentHealthProfileForm = () => {
               icon={<Syringe size={18} />}
             />
           </div>
-          {/* Thông tin học sinh - Tab cơ bản */}
           {activeTab === "basic" && (
             <div>
               <div className="mb-6">
@@ -446,9 +383,9 @@ const ParentHealthProfileForm = () => {
                       type="text"
                       name="studentId"
                       value={studentInfo.studentId}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                   <div>
@@ -459,9 +396,9 @@ const ParentHealthProfileForm = () => {
                       type="text"
                       name="studentName"
                       value={studentInfo.studentName}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                   <div>
@@ -472,9 +409,9 @@ const ParentHealthProfileForm = () => {
                       type="text"
                       name="class"
                       value={studentInfo.class}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                   <div>
@@ -485,14 +422,13 @@ const ParentHealthProfileForm = () => {
                       type="date"
                       name="dateOfBirth"
                       value={studentInfo.dateOfBirth}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                 </div>
               </div>
-
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
                   <User className="mr-2 text-primary" size={20} />
@@ -507,9 +443,9 @@ const ParentHealthProfileForm = () => {
                       type="text"
                       name="parentName"
                       value={studentInfo.parentName}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                   <div>
@@ -521,9 +457,9 @@ const ParentHealthProfileForm = () => {
                       type="tel"
                       name="contactNumber"
                       value={studentInfo.contactNumber}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     />
                   </div>
                   <div>
@@ -534,9 +470,9 @@ const ParentHealthProfileForm = () => {
                     <select
                       name="relationship"
                       value={studentInfo.relationship}
-                      onChange={handleStudentInfoChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      required
+                      required={false}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                      disabled
                     >
                       <option value="father">Bố</option>
                       <option value="mother">Mẹ</option>
@@ -548,7 +484,6 @@ const ParentHealthProfileForm = () => {
               </div>
             </div>
           )}
-          {/* Tab dị ứng */}
           {activeTab === "allergies" && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -564,7 +499,6 @@ const ParentHealthProfileForm = () => {
                   <Plus className="w-4 h-4 mr-1" /> Thêm dị ứng
                 </button>
               </div>
-
               {healthInfo.allergies.map((allergy, index) => (
                 <div key={index} className="mb-6 p-4 border rounded-md">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -607,7 +541,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Mức độ nghiêm trọng
@@ -629,7 +562,6 @@ const ParentHealthProfileForm = () => {
                       <option value="Severe">Nghiêm trọng</option>
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Ghi chú
@@ -653,7 +585,6 @@ const ParentHealthProfileForm = () => {
               ))}
             </div>
           )}
-          {/* Tab bệnh mãn tính */}
           {activeTab === "chronic" && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -669,7 +600,6 @@ const ParentHealthProfileForm = () => {
                   <Plus className="w-4 h-4 mr-1" /> Thêm bệnh mãn tính
                 </button>
               </div>
-
               {healthInfo.chronicConditions.map((condition, index) => (
                 <div key={index} className="mb-6 p-4 border rounded-md">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -711,7 +641,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Thuốc điều trị
@@ -731,7 +660,6 @@ const ParentHealthProfileForm = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Ghi chú
@@ -755,7 +683,6 @@ const ParentHealthProfileForm = () => {
               ))}
             </div>
           )}
-          {/* Tab tiền sử điều trị */}
           {activeTab === "medical" && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -771,7 +698,6 @@ const ParentHealthProfileForm = () => {
                   <Plus className="w-4 h-4 mr-1" /> Thêm tiền sử
                 </button>
               </div>
-
               {healthInfo.medicalHistory.map((history, index) => (
                 <div key={index} className="mb-6 p-4 border rounded-md">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -814,7 +740,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -854,7 +779,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Ghi chú
@@ -878,7 +802,6 @@ const ParentHealthProfileForm = () => {
               ))}
             </div>
           )}
-          {/* Tab tiêm chủng */}
           {activeTab === "vaccines" && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -894,7 +817,6 @@ const ParentHealthProfileForm = () => {
                   <Plus className="w-4 h-4 mr-1" /> Thêm tiêm chủng
                 </button>
               </div>
-
               {healthInfo.vaccines.map((vaccine, index) => (
                 <div key={index} className="mb-6 p-4 border rounded-md">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -936,7 +858,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -978,7 +899,6 @@ const ParentHealthProfileForm = () => {
                       />
                     </div>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Ghi chú

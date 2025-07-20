@@ -111,7 +111,7 @@ export const createStudentHealthProfile = async (studentData) => {
 //parent update student health profile
 export const updateStudentHealthProfile = async (profileId, studentData) => {
   try {
-    const response = await api.put(
+    const response = await api.patch(
       `${API_URL}/health-profiles/${profileId}`,
       studentData
     );
