@@ -241,15 +241,18 @@ const DispenseMedicationAndSupplies = () => {
     }
 
     const allItems = [...dispenseForm.medications, ...dispenseForm.supplies];
-    if (!allItems.some((item) => item.itemId)) {
-      setErrors((prev) => ({
-        ...prev,
-        form: "Vui lòng chọn ít nhất một loại thuốc hoặc vật tư",
-      }));
-      return;
-    }
+    const validItems = allItems.filter((item) => item.itemId);
 
-    const hasErrors = allItems.some((item, index) => {
+    // Remove the check that requires at least one item
+    // if (!allItems.some((item) => item.itemId)) {
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     form: "Vui lòng chọn ít nhất một loại thuốc hoặc vật tư",
+    //   }));
+    //   return;
+    // }
+
+    const hasErrors = validItems.some((item, index) => {
       if (!item.itemId) {
         setErrors((prev) => ({
           ...prev,
@@ -280,16 +283,13 @@ const DispenseMedicationAndSupplies = () => {
 
     setLoading(true);
     try {
-      const dispensedItems = allItems
-        .filter((item) => item.itemId)
-        .map((item) => ({
-          itemId: item.itemId,
-          quantityToWithdraw: item.quantityToWithdraw,
-          usageInstructions: item.usageInstructions || "",
-        }));
-      if (!Array.isArray(dispensedItems) || dispensedItems.length === 0) {
-        throw new Error("No valid items to dispense");
-      }
+      const dispensedItems = validItems.map((item) => ({
+        itemId: item.itemId,
+        quantityToWithdraw: item.quantityToWithdraw,
+        usageInstructions: item.usageInstructions || "",
+      }));
+
+      // Allow submission even if dispensedItems is empty
       const response = await incidentsService.dispenseMedicationForIncident(
         selectedIncident._id,
         dispensedItems

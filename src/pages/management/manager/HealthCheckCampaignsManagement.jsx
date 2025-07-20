@@ -44,8 +44,9 @@ import { styled } from "@mui/material/styles";
 import { Search } from "lucide-react";
 import healthCheckCampaignService from "~/libs/api/services/healthCheckCampainService";
 import healthCheckTemplateService from "~/libs/api/services/healthCheckTemplateService";
+import classService from "~/libs/api/services/classService";
+import userStudentServiceInstance from "~/libs/api/services/userStudentService";
 import { userService } from "~/libs/api";
-import { create } from "lodash";
 
 // Styled Paper cho phần form và detail
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -85,7 +86,7 @@ const CampaignForm = ({
   );
   const [templates, setTemplates] = useState([]);
   const [dateError, setDateError] = useState("");
-  const [profile, setProfiles] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     if (initialData) {
@@ -104,32 +105,31 @@ const CampaignForm = ({
     }
   }, [initialData]);
 
-  const fetchTemplates = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const response =
+      const templateResponse =
         await healthCheckTemplateService.getListHealthCheckTemplates({
           page: 1,
           limit: 10,
           search: "",
         });
-      console.log("Fetched templates:", response);
-      const profileResponse = await userService.getProfile();
-      console.log("Fetched profiles:", profileResponse);
-      setProfiles(profileResponse.data.data || []);
+      setTemplates(templateResponse.data || []);
 
-      setTemplates(response.data || []);
-      if (response.data.length > 0 && !templateId) {
-        setTemplateId(response.data[0]._id);
+      const profileResponse = await userService.getProfile();
+      setProfile(profileResponse.data.data || null);
+
+      if (templateResponse.data.length > 0 && !templateId) {
+        setTemplateId(templateResponse.data[0]._id);
       }
     } catch (err) {
-      console.error("Failed to fetch templates:", err);
-      showSnackbar("Không thể tải danh sách mẫu kiểm tra.", "error");
+      console.error("Failed to fetch data:", err);
+      showSnackbar("Không thể tải dữ liệu. Vui lòng thử lại.", "error");
     }
   }, [showSnackbar, templateId]);
 
   useEffect(() => {
-    fetchTemplates();
-  }, [fetchTemplates]);
+    fetchData();
+  }, [fetchData]);
 
   const validateDates = () => {
     const today = new Date().toISOString().split("T")[0];
@@ -170,7 +170,7 @@ const CampaignForm = ({
       startDate,
       endDate,
       templateId,
-      createdBy: profile._id,
+      createdBy: profile?._id,
     };
     onSubmit(formattedData);
   };
@@ -200,7 +200,6 @@ const CampaignForm = ({
         },
       }}
     >
-      {/* Header Section */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
         <Box
           sx={{
@@ -243,9 +242,7 @@ const CampaignForm = ({
 
       <Divider sx={{ mb: 4 }} />
 
-      {/* Form Fields */}
       <Grid container spacing={3}>
-        {/* Campaign Name */}
         <Grid item xs={12}>
           <Typography
             variant="subtitle2"
@@ -292,7 +289,6 @@ const CampaignForm = ({
           />
         </Grid>
 
-        {/* Date Range */}
         <Grid item xs={12}>
           <Typography
             variant="subtitle2"
@@ -376,7 +372,6 @@ const CampaignForm = ({
           </Grid>
         </Grid>
 
-        {/* Template Selection */}
         <Grid item xs={12}>
           <Typography
             variant="subtitle2"
@@ -428,7 +423,6 @@ const CampaignForm = ({
         </Grid>
       </Grid>
 
-      {/* Action Buttons */}
       <Box
         sx={{
           display: "flex",
@@ -497,14 +491,300 @@ const CampaignForm = ({
   );
 };
 
+// Component cho Form phân công
+const AssignmentForm = ({ campaignId, onSubmit, onCancel, showSnackbar }) => {
+  const [assignments, setAssignments] = useState([{ classId: "", nurseId: "" }]);
+  const [classes, setClasses] = useState([]);
+  const [nurses, setNurses] = useState([]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const classResponse = await classService.getAll({
+        page: 1,
+        limit: 100,
+      });
+      setClasses(classResponse.data.classes || []);
+
+      const nurseResponse = await userStudentServiceInstance.getAllUsers({
+        page: 1,
+        limit: 100,
+        role: "Nurse",
+      });
+      console.log("Nurse response:", nurseResponse); // For debugging
+      setNurses(nurseResponse.data.users || []); // Uncommented and fixed
+    } catch (err) {
+      console.error("Failed to fetch assignment data:", err);
+      showSnackbar("Không thể tải dữ liệu phân công. Vui lòng thử lại.", "error");
+    }
+  }, [showSnackbar]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleAssignmentChange = (index, field, value) => {
+    const newAssignments = [...assignments];
+    newAssignments[index] = {
+      ...newAssignments[index],
+      [field]: value,
+    };
+    setAssignments(newAssignments);
+  };
+
+  const addAssignment = () => {
+    setAssignments([...assignments, { classId: "", nurseId: "" }]);
+  };
+
+  const removeAssignment = (index) => {
+    setAssignments(assignments.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formattedData = {
+      assignments: assignments.map((assignment) => ({
+        classId: assignment.classId,
+        nurseId: assignment.nurseId,
+      })),
+    };
+    onSubmit(campaignId, formattedData);
+  };
+
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        p: 4,
+        background: "linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)",
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          background: "linear-gradient(90deg, #2196F3, #21CBF3, #2196F3)",
+        },
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+        <Box
+          sx={{
+            p: 1.5,
+            borderRadius: 2,
+            bgcolor: "primary.main",
+            color: "white",
+            mr: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Assignment />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "grey.800",
+              mb: 0.5,
+            }}
+          >
+            Phân công Y tá và Lớp học
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Chọn y tá và lớp học để phân công cho chiến dịch
+          </Typography>
+        </Box>
+      </Box>
+
+      <Divider sx={{ mb: 4 }} />
+
+      <Grid container spacing={3}>
+        {assignments.map((assignment, index) => (
+          <Grid item xs={12} key={index}>
+            <Box sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 2 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={5}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Lớp học"
+                    value={assignment.classId}
+                    onChange={(e) =>
+                      handleAssignmentChange(index, "classId", e.target.value)
+                    }
+                    required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Assignment sx={{ color: "action.active" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  >
+                    <MenuItem value="" disabled>
+                      Chọn lớp học
+                    </MenuItem>
+                    {classes.map((cls) => (
+                      <MenuItem key={cls._id} value={cls._id}>
+                        {`${cls.className} (${cls.gradeLevel} - ${cls.schoolYear})`}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={5}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Y tá"
+                    value={assignment.nurseId}
+                    onChange={(e) =>
+                      handleAssignmentChange(index, "nurseId", e.target.value)
+                    }
+                    required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Assignment sx={{ color: "action.active" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  >
+                    <MenuItem value="" disabled>
+                      Chọn y tá
+                    </MenuItem>
+                    {nurses.map((nurse) => (
+                      <MenuItem key={nurse._id} value={nurse._id}>
+                        {nurse.username}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <IconButton
+                    color="error"
+                    onClick={() => removeAssignment(index)}
+                    disabled={assignments.length === 1}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+        ))}
+        <Grid item xs={12}>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={addAssignment}
+            sx={{ mt: 2 }}
+          >
+            Thêm Phân công
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          mt: 4,
+          gap: 2,
+          pt: 3,
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={onCancel}
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            fontWeight: 600,
+            textTransform: "none",
+            borderColor: "grey.300",
+            "&:hover": {
+              borderColor: "grey.400",
+              backgroundColor: "grey.50",
+            },
+          }}
+        >
+          Hủy
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={assignments.some(
+            (assignment) => !assignment.classId || !assignment.nurseId
+          )}
+          sx={{
+            borderRadius: 2,
+            px: 4,
+            py: 1.5,
+            fontWeight: 600,
+            textTransform: "none",
+            background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+            boxShadow: "0 4px 20px rgba(33, 150, 243, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(45deg, #1976D2 30%, #0288D1 90%)",
+              boxShadow: "0 6px 25px rgba(33, 150, 243, 0.4)",
+              transform: "translateY(-1px)",
+            },
+            "&:disabled": {
+              background: "grey.300",
+              boxShadow: "none",
+            },
+            transition: "all 0.3s ease",
+          }}
+        >
+          Lưu Phân công
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
 // Component để hiển thị chi tiết chiến dịch
-const CampaignDetail = ({ campaign, onClose }) => {
+const CampaignDetail = ({ campaign, onClose, showSnackbar }) => {
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+
   if (!campaign) return null;
-  const campaignData = campaign.data || campaign; // Xử lý cấu trúc dữ liệu { data: {...} }
+  const campaignData = campaign.data || campaign;
+
+  const handleAssignmentSubmit = async (campaignId, assignmentData) => {
+    try {
+      await healthCheckCampaignService.assignStaffToCampaign(
+        campaignId,
+        assignmentData
+      );
+      showSnackbar("Phân công y tá và lớp học thành công.", "success");
+      setShowAssignmentModal(false);
+      // Refresh campaign details
+      const response = await healthCheckCampaignService.getCampaignDetails(
+        campaignId
+      );
+      campaign.data = response.data;
+    } catch (err) {
+      console.error("Phân công thất bại:", err);
+      showSnackbar("Phân công thất bại. Vui lòng thử lại.", "error");
+    }
+  };
 
   return (
     <Box sx={{ p: 4, maxWidth: "1200px", mx: "auto" }}>
-      {/* Header Section */}
       <Box sx={{ mb: 4, textAlign: "center" }}>
         <Typography
           variant="h5"
@@ -519,7 +799,6 @@ const CampaignDetail = ({ campaign, onClose }) => {
         <Divider sx={{ mt: 2, mb: 3 }} />
       </Box>
 
-      {/* Campaign Information Card */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: "hidden" }}>
         <Box
           sx={{
@@ -590,17 +869,22 @@ const CampaignDetail = ({ campaign, onClose }) => {
                     label={
                       campaignData.status === "DRAFT"
                         ? "Nháp"
-                        : campaignData.status === "ACTIVE"
-                        ? "Đang hoạt động"
+                        : campaignData.status === "ANNOUNCED"
+                        ? "Đã thông báo"
+                        : campaignData.status === "IN_PROGRESS"
+                        ? "Đang tiến hành"
                         : campaignData.status === "COMPLETED"
                         ? "Hoàn thành"
                         : "Đã hủy"
                     }
                     color={
-                      campaignData.status === "ACTIVE"
-                        ? "success"
+                      campaignData.status === "ANNOUNCED" ||
+                      campaignData.status === "IN_PROGRESS"
+                        ? "warning"
                         : campaignData.status === "COMPLETED"
-                        ? "primary"
+                        ? "success"
+                        : campaignData.status === "CANCELED"
+                        ? "error"
                         : "default"
                     }
                     sx={{ fontWeight: "medium" }}
@@ -794,7 +1078,6 @@ const CampaignDetail = ({ campaign, onClose }) => {
         </Box>
       </Paper>
 
-      {/* Template Information Card */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: "hidden" }}>
         <Box
           sx={{
@@ -950,7 +1233,6 @@ const CampaignDetail = ({ campaign, onClose }) => {
         </Box>
       </Paper>
 
-      {/* Staff Information Card */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: "hidden" }}>
         <Box
           sx={{
@@ -964,12 +1246,12 @@ const CampaignDetail = ({ campaign, onClose }) => {
           </Typography>
         </Box>
         <Box sx={{ p: 3 }}>
-          {campaignData.participatingStaffs?.length > 0 ? (
+          {campaignData.assignments?.length > 0 ? (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {campaignData.participatingStaffs.map((staff, index) => (
+              {campaignData.assignments.map((staff, index) => (
                 <Chip
                   key={index}
-                  label={staff}
+                  label={staff.nurseId.username}
                   variant="outlined"
                   sx={{
                     fontWeight: "medium",
@@ -997,18 +1279,29 @@ const CampaignDetail = ({ campaign, onClose }) => {
         </Box>
       </Paper>
 
-      {/* Assignments Card */}
       <Paper elevation={2} sx={{ mb: 4, borderRadius: 2, overflow: "hidden" }}>
         <Box
           sx={{
             backgroundColor: "#6ae274ff",
             color: "success.contrastText",
             p: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             Phân công
           </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setShowAssignmentModal(true)}
+            sx={{ textTransform: "none", borderRadius: 2 }}
+          >
+            Thêm Phân công
+          </Button>
         </Box>
         <Box sx={{ p: 3 }}>
           {campaignData.assignments?.length > 0 ? (
@@ -1094,7 +1387,6 @@ const CampaignDetail = ({ campaign, onClose }) => {
         </Box>
       </Paper>
 
-      {/* Action Button */}
       <Box
         sx={{
           display: "flex",
@@ -1124,6 +1416,37 @@ const CampaignDetail = ({ campaign, onClose }) => {
           Đóng
         </Button>
       </Box>
+
+      <Dialog
+        open={showAssignmentModal}
+        onClose={() => setShowAssignmentModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+            color: "white",
+          }}
+        >
+          Phân công Y tá và Lớp học
+          <IconButton
+            aria-label="Đóng"
+            onClick={() => setShowAssignmentModal(false)}
+            sx={{ position: "absolute", right: 8, top: 8, color: "white" }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <AssignmentForm
+            campaignId={campaignData._id}
+            onSubmit={handleAssignmentSubmit}
+            onCancel={() => setShowAssignmentModal(false)}
+            showSnackbar={showSnackbar}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
@@ -1143,14 +1466,19 @@ const HealthCheckCampaignsManagement = () => {
   const [editingCampaign, setEditingCampaign] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewingCampaign, setViewingCampaign] = useState(null);
-  const [profiles, setProfiles] = useState([]);
-
-  // State cho Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  // Helper function to show Snackbar
+  const statusOptions = [
+    { value: "", label: "Tất cả" },
+    { value: "DRAFT", label: "Nháp" },
+    { value: "ANNOUNCED", label: "Đã thông báo" },
+    { value: "IN_PROGRESS", label: "Đang tiến hành" },
+    { value: "COMPLETED", label: "Hoàn thành" },
+    { value: "CANCELED", label: "Đã hủy" },
+  ];
+
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -1212,7 +1540,14 @@ const HealthCheckCampaignsManagement = () => {
     setShowFormModal(true);
   };
 
-  const handleEditClick = async (campaignId) => {
+  const handleEditClick = async (campaignId, status) => {
+    if (!["DRAFT", "ANNOUNCED"].includes(status)) {
+      showSnackbar(
+        "Chỉ có thể chỉnh sửa chiến dịch ở trạng thái Nháp hoặc Đã thông báo.",
+        "error"
+      );
+      return;
+    }
     try {
       const response = await healthCheckCampaignService.getCampaignDetails(
         campaignId
@@ -1248,13 +1583,13 @@ const HealthCheckCampaignsManagement = () => {
         createdBy: formData.createdBy,
       };
       if (editingCampaign) {
+        requestBody.status = editingCampaign.status;
         await healthCheckCampaignService.updateHealthCheckCampaign(
           editingCampaign._id,
           requestBody
         );
         showSnackbar("Cập nhật chiến dịch thành công.", "success");
       } else {
-        console.log("Creating new campaign with data:", requestBody);
         await healthCheckCampaignService.createHealthCheckCampaign(requestBody);
         showSnackbar("Thêm chiến dịch mới thành công.", "success");
       }
@@ -1271,44 +1606,73 @@ const HealthCheckCampaignsManagement = () => {
   };
 
   const handleStatusChange = async (campaignId, currentStatus) => {
-    const newStatus =
-      currentStatus === "DRAFT"
-        ? "ACTIVE"
-        : currentStatus === "ACTIVE"
-        ? "COMPLETED"
-        : "DRAFT";
-    Swal.fire({
-      title: `Bạn có chắc chắn muốn thay đổi trạng thái thành "${
-        newStatus === "DRAFT"
-          ? "Nháp"
-          : newStatus === "ACTIVE"
-          ? "Đang hoạt động"
-          : "Hoàn thành"
-      }"?`,
-      text: "Hành động này sẽ thay đổi trạng thái của chiến dịch!",
-      icon: "warning",
+    // Define valid next statuses based on current status
+    const statusSequence = ["DRAFT", "ANNOUNCED", "IN_PROGRESS", "COMPLETED"];
+    const validTransitions = {
+      DRAFT: ["ANNOUNCED", "CANCELED"],
+      ANNOUNCED: ["IN_PROGRESS", "CANCELED"],
+      IN_PROGRESS: ["COMPLETED", "CANCELED"],
+      COMPLETED: [],
+      CANCELED: [],
+    };
+
+    const nextStatuses = validTransitions[currentStatus] || [];
+
+    // If no valid transitions, show a message and return
+    if (nextStatuses.length === 0) {
+      showSnackbar(
+        "Không thể thay đổi trạng thái từ trạng thái hiện tại.",
+        "info"
+      );
+      return;
+    }
+
+    // Map next statuses to their display labels
+    const statusOptionsMap = nextStatuses.map((status) => ({
+      value: status,
+      label: statusOptions.find((opt) => opt.value === status)?.label || status,
+    }));
+
+    // Show SweetAlert2 modal with dropdown
+    const result = await Swal.fire({
+      title: "Chọn trạng thái mới",
+      text: `Trạng thái hiện tại: ${
+        statusOptions.find((opt) => opt.value === currentStatus)?.label
+      }`,
+      icon: "question",
+      input: "select",
+      inputOptions: statusOptionsMap.reduce((acc, opt) => {
+        acc[opt.value] = opt.label;
+        return acc;
+      }, {}),
+      inputPlaceholder: "Chọn trạng thái mới",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Có, thực hiện!",
+      confirmButtonText: "Cập nhật",
       cancelButtonText: "Hủy",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await healthCheckCampaignService.updateCampaignStatus(campaignId, {
-            status: newStatus,
-          });
-          showSnackbar(`Cập nhật trạng thái chiến dịch thành công.`, "success");
-          fetchCampaigns();
-        } catch (err) {
-          console.error("Cập nhật trạng thái chiến dịch thất bại:", err);
-          showSnackbar(
-            "Cập nhật trạng thái chiến dịch thất bại. Vui lòng thử lại.",
-            "error"
-          );
+      inputValidator: (value) => {
+        if (!value) {
+          return "Vui lòng chọn một trạng thái!";
         }
-      }
+      },
     });
+
+    if (result.isConfirmed) {
+      try {
+        await healthCheckCampaignService.updateCampaignStatus(campaignId, {
+          status: result.value,
+        });
+        showSnackbar(`Cập nhật trạng thái chiến dịch thành công.`, "success");
+        fetchCampaigns();
+      } catch (err) {
+        console.error("Cập nhật trạng thái chiến dịch thất bại:", err);
+        showSnackbar(
+          "Cập nhật trạng thái chiến dịch thất bại. Vui lòng thử lại.",
+          "error"
+        );
+      }
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -1378,11 +1742,11 @@ const HealthCheckCampaignsManagement = () => {
                 onChange={handleStatusFilterChange}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
               >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="DRAFT">Nháp</MenuItem>
-                <MenuItem value="ACTIVE">Đang hoạt động</MenuItem>
-                <MenuItem value="COMPLETED">Hoàn thành</MenuItem>
-                <MenuItem value="CANCELLED">Đã hủy</MenuItem>
+                {statusOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </div>
             <div className="md:col-span-4">
@@ -1493,19 +1857,18 @@ const HealthCheckCampaignsManagement = () => {
                     <TableCell>
                       <Chip
                         label={
-                          campaign.status === "DRAFT"
-                            ? "Nháp"
-                            : campaign.status === "ACTIVE"
-                            ? "Đang hoạt động"
-                            : campaign.status === "COMPLETED"
-                            ? "Hoàn thành"
-                            : "Đã hủy"
+                          statusOptions.find(
+                            (opt) => opt.value === campaign.status
+                          )?.label || campaign.status
                         }
                         color={
-                          campaign.status === "ACTIVE"
-                            ? "success"
+                          campaign.status === "ANNOUNCED" ||
+                          campaign.status === "IN_PROGRESS"
+                            ? "warning"
                             : campaign.status === "COMPLETED"
-                            ? "primary"
+                            ? "success"
+                            : campaign.status === "CANCELED"
+                            ? "error"
                             : "default"
                         }
                       />
@@ -1531,34 +1894,55 @@ const HealthCheckCampaignsManagement = () => {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Sửa">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleEditClick(campaign._id)}
-                            sx={{
-                              "&:hover": {
-                                color: "white",
-                                backgroundColor: "primary.main",
-                              },
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
+                          <span>
+                            <IconButton
+                              color="primary"
+                              onClick={() =>
+                                handleEditClick(campaign._id, campaign.status)
+                              }
+                              disabled={![
+                                "DRAFT",
+                                "ANNOUNCED",
+                              ].includes(campaign.status)}
+                              sx={{
+                                "&:hover": {
+                                  color: "white",
+                                  backgroundColor: "primary.main",
+                                },
+                                "&.Mui-disabled": {
+                                  color: "grey.400",
+                                  cursor: "not-allowed",
+                                },
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </span>
                         </Tooltip>
                         <Tooltip title="Thay đổi trạng thái">
-                          <IconButton
-                            color="warning"
-                            onClick={() =>
-                              handleStatusChange(campaign._id, campaign.status)
-                            }
-                            sx={{
-                              "&:hover": {
-                                color: "white",
-                                backgroundColor: "warning.main",
-                              },
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
+                          <span>
+                            <IconButton
+                              color="warning"
+                              onClick={() =>
+                                handleStatusChange(campaign._id, campaign.status)
+                              }
+                              disabled={["COMPLETED", "CANCELED"].includes(
+                                campaign.status
+                              )}
+                              sx={{
+                                "&:hover": {
+                                  color: "white",
+                                  backgroundColor: "warning.main",
+                                },
+                                "&.Mui-disabled": {
+                                  color: "grey.400",
+                                  cursor: "not-allowed",
+                                },
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </span>
                         </Tooltip>
                       </Stack>
                     </TableCell>
@@ -1600,21 +1984,6 @@ const HealthCheckCampaignsManagement = () => {
         maxWidth="sm"
         fullWidth
       >
-        {/* <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-            color: "white",
-          }}
-        >
-          {editingCampaign ? "Chỉnh sửa Chiến dịch" : "Thêm Chiến dịch Mới"}
-          <IconButton
-            aria-label="Đóng"
-            onClick={() => setShowFormModal(false)}
-            sx={{ position: "absolute", right: 8, top: 8, color: "white" }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle> */}
         <DialogContent>
           <CampaignForm
             initialData={editingCampaign}
@@ -1651,6 +2020,7 @@ const HealthCheckCampaignsManagement = () => {
           <CampaignDetail
             campaign={viewingCampaign}
             onClose={() => setShowDetailModal(false)}
+            showSnackbar={showSnackbar}
           />
         </DialogContent>
       </Dialog>

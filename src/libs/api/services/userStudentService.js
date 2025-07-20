@@ -6,7 +6,7 @@ class UserStudentService {
   // 1. Lấy danh sách người dùng
   async getAllUsers({ page = 1, limit = 10, role, status, search }) {
     try {
-      const res = await api.get(endpoints.admin.users.getAll, {
+      const res = await api.get(endpoints.user.getAll, {
         params: {
           page,
           limit,

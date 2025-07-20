@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import Stanford from "~assets/images/stanford.jpg";
 import Google from "~/assets/images/google.svg";
 import TextInput from "~components/input/TextInput";
@@ -8,9 +8,9 @@ import { useNavigate } from "react-router";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "~/libs/contexts/AuthContext";
-import api from "~/libs/hooks/axiosInstance";
 import { Loader } from "lucide-react";
 import { toast } from "react-toastify";
+import authService from "~/libs/api/services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,8 +27,8 @@ const Login = () => {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const response = await api.post("/auth/login", values);
-        login(response.data.data.accessToken);
+        const response = await authService.login(values);
+        login(response.data.accessToken);
         toast.success("Đăng nhập thành công!", {
           position: "bottom-right",
           autoClose: 3000,
@@ -44,56 +44,59 @@ const Login = () => {
     },
   });
 
-  const handleGoogle = () => {
-    const hasLoggedInBefore = localStorage.getItem("hasGoogleLoggedIn") === "true";
+  const handleGoogle = async () => {
+    try {
+      const data = await authService.openGoogleLoginPopup();
+      const { accessToken, isNewUser, hasMissingFields } = data;
 
-    const width = 500;
-    const height = 600;
-    const left = (window.screen.width - width) / 2;
-    const top = (window.screen.height - height) / 2;
+      if (!accessToken) {
+        toast.error("Không nhận được access token");
+        return;
+      }
 
-    const url = hasLoggedInBefore
-      ? "http://localhost:3000/api/auth/google?silent=true"
-      : "http://localhost:3000/api/auth/google";
+      localStorage.setItem("hasGoogleLoggedIn", "true");
 
-    const authWindow = window.open(
-      url,
-      "_blank",
-      `width=${width},height=${height},left=${left},top=${top},resizable=no`
-    );
+      await login(accessToken);
+      toast.success("Đăng nhập thành công!", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
 
-    if (!authWindow) {
-      toast.error("Không thể mở popup Google");
-      return;
+      if (isNewUser || hasMissingFields) {
+        navigate("/complete-profile");
+      }
+    } catch (error) {
+      toast.error(error.message || "Lỗi đăng nhập Google");
     }
-
-    window.addEventListener(
-      "message",
-      async (event) => {
-        if (event.origin !== "http://localhost:3000") return;
-
-        const { accessToken, isNewUser, hasMissingFields } = event.data;
-
-        if (!accessToken) {
-          toast.error("Không nhận được access token");
-          return;
-        }
-
-        localStorage.setItem("hasGoogleLoggedIn", "true");
-
-        await login(accessToken);
-        toast.success("Đăng nhập thành công!", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-
-        if (isNewUser || hasMissingFields) {
-          navigate("/complete-profile");
-        }
-      },
-      { once: true }
-    );
   };
+
+  useEffect(() => {
+    const receiveMessage = async (event) => {
+      if (event.origin !== "http://localhost:3000") return;
+
+      const { accessToken, isNewUser, hasMissingFields } = event.data;
+
+      if (!accessToken) {
+        toast.error("Không nhận được access token");
+        return;
+      }
+
+      localStorage.setItem("hasGoogleLoggedIn", "true");
+
+      await login(accessToken);
+      toast.success("Đăng nhập thành công!", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+
+      if (isNewUser || hasMissingFields) {
+        navigate("/complete-profile");
+      }
+    };
+
+    window.addEventListener("message", receiveMessage);
+    return () => window.removeEventListener("message", receiveMessage);
+  }, [login, navigate]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen w-full">
