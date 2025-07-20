@@ -1,12 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import React from "react";
 
-export const UserTabs = ({
-  room,
-  isActive,
-  onClick,
-  unreadCount = 0,
-}) => {
+export const UserTabs = ({ room, isActive, onClick, unreadCount = 0 }) => {
   const truncateMessage = (message, maxLength = 50) => {
     if (!message) return "Không có tin nhắn";
     return message.length > maxLength
@@ -26,8 +21,9 @@ export const UserTabs = ({
         transition: "all 0.2s ease-in-out",
         borderBottom: 0.5,
         borderColor: "#0000001b",
+        bgcolor: isActive ? "#f6f5f5" : "transparent",
         "&:hover": {
-          bgcolor: "#f9f9f9",
+          bgcolor: isActive ? "#f6f5f5" : "transparent",
         },
         display: "flex",
         alignItems: "center",
@@ -85,6 +81,24 @@ export const UserTabs = ({
             {room?.lastMessage?.senderId === room?.currentUserId ? "Bạn: " : ""}
             {truncateMessage(room?.lastMessage?.content)}
           </Typography>
+
+          {unreadCount > 0 && (
+            <Box
+              sx={{
+                minWidth: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: "red",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                ml: 1,
+              }}
+            ></Box>
+          )}
         </Box>
       </Box>
     </Box>

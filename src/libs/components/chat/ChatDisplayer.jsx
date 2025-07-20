@@ -20,13 +20,10 @@ import {
 const ChatDisplayer = ({
   socket,
   messages = [],
-  // receiver,
-  // setReceiver,
-  // sender,
-  // setSender,
   currentUser,
   room,
   isLoading = false,
+  onMessageSent, // Add this prop to notify parent about sent messages
 }) => {
   const [newMessage, setNewMessage] = useState("");
   const [receiver, setReceiver] = useState(room?.receiverId || null);
@@ -37,6 +34,14 @@ const ChatDisplayer = ({
   const inputRef = useRef(null);
 
   console.log("ChatDisplayer rendered with room:", room);
+
+  // Update receiver and sender when room changes
+  useEffect(() => {
+    if (room) {
+      setReceiver(room.receiverId || null);
+      setSender(room.senderId || null);
+    }
+  }, [room?.roomId]); // Use roomId as dependency to detect room changes
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -49,7 +54,7 @@ const ChatDisplayer = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+const handleSendMessage = () => {
     if (!newMessage.trim()) {
       console.log("Empty message, not sending");
       return;
@@ -80,9 +85,16 @@ const ChatDisplayer = ({
       content: newMessage,
       receiverId: actualReceiver,
       type: "TEXT",
+      createdAt: new Date().toISOString()
     };
 
     socket.emit("sendMessage", messageData);
+    
+    // Notify parent component about the sent message for sidebar update
+    if (onMessageSent) {
+      onMessageSent(messageData);
+    }
+    
     setNewMessage("");
   };
 

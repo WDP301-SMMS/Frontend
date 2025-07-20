@@ -11,12 +11,23 @@ const socket = io("http://localhost:3000");
 export default function Chat() {
   const { user } = useAuth();
   const [rooms, setRooms] = useState([]);
-  // const [receiver, setReceiver] = useState(null);
-  // const [sender, setSender] = useState(null);
   const [messages, setMessages] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Sort rooms by latest message time
+  const sortRoomsByLatestMessage = (rooms) => {
+    return [...rooms].sort((a, b) => {
+      const aTime = a.lastMessage?.createdAt
+        ? new Date(a.lastMessage.createdAt)
+        : new Date(0);
+      const bTime = b.lastMessage?.createdAt
+        ? new Date(b.lastMessage.createdAt)
+        : new Date(0);
+      return bTime - aTime; // Most recent first
+    });
+  };
 
   const loadRooms = useCallback(async () => {
     if (!user?._id) return;
@@ -32,7 +43,6 @@ export default function Chat() {
 
         const enhancedRooms = roomsData.map((room) => ({
           ...room,
-
           unreadCount: Math.floor(Math.random() * 5),
           isOnline: Math.random() > 0.5,
           type:
@@ -46,10 +56,11 @@ export default function Chat() {
         }));
 
         console.log("Enhanced rooms:", enhancedRooms);
-        setRooms(enhancedRooms);
+        const sortedRooms = sortRoomsByLatestMessage(enhancedRooms);
+        setRooms(sortedRooms);
 
-        if (enhancedRooms.length > 0 && !selectedRoom) {
-          setSelectedRoom(enhancedRooms[0]);
+        if (sortedRooms.length > 0 && !selectedRoom) {
+          setSelectedRoom(sortedRooms[0]);
         }
       } else {
         setError(response.error || "Không thể tải danh sách cuộc trò chuyện");
@@ -61,6 +72,30 @@ export default function Chat() {
       setIsLoading(false);
     }
   }, [user, selectedRoom]);
+
+  // Update room's last message when a new message is received
+  const updateRoomLastMessage = useCallback((message) => {
+    setRooms((prevRooms) => {
+      const updatedRooms = prevRooms.map((room) => {
+        if (room.roomId === message.roomId) {
+          return {
+            ...room,
+            lastMessage: {
+              content: message.content,
+              createdAt: message.createdAt || new Date().toISOString(),
+              senderId: message.senderId._id || message.senderId,
+              senderUsername:
+                message.senderId.username || message.senderUsername,
+            },
+          };
+        }
+        return room;
+      });
+
+      // Sort rooms after updating
+      return sortRoomsByLatestMessage(updatedRooms);
+    });
+  }, []);
 
   useEffect(() => {
     if (user && user._id) {
@@ -78,20 +113,21 @@ export default function Chat() {
       socket.emit("joinRoom", selectedRoom.roomId);
 
       const handleReceiveMessage = (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        if (message.roomId === selectedRoom.roomId) {
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
+
+        updateRoomLastMessage(message);
       };
 
-      // Listen for incoming messages
       socket.on("receiveMessage", handleReceiveMessage);
 
-      // get the latest messages for the selected room
-
       return () => {
-        socket.emit("leaveRoom");
+        socket.emit("leaveRoom", selectedRoom.roomId);
         socket.off("receiveMessage", handleReceiveMessage);
       };
     }
-  }, [selectedRoom]);
+  }, [selectedRoom, updateRoomLastMessage]);
 
   const handleRoomSelect = (room) => {
     setSelectedRoom(room);
@@ -219,13 +255,9 @@ export default function Chat() {
         {/* Chat Sidebar */}
         <ChatSideBar
           rooms={rooms}
-          activeRoomId={selectedRoom?.id}
+          activeRoomId={selectedRoom?.roomId}
           onRoomSelect={handleRoomSelect}
           currentUser={user}
-          // receiver={receiver}
-          // setReceiver={setReceiver}
-          // sender={sender}
-          // setSender={setSender}
         />
 
         {/* Chat Section */}
@@ -235,10 +267,7 @@ export default function Chat() {
             messages={messages}
             setMessages={setMessages}
             selectedRoom={selectedRoom}
-            // sender={sender}
-            // setSender={setSender}
-            // receiver={receiver}
-            // setReceiver={setReceiver}
+            onMessageSent={updateRoomLastMessage} // Pass the callback
           />
         </Box>
       </Paper>

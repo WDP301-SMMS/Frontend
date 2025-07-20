@@ -18,6 +18,7 @@ const ChatSideBar = ({
   onRoomSelect,
   currentUser,
 }) => {
+
   return (
     <Box
       sx={{
@@ -62,7 +63,7 @@ const ChatSideBar = ({
               <ListItem key={room.id} sx={{ p: 0 }}>
                 <UserTabs
                   room={room}
-                  isActive={room.id === activeRoomId}
+                  isActive={room.roomId === activeRoomId}
                   onClick={() => onRoomSelect?.(room)}
                   unreadCount={room.unreadCount || 0}
                 />

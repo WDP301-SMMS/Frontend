@@ -20,10 +20,7 @@ const ChatSection = ({
   selectedRoom,
   messages,
   setMessages,
-  // receiver,
-  // sender,
-  // setReceiver,
-  // setSender,
+  onMessageSent, // Add this prop
 }) => {
   const { user } = useAuth();
 
@@ -201,7 +198,7 @@ const ChatSection = ({
       </Box>
     );
   }
-  return (
+return (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Error Alert */}
       {error && (
@@ -229,10 +226,7 @@ const ChatSection = ({
         currentUser={user}
         room={selectedRoom}
         isLoading={isLoading}
-        // receiver={receiver}
-        // sender={sender}
-        // setReceiver={setReceiver}
-        // setSender={setSender}
+        onMessageSent={onMessageSent} // Pass the callback
       />
     </Box>
   );
