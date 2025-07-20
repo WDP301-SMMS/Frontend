@@ -59,8 +59,6 @@ import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManageme
 import ClassManagement from "~/pages/management/admin/ClassManagement";
 import PartnerManagement from "~/pages/management/admin/PartnerManagement";
 import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/DispenseMedicationAndSupplies";
-import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
-import PartnerManagement from "~/pages/management/manager/PartnerManagement";
 import HealthCheckCampaignsManagement from "~/pages/management/manager/HealthCheckCampaignsManagement";
 import PrepareCheckupList from "~/pages/management/nurse/MedicalCheckup/PrepareCheckupList";
 import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheckup";
