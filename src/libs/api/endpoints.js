@@ -1,3 +1,4 @@
+import { update } from "lodash";
 import { classes } from "~/mock/mock"
 
 export const endpoints = {
@@ -66,6 +67,7 @@ export const endpoints = {
     getHealthCheckRecordByStudent: "/health-check/record/{id}", // GET
     getLatestHealthCheckRecordByStudent: "/health-check/record/{id}/latest", // GET
     createHealthCheckResult: "/health-check/record/create-result", // POST
+    updateHealthCheckRecord: "/health-check/record/result/{id}", // PUT
   },
   inventory: {
     getAllItems: "/inventory/items",                // GET ?type=

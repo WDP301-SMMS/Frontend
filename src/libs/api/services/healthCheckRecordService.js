@@ -33,6 +33,17 @@ class HealthCheckRecordService {
       throw error?.response?.data || error;
     }
   }
+
+  // 4. Cập nhật kết quả kiểm tra sức khỏe
+  async updateHealthCheckRecord(recordId, updateData) {
+    try {
+      const url = endpoints.healthCheck.updateHealthCheckRecord.replace("{id}", recordId);
+      const res = await api.put(url, updateData);
+      return res.data;
+    } catch (error) {
+      throw error?.response?.data || error;
+    }
+  }
 }
 
 const healthCheckRecordService = new HealthCheckRecordService();

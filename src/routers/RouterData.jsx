@@ -37,11 +37,6 @@ import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSupplie
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
-const ManageSupplies = () => <div>Quản lý vật tư</div>;
-const SendConsent = () => <div>Gửi phiếu đồng thuận</div>;
-const PrepareList = () => <div>Chuẩn bị danh sách</div>;
-const PrepareCheckupList = () => <div>Chuẩn bị danh sách khám</div>;
-const PerformCheckup = () => <div>Thực hiện khám & Ghi nhận</div>;
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
 const Settings = () => <div>Cài đặt</div>;
 import Layout from "../pages/layout/Layout";
@@ -63,6 +58,8 @@ import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAn
 import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
 import PartnerManagement from "~/pages/management/manager/PartnerManagement";
 import HealthCheckCampaignsManagement from "~/pages/management/manager/HealthCheckCampaignsManagement";
+import PrepareCheckupList from "~/pages/management/nurse/MedicalCheckup/PrepareCheckupList";
+import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheckup";
 
 const basicRoutes = [
   {
@@ -168,7 +165,7 @@ const nurseRoutes = [
         element: <PostVaccinationMonitoring />,
       },
       { path: "send-checkup-notice", element: <SendCheckupNotice /> },
-      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
+      { path: "prepare-checkup-list", element: <PrepareCheckupList/> },
       { path: "perform-checkup", element: <PerformCheckup /> },
       { path: "send-results-consult", element: <SendResultsConsult /> },
       { path: "settings", element: <Settings /> },
