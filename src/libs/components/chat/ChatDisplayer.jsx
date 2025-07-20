@@ -9,6 +9,7 @@ import {
   Chip,
   InputAdornment,
   Tooltip,
+  styled,
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -16,6 +17,19 @@ import {
   EmojiEmotions as EmojiIcon,
   MoreVert,
 } from "@mui/icons-material";
+import uploadService from "~/libs/api/services/uploadService";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 const ChatDisplayer = ({
   socket,
@@ -28,12 +42,9 @@ const ChatDisplayer = ({
   const [newMessage, setNewMessage] = useState("");
   const [receiver, setReceiver] = useState(room?.receiverId || null);
   const [sender, setSender] = useState(room?.senderId || null);
-  const [isTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
-
-  console.log("ChatDisplayer rendered with room:", room);
 
   // Update receiver and sender when room changes
   useEffect(() => {
@@ -54,9 +65,11 @@ const ChatDisplayer = ({
     scrollToBottom();
   }, [messages]);
 
-const handleSendMessage = () => {
-    if (!newMessage.trim()) {
-      console.log("Empty message, not sending");
+  const handleSendMessage = async (file) => {
+    let fileData = null;
+    console.log("Sending message:", newMessage, "with file:", file);
+    if (!newMessage.trim() && !file) {
+      console.log("Empty message and no file, not sending");
       return;
     }
 
@@ -79,22 +92,30 @@ const handleSendMessage = () => {
       return;
     }
 
+    if (file) {
+      const response = await uploadService.uploadFile(file);
+      fileData = response.url;
+      console.log("File uploaded successfully:", fileData);
+    }
+
+    console.log(fileData);
+
     const messageData = {
       roomId: room.roomId,
       senderId: currentUser,
-      content: newMessage,
+      content: file ? fileData : newMessage,
       receiverId: actualReceiver,
-      type: "TEXT",
-      createdAt: new Date().toISOString()
+      type: file ? "FILE" : "TEXT",
+      createdAt: new Date().toISOString(),
     };
 
     socket.emit("sendMessage", messageData);
-    
+
     // Notify parent component about the sent message for sidebar update
     if (onMessageSent) {
       onMessageSent(messageData);
     }
-    
+
     setNewMessage("");
   };
 
@@ -246,43 +267,72 @@ const handleSendMessage = () => {
                         {message.senderId?.username || "Unknown User"}
                       </Typography>
                     )}
+                    {message.type === "FILE" ? (
+                      <Box
+                        sx={{
+                          position: "relative",
+                          display: "inline-block",
+                          cursor: "pointer",
+                          borderRadius: 1,
+                          overflow: "hidden",
+                          bgcolor: "white",
 
-                    <Paper
-                      elevation={1}
-                      sx={{
-                        p: 1.5,
-                        bgcolor: isCurrentUser ? "primary.main" : "white",
-                        color: isCurrentUser ? "white" : "text.primary",
-                        borderRadius: 2,
-                        borderTopLeftRadius: !isCurrentUser ? 1 : 2,
-                        borderTopRightRadius: isCurrentUser ? 1 : 2,
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      <Typography variant="body2">{message.content}</Typography>
-                    </Paper>
+                          "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "transparent",
+                            zIndex: 1,
+                            transition: "background-color 0.1s linear",
+                          },
+
+                          "&:hover::after": {
+                            backgroundColor: "rgba(0, 0, 0, 0.1)",
+                          },
+                        }}
+                        onClick={() => {
+                          window.location.href = message.content;
+                        }}
+                      >
+                        <img
+                          src={message.content}
+                          alt="Uploaded file"
+                          style={{
+                            width: "300px",
+                            height: "auto",
+                            objectFit: "cover",
+                            borderRadius: 4,
+                            display: "block",
+                          }}
+                        />
+                      </Box>
+                    ) : (
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          p: 1.5,
+                          bgcolor: isCurrentUser ? "primary.main" : "white",
+                          color: isCurrentUser ? "white" : "text.primary",
+                          borderRadius: 2,
+                          borderTopLeftRadius: !isCurrentUser ? 1 : 2,
+                          borderTopRightRadius: isCurrentUser ? 1 : 2,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        <Typography variant="body2">
+                          {message.content}
+                        </Typography>
+                      </Paper>
+                    )}
                   </Box>
                 </Box>
               );
             })}
           </Box>
         ))}
-
-        {isTyping && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Avatar sx={{ width: 24, height: 24 }}>
-              <Typography variant="caption">•••</Typography>
-            </Avatar>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontStyle: "italic" }}
-            >
-              Đang nhập...
-            </Typography>
-          </Box>
-        )}
-
         <div ref={messagesEndRef} />
       </Box>
 
@@ -313,8 +363,21 @@ const handleSendMessage = () => {
               startAdornment: (
                 <InputAdornment position="start">
                   <Tooltip title="Đính kèm file">
-                    <IconButton size="small" edge="start">
+                    <IconButton
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      size="small"
+                      edge="start"
+                    >
                       <AttachFileIcon fontSize="small" />
+                      <VisuallyHiddenInput
+                        type="file"
+                        onChange={(e) => handleSendMessage(e.target.files[0])}
+                        accept="image/*"
+                        multiple={false}
+                      />
                     </IconButton>
                   </Tooltip>
                 </InputAdornment>
