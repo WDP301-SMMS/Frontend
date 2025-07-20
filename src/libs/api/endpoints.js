@@ -105,4 +105,13 @@ export const endpoints = {
     addPartnerStaff: "/admin/partners/{partnerId}/staff", // POST
     deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}", // DELETE
   },
+  medication: {
+    create: "/medication/requests", // POST: Tạo yêu cầu uống thuốc
+    getAll: "/medication/allRequests", // GET: Lấy tất cả yêu cầu (nurse)
+    getById: "/medication/requests/{requestId}", // GET: Chi tiết yêu cầu
+    getByParent: "/medication/requests/parent", // GET: Lấy yêu cầu theo phụ huynh
+    updateInfo: "/medication/requests/{requestId}", // PATCH: cập nhật thời gian, file
+    updateItems: "/medication/requests/{requestId}/items", // PATCH: cập nhật hoặc thêm thuốc
+  }
+
 };
