@@ -62,6 +62,8 @@ import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAn
 import HealthCheckCampaignsManagement from "~/pages/management/manager/HealthCheckCampaignsManagement";
 import PrepareCheckupList from "~/pages/management/nurse/MedicalCheckup/PrepareCheckupList";
 import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheckup";
+import MedicationRequests from "~/pages/management/nurse/MedicationRequestsManagement/MedicationRequests";
+import MedicationSchedules from "~/pages/management/nurse/MedicationRequestsManagement/MedicationSchedules";
 
 const basicRoutes = [
   {
@@ -154,6 +156,10 @@ const nurseRoutes = [
       { path: "", element: <DashboardHome /> },
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
+
+      {path: "medication-requests", element: <MedicationRequests /> },
+      {path: "medication-schedules", element: <MedicationSchedules /> },
+
       { path: "message", element: <Message /> },
       { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
       { path: "manage-supplies", element: <ManageMedicalSupplies /> },

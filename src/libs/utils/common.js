@@ -186,6 +186,25 @@ export const mockData = {
       ],
     },
     {
+      id: 'medication-requests-manager',
+      label: 'Gửi thuốc cho học sinh',
+      icon: 'Bell',
+      subItems: [
+        {
+          id: 'medication-requests',
+          label: 'Yêu cầu thuốc',
+          icon: 'FileBarChart',
+          route: '/management/nurse/medication-requests',
+        },
+        {
+          id: 'medication-schedules',
+          label: 'Lịch uống thuốc',
+          icon: 'Eye',
+          route: '/management/nurse/medication-schedules',
+        },
+      ],
+    },
+    {
       id: 'medication-supply-management',
       label: 'Cấp phát thuốc & vật tư',
       icon: 'Syringe',
