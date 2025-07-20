@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../hooks/axiosInstance';
 import { useNavigate } from 'react-router-dom';
+import { userService } from "~/libs/api/services/userService"
 
 const AuthContext = createContext();
 
@@ -15,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkLoginStatus = useCallback(async () => {
     try {
-      const response = await api.get('/user/me');
+      const response = await userService.getProfile();
       setUser(response.data.data);
       setRole(response.data.data.role);
       setIsLoggedIn(true);
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", token);
 
     try {
-      const response = await api.get("/user/me");
+      const response = await userService.getProfile();
       const userData = response.data.data;
       setUser(userData);
       setRole(userData.role);
