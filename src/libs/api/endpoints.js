@@ -78,4 +78,8 @@ export const endpoints = {
     addPartnerStaff: "/admin/partners/{partnerId}/staff", // POST
     deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}", // DELETE
   },
+  chat: {
+    getAllMessagesByRoomId: "/messages/{roomId}", // GET
+    getAllRoomsByUserId: "/messages/user/{userId}", // GET
+  },
 };

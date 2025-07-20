@@ -11,7 +11,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     ];
 
   return (
-    <aside className="w-24 h-screen bg-white flex flex-col items-center py-8 shadow-sm border-r border-gray-200">
+    <aside className="w-20 h-screen bg-white flex flex-col items-center py-8 shadow-sm border-r border-gray-200">
       <nav className="flex flex-col items-center space-y-3">
         {navItems.map((item) => (
           <button
