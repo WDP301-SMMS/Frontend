@@ -71,7 +71,7 @@ const StudentManagement = React.lazy(() =>
 //   import("../pages/management/admin/Dashboard")
 // );
 const BlogManagement = React.lazy(() =>
-  import("../pages/management/admin/BlogManagement")
+  import("../pages/management/manager/BlogManagement")
 );
 const UserManagement = React.lazy(() =>
   import("../pages/management/admin/UserManagement")
@@ -97,7 +97,6 @@ export {
   Contact,
   Profile,
   Blogs,
-  BlogDetail,
   ParentHealthProfiles,
   ParentHealthProfileForm,
   ParentHealthProfileDetail,

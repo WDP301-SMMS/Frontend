@@ -4,7 +4,7 @@ import {
   Contact,
   Profile,
   Blogs,
-  BlogDetail,
+  // BlogDetail,
   ParentHealthProfiles,
   ParentHealthProfileForm,
   ParentHealthProfileDetail,
@@ -84,10 +84,10 @@ const basicRoutes = [
         path: "blogs",
         element: <Blogs />,
       },
-      {
-        path: "blog-detail",
-        element: <BlogDetail />,
-      },
+      // {
+      //   path: "blog-detail",
+      //   element: <BlogDetail />,
+      // },
     ],
   },
 ];
@@ -161,7 +161,7 @@ const nurseRoutes = [
         element: <PostVaccinationMonitoring />,
       },
       { path: "send-checkup-notice", element: <SendCheckupNotice /> },
-      { path: "prepare-checkup-list", element: <PrepareCheckupList/> },
+      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "perform-checkup", element: <PerformCheckup /> },
       { path: "send-results-consult", element: <SendResultsConsult /> },
       { path: "settings", element: <Settings /> },
@@ -190,8 +190,9 @@ const managerRoutes = [
       { path: "nurse-management", element: <NursesManagement /> },
       { path: "manage-medications", element: <MedicineCRUD /> },
       { path: "manage-supplies", element: <SuppliesCRUD /> },
-      {path: "manage-partner", element: <PartnerManagement /> },
-      {path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
+      { path: "manage-partner", element: <PartnerManagement /> },
+      { path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
+      { path: "manage-blogs", element: <BlogManagement /> },
     ],
   },
 ];
@@ -206,7 +207,7 @@ const adminRoutes = [
     ),
     children: [
       // { path: "", element: <AdminDashboard /> },
-      { path: "blogs", element: <BlogManagement /> },
+      // { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
     ],
   },
