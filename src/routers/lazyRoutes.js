@@ -7,7 +7,7 @@ const Contact = React.lazy(() => import("../pages/basic-pages/Contact"));
 
 const Profile = React.lazy(() => import("../pages/setting/Profile"));
 const Blogs = React.lazy(() => import("../pages/blogs/Blogs"));
-const BlogDetail = React.lazy(() => import("../pages/blogs/BlogDetail"));
+
 
 // Health Profile Routes for Parents
 const ParentHealthProfiles = React.lazy(() =>
@@ -71,7 +71,7 @@ const StudentManagement = React.lazy(() =>
 //   import("../pages/management/admin/Dashboard")
 // );
 const BlogManagement = React.lazy(() =>
-  import("../pages/management/admin/BlogManagement")
+  import("../pages/management/manager/BlogManagement")
 );
 const UserManagement = React.lazy(() =>
   import("../pages/management/admin/UserManagement")
@@ -97,7 +97,6 @@ export {
   Contact,
   Profile,
   Blogs,
-  BlogDetail,
   ParentHealthProfiles,
   ParentHealthProfileForm,
   ParentHealthProfileDetail,

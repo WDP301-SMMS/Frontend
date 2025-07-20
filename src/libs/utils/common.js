@@ -359,6 +359,12 @@ export const mockData = {
         },
       ],
     },
+     {
+      id: 'manage-blogs',
+      label: 'Quản lí blog',
+      icon: 'Book',
+      route: '/management/manager/manage-blogs',
+    },
     {
       id: 'settings',
       label: 'Cài đặt',
