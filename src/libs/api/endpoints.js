@@ -1,13 +1,25 @@
+import { update } from "lodash";
+import { classes } from "~/mock/mock"
+
 export const endpoints = {
   user: {
+    getProfile: "/user/me",           // GET /user/me
+    updateProfile: "/user/me",        // PUT /user/me
+    getAll: "/admin/users",                               // GET
+    updateStatus: "/admin/users/{userId}/status",
     getProfile: "/user/me", // GET /user/me
     updateProfile: "/user/me", // PUT /user/me
     getAll: "/admin/users", // GET
     updateStatus: "/admin/users/{userId}/status",
   },
   students: {
-    getAll: "/admin/students", // GET
-    create: "/admin/students", // POST
+    getAll: "/admin/students",                            // GET
+    create: "/admin/students",                            // POST
+  },
+  classes: {
+    getAll: "/admin/classes",                             // GET
+    create: "/admin/classes",                             // POST
+    getById: "/admin/classes/{classId}",                  // GET  
   },
   auth: {
     login: "/auth/login", // POST /auth/login
@@ -40,6 +52,9 @@ export const endpoints = {
     deleteTemplate: "/health-check/templates/{id}",
     setDefault: "/health-check/templates/set-default",
 
+
+
+    getHealthCheckCampaigns: "/health-check/campaigns", // GET
     getHealthCheckCampaigns: "/health-check/campaigns", // GET
     createHealthCheckCampaign: "/health-check/campaigns", // POST
     searchHealthCheckCampaigns: "/health-check/campaigns/search", // GET
@@ -49,6 +64,18 @@ export const endpoints = {
     updateHealthCheckCampaign: "/health-check/campaigns/{id}", // PUT
     updateCampaignStatus: "/health-check/campaigns/{id}/status", // PATCH
     assignStaffToCampaign: "/health-check/campaigns/{id}/assignments", // PUT
+
+
+    getAllConsents: "/health-check/consents", // GET
+    getConsentsByCampaignId: "/health-check/consents/campaign/{campaignId}", // GET
+    addStudentsToConsent: "/health-check/consents/campaign/add-students", // POST
+    updateConsentStatus: "/health-check/consents/{consentId}/status", // PATCH
+
+    // ✅ NEW: Health Check Records
+    getHealthCheckRecordByStudent: "/health-check/record/{id}", // GET
+    getLatestHealthCheckRecordByStudent: "/health-check/record/{id}/latest", // GET
+    createHealthCheckResult: "/health-check/record/create-result", // POST
+    updateHealthCheckRecord: "/health-check/record/result/{id}", // PUT
   },
   inventory: {
     getAllItems: "/inventory/items", // GET ?type=
@@ -59,15 +86,15 @@ export const endpoints = {
     addBatch: "/inventory/items/{itemId}/batches",
   },
   incident: {
-    getAllIncidents: "/incident", // GET: Lấy tất cả sự cố
-    getMyIncidents: "/incident/nurse", // GET: Lấy sự cố của tôi (nurse)
-    getIncidentById: "/incident/{incidentId}", // GET: Lấy sự cố theo ID
-    createIncident: "/incident", // POST: Tạo sự cố y tế
-    updateIncident: "/incident/{incidentId}", // PATCH: Cập nhật sự cố
+    getAllIncidents: "/incident",                             // GET: Lấy tất cả sự cố
+    getMyIncidents: "/incident/nurse",                        // GET: Lấy sự cố của tôi (nurse)
+    getIncidentById: "/incident/{incidentId}",                // GET: Lấy sự cố theo ID
+    createIncident: "/incident",                              // POST: Tạo sự cố y tế
+    updateIncident: "/incident/{incidentId}",                 // PATCH: Cập nhật sự cố
 
     getAllIncidentsToDispense: "/inventory/incidents-to-dispense", // GET: sự cố cần cấp phát
     dispenseIncident: "/inventory/incidents/{incidentId}/dispense", // POST: cấp phát thuốc
-    dispenseHistory: "/inventory/dispense-history", // GET: lịch sử cấp phát
+    dispenseHistory: "/inventory/dispense-history",                // GET: lịch sử cấp phát
   },
   partner: {
     createPartner: "/admin/partners", // POST
@@ -77,5 +104,9 @@ export const endpoints = {
     updatePartnerStatus: "/admin/partners/{partnerId}/status", // PATCH
     addPartnerStaff: "/admin/partners/{partnerId}/staff", // POST
     deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}", // DELETE
+  },
+  chat: {
+    getAllMessagesByRoomId: "/messages/{roomId}", // GET
+    getAllRoomsByUserId: "/messages/user/{userId}", // GET
   },
 };

@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { Send, Eye, AlertTriangle, CheckCircle, X, RefreshCw, Search } from "lucide-react";
 import {
-  Box,
-  Card,
-  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
   Typography,
-  Tabs,
-  Tab,
+  Box,
   TextField,
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Button,
+  FormControl,
+  InputLabel,
   Table,
   TableBody,
   TableCell,
@@ -22,651 +20,906 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Chip,
-  LinearProgress,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
+  Pagination,
+  Container,
+  Alert,
+  CircularProgress,
   InputAdornment,
-  Alert
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  Send as SendIcon,
-  Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  FilterList as FilterListIcon,
-  People as PeopleIcon,
-  CheckCircle as CheckCircleIcon,
-  Preview as PreviewIcon
-} from '@mui/icons-material';
+} from "@mui/material";
+import { Warning } from "@mui/icons-material";
+import ReactMarkdown from "react-markdown";
+import healthCheckCampaignService from "~/libs/api/services/healthCheckCampainService";
+import healthCheckConsentService from "~/libs/api/services/healthCheckConsentService";
 
-const SendCheckupNotice = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [notices, setNotices] = useState([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [newNotice, setNewNotice] = useState({
-    title: '',
-    targetType: 'all',
-    grade: '',
-    class: '',
-    content: {
-      purpose: '',
-      checkupItems: [],
-      datetime: '',
-      location: '',
-      notes: ''
-    },
-    sendDate: new Date().toISOString().split('T')[0],
-    deadline: ''
-  });
+// Reusable Alert Dialog Component
+const AlertDialog = ({ open, onClose, message, type, onConfirm }) => {
+  const [cancellationReason, setCancellationReason] = useState("");
 
-  // Mock data cho các lớp học
-  const grades = ['Khối 1', 'Khối 2', 'Khối 3', 'Khối 4', 'Khối 5', 'Khối 6', 'Khối 7', 'Khối 8', 'Khối 9'];
-  const classes = {
-    'Khối 1': ['1A', '1B', '1C'],
-    'Khối 2': ['2A', '2B', '2C'],
-    'Khối 3': ['3A', '3B', '3C'],
-    'Khối 4': ['4A', '4B', '4C'],
-    'Khối 5': ['5A', '5B', '5C'],
-    'Khối 6': ['6A', '6B', '6C'],
-    'Khối 7': ['7A', '7B', '7C'],
-    'Khối 8': ['8A', '8B', '8C'],
-    'Khối 9': ['9A', '9B', '9C']
-  };
-
-  const checkupItemsList = [
-    'Cân nặng',
-    'Chiều cao',
-    'Thị lực',
-    'Răng miệng',
-    'Khám tổng quát',
-    'Kiểm tra tim mạch',
-    'Kiểm tra hô hấp',
-    'Tầm soát dinh dưỡng'
-  ];
-
-  // Mock data cho thông báo đã gửi
-  useEffect(() => {
-    setNotices([
-      {
-        id: 1,
-        title: 'Thông báo kiểm tra sức khỏe định kỳ năm học 2024-2025',
-        targetType: 'all',
-        sendDate: '2024-12-15',
-        deadline: '2024-12-25',
-        status: 'sent',
-        totalRecipients: 450,
-        confirmed: 320,
-        pending: 130
-      },
-      {
-        id: 2,
-        title: 'Kiểm tra sức khỏe Khối 6',
-        targetType: 'grade',
-        grade: 'Khối 6',
-        sendDate: '2024-12-10',
-        deadline: '2024-12-20',
-        status: 'sent',
-        totalRecipients: 90,
-        confirmed: 75,
-        pending: 15
-      }
-    ]);
-  }, []);
-
-  const handleInputChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setNewNotice(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setNewNotice(prev => ({
-        ...prev,
-        [field]: value
-      }));
-    }
-  };
-
-  const handleCheckupItemChange = (item, checked) => {
-    setNewNotice(prev => ({
-      ...prev,
-      content: {
-        ...prev.content,
-        checkupItems: checked 
-          ? [...prev.content.checkupItems, item]
-          : prev.content.checkupItems.filter(i => i !== item)
-      }
-    }));
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const sendNotice = () => {
-    if (!newNotice.title || !newNotice.content.purpose) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+  const handleConfirm = () => {
+    if (type === "confirm" && !cancellationReason.trim() && message.includes("hủy")) {
+      alert("Vui lòng nhập lý do hủy chiến dịch.");
       return;
     }
-
-    const notice = {
-      ...newNotice,
-      id: notices.length + 1,
-      status: 'sent',
-      totalRecipients: newNotice.targetType === 'all' ? 450 : 
-                      newNotice.targetType === 'grade' ? 90 : 30,
-      confirmed: 0,
-      pending: newNotice.targetType === 'all' ? 450 : 
-               newNotice.targetType === 'grade' ? 90 : 30
-    };
-
-    setNotices(prev => [...prev, notice]);
-    setNewNotice({
-      title: '',
-      targetType: 'all',
-      grade: '',
-      class: '',
-      content: {
-        purpose: '',
-        checkupItems: [],
-        datetime: '',
-        location: '',
-        notes: ''
-      },
-      sendDate: new Date().toISOString().split('T')[0],
-      deadline: ''
-    });
-
-    alert('Đã gửi thông báo thành công!');
-    setActiveTab(1);
+    onConfirm(cancellationReason);
+    setCancellationReason("");
   };
 
-  const deleteNotice = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa thông báo này?')) {
-      setNotices(prev => prev.filter(notice => notice.id !== id));
-    }
-  };
-
-  const resetForm = () => {
-    setNewNotice({
-      title: '',
-      targetType: 'all',
-      grade: '',
-      class: '',
-      content: {
-        purpose: '',
-        checkupItems: [],
-        datetime: '',
-        location: '',
-        notes: ''
-      },
-      sendDate: new Date().toISOString().split('T')[0],
-      deadline: ''
-    });
-  };
-
-  const filteredNotices = notices.filter(notice =>
-    notice.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getTargetDisplay = (notice) => {
-    if (notice.targetType === 'all') return 'Tất cả';
-    if (notice.targetType === 'grade') return notice.grade;
-    return `${notice.grade} - ${notice.class}`;
-  };
-
-  const PreviewDialog = () => (
-    <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>
-        Xem trước thông báo
+        {type === "success" ? "Thành công" : type === "error" ? "Lỗi" : "Xác nhận"}
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, bgcolor: 'background.paper' }}>
-          <Typography variant="h5" gutterBottom align="center" color="primary">
-            {newNotice.title || '[Tiêu đề thông báo]'}
-          </Typography>
-          
-          <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-            Kính gửi: Quý phụ huynh
-          </Typography>
-          
-          <Typography variant="body1" paragraph>
-            <strong>Đối tượng:</strong> {
-              newNotice.targetType === 'all' ? 'Tất cả học sinh' :
-              newNotice.targetType === 'grade' ? newNotice.grade :
-              `${newNotice.grade} - ${newNotice.class}`
-            }
-          </Typography>
-
-          <Typography variant="body1" paragraph>
-            <strong>Mục đích kiểm tra:</strong><br />
-            {newNotice.content.purpose || '[Chưa nhập mục đích kiểm tra]'}
-          </Typography>
-
-          {newNotice.content.checkupItems.length > 0 && (
-            <Typography variant="body1" paragraph>
-              <strong>Các hạng mục kiểm tra:</strong><br />
-              {newNotice.content.checkupItems.map((item, index) => (
-                <span key={item}>
-                  • {item}
-                  {index < newNotice.content.checkupItems.length - 1 && <br />}
-                </span>
-              ))}
-            </Typography>
+        <Box display="flex" flexDirection="column" gap={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            {type === "success" ? (
+              <CheckCircle size={24} className="text-green-500" />
+            ) : (
+              <AlertTriangle size={24} className="text-red-500" />
+            )}
+            <Typography>{message}</Typography>
+          </Box>
+          {type === "confirm" && message.includes("hủy") && (
+            <TextField
+              label="Lý do hủy"
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              required
+              placeholder="Nhập lý do hủy chiến dịch"
+            />
           )}
-
-          {newNotice.content.datetime && (
-            <Typography variant="body1" paragraph>
-              <strong>Thời gian kiểm tra:</strong> {new Date(newNotice.content.datetime).toLocaleString('vi-VN')}
-            </Typography>
-          )}
-
-          {newNotice.content.location && (
-            <Typography variant="body1" paragraph>
-              <strong>Địa điểm:</strong> {newNotice.content.location}
-            </Typography>
-          )}
-
-          {newNotice.content.notes && (
-            <Typography variant="body1" paragraph>
-              <strong>Lưu ý:</strong><br />
-              {newNotice.content.notes}
-            </Typography>
-          )}
-
-          {newNotice.deadline && (
-            <Typography variant="body1" paragraph color="error">
-              <strong>Hạn chót xác nhận:</strong> {new Date(newNotice.deadline).toLocaleDateString('vi-VN')}
-            </Typography>
-          )}
-
-          <Typography variant="body2" sx={{ mt: 3, fontStyle: 'italic' }}>
-            Trân trọng,<br />
-            Ban Giám hiệu nhà trường
-          </Typography>
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setPreviewOpen(false)}>Đóng</Button>
-        <Button variant="contained" onClick={() => {
-          setPreviewOpen(false);
-          sendNotice();
-        }} startIcon={<SendIcon />}>
-          Gửi thông báo
-        </Button>
+        {type === "confirm" ? (
+          <>
+            <Button onClick={onClose} color="inherit">
+              Hủy
+            </Button>
+            <Button onClick={handleConfirm} color="primary" variant="contained">
+              Xác nhận
+            </Button>
+          </>
+        ) : (
+          <Button onClick={onClose} color="primary" variant="contained">
+            Đóng
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
+};
+
+function SendCheckupNotice() {
+  const [form, setForm] = useState({
+    selectedCampaignId: "",
+    scheduledDate: new Date().toISOString().substring(0, 10),
+    location: "",
+  });
+
+  const [allCampaigns, setAllCampaigns] = useState([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState([]);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [campaignsLoading, setCampaignsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [nurseID, setNurseID] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
+  const [openDetailDialog, setOpenDetailDialog] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [alertDialog, setAlertDialog] = useState({
+    open: false,
+    message: "",
+    type: "error",
+    onConfirm: null,
+  });
+
+  const itemsPerPage = 10;
+  const currentDate = new Date().toISOString().substring(0, 10);
+
+  useEffect(() => {
+    loadAllCampaigns();
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const result = await userService.getProfile();
+      if (result.success) {
+        const data = result.data.data;
+        const nurseID = localStorage.getItem("nurseID");
+        if (nurseID !== data._id) {
+          localStorage.setItem("nurseID", data._id);
+          setNurseID(data._id);
+        } else {
+          setNurseID(data._id);
+        }
+      } else {
+        setError(result.message || "Không thể tải thông tin Nurse");
+      }
+    } catch (err) {
+      setError("Có lỗi xảy ra khi tải hồ sơ");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAllCampaigns = async () => {
+    try {
+      setCampaignsLoading(true);
+      const response = await healthCheckCampaignService.getListHealthCheckCampaigns({ page: 1, limit: 100 });
+      const campaigns = response.data.campaigns || [];
+      setAllCampaigns(campaigns);
+      setFilteredCampaigns(campaigns);
+      
+      const notificationsData = campaigns.map((campaign) => {
+        let campaignActualStartDate = campaign.startDate
+          ? new Date(campaign.startDate).toISOString().substring(0, 10)
+          : "N/A";
+        const status = campaignActualStartDate === currentDate
+          ? "IN_PROGRESS"
+          : campaign.status || "DRAFT";
+        return {
+          id: campaign._id,
+          campaignId: campaign._id,
+          campaignName: campaign.name || "N/A",
+          scheduledDate: campaignActualStartDate,
+          location: campaign.location || "Phòng y tế trường",
+          content: generateNotificationContentFromCampaign(campaign),
+          status,
+          cancellationReason: campaign.cancellationReason || "",
+        };
+      });
+      setNotifications(notificationsData);
+    } catch (error) {
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải danh sách chiến dịch. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setCampaignsLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    const filtered = allCampaigns.filter((campaign) => {
+      const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter ? campaign.status === statusFilter : true;
+      return matchesSearch && matchesStatus;
+    });
+    setFilteredCampaigns(filtered);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [searchTerm, statusFilter, allCampaigns]);
+
+  const handleRefresh = async () => {
+    try {
+      setCampaignsLoading(true);
+      await loadAllCampaigns();
+      setAlertDialog({
+        open: true,
+        message: "Dữ liệu đã được làm mới thành công!",
+        type: "success",
+      });
+    } catch (error) {
+      setAlertDialog({
+        open: true,
+        message: "Không thể làm mới dữ liệu. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setCampaignsLoading(false);
+    }
+  };
+
+  const getUniqueClassNames = (assignments) => {
+    if (!assignments || !Array.isArray(assignments)) return "N/A";
+    const uniqueClasses = [...new Set(assignments.map(a => a.classId?.className).filter(name => name))];
+    return uniqueClasses.length > 0 ? uniqueClasses.join(", ") : "N/A";
+  };
+
+  const generateNotificationContentFromCampaign = (campaign) => {
+    return `
+# THÔNG BÁO KHÁM SỨC KHỎE
+
+Kính gửi quý phụ huynh,
+
+Trường học tổ chức khám sức khỏe định kỳ cho học sinh.
+
+## Thông tin chi tiết
+- **Tên chiến dịch**: ${campaign.name || "N/A"}
+- **Ngày khám dự kiến**: ${new Date(campaign.startDate).toLocaleDateString("vi-VN")}
+- **Địa điểm**: ${campaign.location || "Phòng y tế trường"}
+- **Đối tượng**: ${getUniqueClassNames(campaign.assignments)}
+
+## Lưu ý
+- Đảm bảo học sinh ăn nhẹ trước khi khám.
+- Liên hệ: Y tá trường - SĐT: 0123 456 789, Email: nurse@school.edu.vn
+
+Vui lòng phản hồi trước ngày **${new Date(campaign.startDate).toLocaleDateString("vi-VN")}**.
+
+Trân trọng,  
+**Ban Y tế Trường học**
+    `;
+  };
+
+  const generateNotificationContent = () => {
+    if (!selectedCampaign) return "";
+
+    return `
+# THÔNG BÁO KHÁM SỨC KHỎE
+
+Kính gửi quý phụ huynh,
+
+Trường học tổ chức khám sức khỏe định kỳ cho học sinh.
+
+## Thông tin chi tiết
+- **Tên chiến dịch**: ${selectedCampaign.name || "N/A"}
+- **Ngày khám dự kiến**: ${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}
+- **Địa điểm**: ${form.location}
+- **Đối tượng**: ${getUniqueClassNames(selectedCampaign.assignments)}
+
+## Lưu ý
+- Đảm bảo học sinh ăn nhẹ trước khi khám.
+- Liên hệ: Y tá trường - SĐT: 0123 456 789, Email: nurse@school.edu.vn
+
+Vui lòng phản hồi trước ngày **${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}**.
+
+Trân trọng,  
+**Ban Y tế Trường học**
+    `;
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: value,
+    }));
+  };
+
+  const handleCampaignSelect = async (e) => {
+    const campaignId = e.target.value;
+    if (!campaignId) {
+      setSelectedCampaign(null);
+      setForm((prevForm) => ({
+        ...prevForm,
+        selectedCampaignId: "",
+        scheduledDate: new Date().toISOString().substring(0, 10),
+        location: "",
+      }));
+      return;
+    }
+    try {
+      setLoading(true);
+      const campaignData = await healthCheckCampaignService.getCampaignDetails(campaignId);
+      setSelectedCampaign(campaignData.data);
+      setForm((prevForm) => ({
+        ...prevForm,
+        selectedCampaignId: campaignId,
+        scheduledDate: campaignData.data.startDate
+          ? new Date(campaignData.data.startDate).toISOString().substring(0, 10)
+          : new Date().toISOString().substring(0, 10),
+        location: campaignData.data.location || "",
+      }));
+    } catch (error) {
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải thông tin chiến dịch. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.selectedCampaignId) {
+      setAlertDialog({
+        open: true,
+        message: "Vui lòng chọn một chiến dịch khám sức khỏe.",
+        type: "error",
+      });
+      return;
+    }
+    if (!form.location) {
+      setAlertDialog({
+        open: true,
+        message: "Vui lòng nhập địa điểm khám.",
+        type: "error",
+      });
+      return;
+    }
+    const selectedDate = new Date(form.scheduledDate);
+    const actualStartDate = new Date(selectedCampaign.startDate);
+    const endDate = new Date(selectedCampaign.endDate);
+    if (
+      selectedDate < actualStartDate.setHours(0, 0, 0, 0) ||
+      selectedDate > endDate.setHours(23, 59, 59, 999)
+    ) {
+      setAlertDialog({
+        open: true,
+        message: "Ngày khám phải nằm trong khoảng từ ngày bắt đầu đến ngày kết thúc.",
+        type: "error",
+      });
+      return;
+    }
+    try {
+      setLoading(true);
+      await healthCheckConsentService.addStudentsToConsent(form.selectedCampaignId);
+      await healthCheckCampaignService.updateCampaignStatus(form.selectedCampaignId, {
+        status: "ANNOUNCED",
+        createdBy: nurseID,
+      });
+
+      await loadAllCampaigns();
+      setForm({
+        selectedCampaignId: "",
+        scheduledDate: new Date().toISOString().substring(0, 10),
+        location: "",
+      });
+      setSelectedCampaign(null);
+      setOpenDialog(false);
+      setAlertDialog({
+        open: true,
+        message: "Thông báo đã được gửi thành công!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      setAlertDialog({
+        open: true,
+        message: "Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCampaign = (notification) => {
+    setAlertDialog({
+      open: true,
+      message: "Bạn có chắc chắn muốn hủy chiến dịch này?",
+      type: "confirm",
+      onConfirm: async (reason) => {
+        try {
+          setLoading(true);
+          await healthCheckCampaignService.updateCampaignStatus(
+            notification.campaignId,
+            { status: "CANCELED", cancellationReason: reason, createdBy: nurseID }
+          );
+          await loadAllCampaigns();
+          setAlertDialog({
+            open: true,
+            message: "Chiến dịch đã được hủy thành công.",
+            type: "success",
+          });
+        } catch (error) {
+          setAlertDialog({
+            open: true,
+            message: "Có lỗi xảy ra khi hủy chiến dịch. Vui lòng thử lại.",
+            type: "error",
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleOpenDetailDialog = async (notification) => {
+    try {
+      setLoading(true);
+      const campaignData = await healthCheckCampaignService.getCampaignDetails(notification.campaignId);
+      setSelectedCampaign(campaignData.data);
+      setSelectedNotification(notification);
+      setOpenDetailDialog(true);
+    } catch (error) {
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải thông tin chiến dịch. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActivateCampaign = async (notification) => {
+    try {
+      setLoading(true);
+      const campaignData = await healthCheckCampaignService.getCampaignDetails(notification.campaignId);
+      const campaign = campaignData.data;
+      
+      setSelectedCampaign(campaign);
+      setForm({
+        selectedCampaignId: campaign._id,
+        scheduledDate: campaign.startDate
+          ? new Date(campaign.startDate).toISOString().substring(0, 10)
+          : new Date().toISOString().substring(0, 10),
+        location: campaign.location || "Phòng y tế trường",
+      });
+      setAlertDialog({
+        open: true,
+        message: `Bạn có chắc chắn muốn gửi thông báo cho chiến dịch "${campaign.name}"?`,
+        type: "confirm",
+        onConfirm: handleSubmit,
+      });
+    } catch (error) {
+      setAlertDialog({
+        open: true,
+        message: "Không thể tải thông tin chiến dịch để gửi thông báo. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(filteredCampaigns.length / itemsPerPage);
+  const paginatedCampaigns = filteredCampaigns.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  const handleCloseAlertDialog = () => {
+    setAlertDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
+  };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
-      <Card>
-        <CardContent>
-          <Typography variant="h4" gutterBottom>
-            Gửi thông báo kiểm tra y tế
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Quản lý và gửi thông báo kiểm tra sức khỏe định kỳ cho phụ huynh
-          </Typography>
-
-          <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider', mt: 3 }}>
-            <Tab icon={<AddIcon />} label="Tạo thông báo" />
-            <Tab icon={<PeopleIcon />} label="Quản lý thông báo" />
-          </Tabs>
-
-          {activeTab === 0 && (
-            <Box sx={{ mt: 3 }}>
-              <Grid container spacing={3}>
-                {/* Thông tin cơ bản */}
-                <Grid item xs={12}>
-                  <Card variant="outlined">
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Thông tin cơ bản
-                      </Typography>
-                      
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="Tiêu đề thông báo *"
-                            value={newNotice.title}
-                            onChange={(e) => handleInputChange('title', e.target.value)}
-                            placeholder="Ví dụ: Thông báo kiểm tra sức khỏe định kỳ năm học 2024-2025"
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <FormControl fullWidth>
-                            <InputLabel>Đối tượng gửi *</InputLabel>
-                            <Select
-                              value={newNotice.targetType}
-                              label="Đối tượng gửi *"
-                              onChange={(e) => handleInputChange('targetType', e.target.value)}
-                            >
-                              <MenuItem value="all">Tất cả học sinh</MenuItem>
-                              <MenuItem value="grade">Theo khối lớp</MenuItem>
-                              <MenuItem value="class">Theo lớp cụ thể</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-
-                        {newNotice.targetType === 'grade' && (
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                              <InputLabel>Chọn khối</InputLabel>
-                              <Select
-                                value={newNotice.grade}
-                                label="Chọn khối"
-                                onChange={(e) => handleInputChange('grade', e.target.value)}
-                              >
-                                {grades.map(grade => (
-                                  <MenuItem key={grade} value={grade}>{grade}</MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                        )}
-
-                        {newNotice.targetType === 'class' && (
-                          <>
-                            <Grid item xs={12} md={6}>
-                              <FormControl fullWidth>
-                                <InputLabel>Chọn khối</InputLabel>
-                                <Select
-                                  value={newNotice.grade}
-                                  label="Chọn khối"
-                                  onChange={(e) => handleInputChange('grade', e.target.value)}
-                                >
-                                  {grades.map(grade => (
-                                    <MenuItem key={grade} value={grade}>{grade}</MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                              <FormControl fullWidth disabled={!newNotice.grade}>
-                                <InputLabel>Chọn lớp</InputLabel>
-                                <Select
-                                  value={newNotice.class}
-                                  label="Chọn lớp"
-                                  onChange={(e) => handleInputChange('class', e.target.value)}
-                                >
-                                  {newNotice.grade && classes[newNotice.grade]?.map(cls => (
-                                    <MenuItem key={cls} value={cls}>{cls}</MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                          </>
-                        )}
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            type="date"
-                            label="Ngày gửi"
-                            value={newNotice.sendDate}
-                            onChange={(e) => handleInputChange('sendDate', e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            type="date"
-                            label="Hạn chót xác nhận *"
-                            value={newNotice.deadline}
-                            onChange={(e) => handleInputChange('deadline', e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {/* Nội dung thông báo */}
-                <Grid item xs={12}>
-                  <Card variant="outlined">
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Nội dung thông báo
-                      </Typography>
-                      
-                      <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            label="Mục đích kiểm tra *"
-                            value={newNotice.content.purpose}
-                            onChange={(e) => handleInputChange('content.purpose', e.target.value)}
-                            placeholder="Ví dụ: Theo kế hoạch kiểm tra sức khỏe định kỳ của trường..."
-                          />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Các hạng mục kiểm tra
-                          </Typography>
-                          <FormGroup row>
-                            {checkupItemsList.map(item => (
-                              <FormControlLabel
-                                key={item}
-                                control={
-                                  <Checkbox
-                                    checked={newNotice.content.checkupItems.includes(item)}
-                                    onChange={(e) => handleCheckupItemChange(item, e.target.checked)}
-                                  />
-                                }
-                                label={item}
-                              />
-                            ))}
-                          </FormGroup>
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            type="datetime-local"
-                            label="Thời gian kiểm tra"
-                            value={newNotice.content.datetime}
-                            onChange={(e) => handleInputChange('content.datetime', e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="Địa điểm kiểm tra"
-                            value={newNotice.content.location}
-                            onChange={(e) => handleInputChange('content.location', e.target.value)}
-                            placeholder="Ví dụ: Phòng y tế trường"
-                          />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            label="Lưu ý dành cho phụ huynh"
-                            value={newNotice.content.notes}
-                            onChange={(e) => handleInputChange('content.notes', e.target.value)}
-                            placeholder="Ví dụ: Học sinh không ăn sáng trước khi kiểm tra, mang theo sổ tiêm chủng..."
-                          />
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {/* Actions */}
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Button
-                      variant="outlined"
-                      onClick={resetForm}
-                    >
-                      Hủy
-                    </Button>
-
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<PreviewIcon />}
-                        onClick={() => setPreviewOpen(true)}
-                      >
-                        Xem trước
-                      </Button>
-                      <Button
-                        variant="contained"
-                        startIcon={<SendIcon />}
-                        onClick={sendNotice}
-                      >
-                        Gửi thông báo
-                      </Button>
-                    </Box>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-
-          {activeTab === 1 && (
-            <Box sx={{ mt: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">
-                  Quản lý thông báo đã gửi
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    size="small"
-                    placeholder="Tìm kiếm thông báo..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  <Button
-                    variant="outlined"
-                    startIcon={<FilterListIcon />}
+    <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
+      >
+        Gửi Thông Báo Khám Sức Khỏe
+      </Typography>
+      <Alert
+        severity="info"
+        icon={<Warning />}
+        sx={{ mb: 3, fontWeight: "medium" }}
+      >
+        Gửi thông báo khám sức khỏe đến phụ huynh học sinh.
+      </Alert>
+      <Box display="flex" gap={2} mb={4}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Tìm kiếm chiến dịch..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={20} />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Trạng thái</InputLabel>
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            label="Trạng thái"
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            <MenuItem value="DRAFT">Nháp</MenuItem>
+            <MenuItem value="ANNOUNCED">Đã công bố</MenuItem>
+            <MenuItem value="IN_PROGRESS">Đang thực hiện</MenuItem>
+            <MenuItem value="COMPLETED">Hoàn thành</MenuItem>
+            <MenuItem value="CANCELED">Đã hủy</MenuItem>
+          </Select>
+        </FormControl>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#2563eb",
+            "&:hover": { backgroundColor: "#1d4ed8" },
+            color: "white",
+            fontWeight: "bold",
+            borderRadius: "8px",
+            padding: "12px 24px",
+            textTransform: "none",
+          }}
+          startIcon={<RefreshCw size={20} />}
+          onClick={handleRefresh}
+          disabled={campaignsLoading}
+        >
+          Làm mới
+        </Button>
+      </Box>
+      <TableContainer
+        component={Paper}
+        sx={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f3f4f6" }}>
+              <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                Tên chiến dịch
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                Ngày khám
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                Địa điểm
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                Trạng thái
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#1a202c" }}>
+                Hành động
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedCampaigns.length > 0 ? (
+              paginatedCampaigns.map((campaign) => {
+                const notification = notifications.find(n => n.campaignId === campaign._id) || {};
+                const isCanceled = campaign.status === "CANCELED";
+                const campaignActualStartDate = campaign.startDate
+                  ? new Date(campaign.startDate).toISOString().substring(0, 10)
+                  : "N/A";
+                return (
+                  <TableRow
+                    key={campaign._id}
+                    hover
+                    sx={{ cursor: "pointer" }}
                   >
-                    Lọc
-                  </Button>
-                </Box>
-              </Box>
-
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Thông báo</TableCell>
-                      <TableCell>Đối tượng</TableCell>
-                      <TableCell>Ngày gửi</TableCell>
-                      <TableCell>Trạng thái</TableCell>
-                      <TableCell>Xác nhận</TableCell>
-                      <TableCell align="right">Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredNotices.map((notice) => (
-                      <TableRow key={notice.id} hover>
-                        <TableCell>
-                          <Box>
-                            <Typography variant="subtitle2">
-                              {notice.title}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Hạn: {new Date(notice.deadline).toLocaleDateString('vi-VN')}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <PeopleIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                            {getTargetDisplay(notice)}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(notice.sendDate).toLocaleDateString('vi-VN')}
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            icon={<CheckCircleIcon />}
-                            label="Đã gửi"
-                            color="success"
-                            size="small"
+                    <TableCell>{campaign.name || "N/A"}</TableCell>
+                    <TableCell>{campaignActualStartDate}</TableCell>
+                    <TableCell>{campaign.location || "Phòng y tế trường"}</TableCell>
+                    <TableCell>
+                      <span
+                        style={{
+                          color:
+                            campaign.status === "CANCELED"
+                              ? "red"
+                              : campaign.status === "COMPLETED"
+                              ? "green"
+                              : campaign.status === "IN_PROGRESS"
+                              ? "blue"
+                              : campaign.status === "ANNOUNCED"
+                              ? "orange"
+                              : "gray",
+                        }}
+                      >
+                        {campaign.status === "DRAFT" && "Nháp"}
+                        {campaign.status === "ANNOUNCED" && "Đã công bố"}
+                        {campaign.status === "IN_PROGRESS" && "Đang thực hiện"}
+                        {campaign.status === "COMPLETED" && "Hoàn thành"}
+                        {campaign.status === "CANCELED" && `Đã hủy - ${notification.cancellationReason || ""}`}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Box display="flex" gap={1}>
+                        <Button
+                          onClick={() => handleOpenDetailDialog(notification)}
+                          sx={{ padding: "8px", minWidth: "auto" }}
+                          aria-label="Xem chi tiết"
+                        >
+                          <Eye size={20} />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteCampaign(notification)}
+                          sx={{ padding: "8px", minWidth: "auto" }}
+                          aria-label="Hủy"
+                          disabled={loading || isCanceled}
+                        >
+                          <X
+                            size={20}
+                            className={isCanceled ? "text-gray-400" : "text-red-600"}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Box>
-                            <Typography variant="body2">
-                              {notice.confirmed}/{notice.totalRecipients}
-                            </Typography>
-                            <LinearProgress
-                              variant="determinate"
-                              value={(notice.confirmed / notice.totalRecipients) * 100}
-                              sx={{ mt: 1 }}
-                            />
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton color="primary">
-                            <VisibilityIcon />
-                          </IconButton>
-                          <IconButton color="warning">
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => deleteNotice(notice.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {filteredNotices.length === 0 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography color="text.secondary">
-                    Không có thông báo nào
-                  </Typography>
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <Box textAlign="center" py={4}>
+                    <Typography color="textSecondary">
+                      Chưa có chiến dịch nào.
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            sx={{ "& .MuiPaginationItem-root": { fontSize: "1rem" } }}
+          />
+        </Box>
+      )}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Gửi Thông Báo Khám Sức Khỏe</DialogTitle>
+        <DialogContent>
+          <form>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Chiến Dịch Khám Sức Khỏe</InputLabel>
+              <Select
+                name="selectedCampaignId"
+                value={form.selectedCampaignId}
+                onChange={handleCampaignSelect}
+                label="Chiến Dịch Khám Sức Khỏe"
+                disabled={campaignsLoading}
+              >
+                <MenuItem value="">
+                  <em>-- Chọn một chiến dịch --</em>
+                </MenuItem>
+                {allCampaigns
+                  .filter(campaign => campaign.status === "DRAFT")
+                  .map((campaign) => (
+                    <MenuItem key={campaign._id} value={campaign._id}>
+                      {`${campaign.name}`}
+                    </MenuItem>
+                  ))}
+              </Select>
+              {campaignsLoading && (
+                <Box display="flex" justifyContent="center" mt={1}>
+                  <CircularProgress size={20} />
                 </Box>
               )}
+            </FormControl>
+            {selectedCampaign && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9", borderRadius: 1 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  <strong>Thông tin chiến dịch:</strong>
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Tên chiến dịch:</strong> {selectedCampaign.name || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Lớp học:</strong>{" "}
+                  {getUniqueClassNames(selectedCampaign.assignments)}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Ngày bắt đầu:</strong>{" "}
+                  {new Date(selectedCampaign.startDate).toLocaleDateString("vi-VN") || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Ngày kết thúc:</strong>{" "}
+                  {new Date(selectedCampaign.endDate).toLocaleDateString("vi-VN") || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Y tá phụ trách:</strong>{" "}
+                  {selectedCampaign.participatingStaffs?.map(s => s.username).join(", ") || "N/A"}
+                </Typography>
+              </Box>
+            )}
+            <TextField
+              name="scheduledDate"
+              label="Ngày khám dự kiến"
+              type="date"
+              value={form.scheduledDate}
+              onChange={handleFormChange}
+              required
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+              inputProps={{
+                min: selectedCampaign
+                  ? new Date(selectedCampaign.startDate).toISOString().substring(0, 10)
+                  : undefined,
+                max: selectedCampaign
+                  ? new Date(selectedCampaign.endDate).toISOString().substring(0, 10)
+                  : undefined,
+              }}
+            />
+            <TextField
+              name="location"
+              label="Địa điểm khám"
+              value={form.location}
+              onChange={handleFormChange}
+              required
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              placeholder="Ví dụ: Phòng y tế trường"
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            color="inherit"
+            disabled={loading}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={() => setOpenPreviewDialog(true)}
+            variant="outlined"
+            color="primary"
+            disabled={
+              loading ||
+              !form.selectedCampaignId ||
+              !form.location
+            }
+          >
+            Xem trước
+          </Button>
+          <Button
+            onClick={() => setAlertDialog({
+              open: true,
+              message: `Bạn có chắc chắn muốn gửi thông báo cho chiến dịch "${selectedCampaign?.name}"?`,
+              type: "confirm",
+              onConfirm: handleSubmit,
+            })}
+            variant="contained"
+            color="primary"
+            disabled={
+              loading ||
+              !form.selectedCampaignId ||
+              !form.location
+            }
+          >
+            {loading ? <CircularProgress size={20} /> : "Gửi"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openPreviewDialog}
+        onClose={() => setOpenPreviewDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Xem trước Thông Báo</DialogTitle>
+        <DialogContent>
+          <Box
+            sx={{
+              p: 3,
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 1,
+              "& h1": {
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                mb: 2,
+                color: "#1a202c",
+              },
+              "& h2": {
+                fontSize: "1.25rem",
+                fontWeight: "bold",
+                mt: 3,
+                mb: 1,
+                color: "#2d3748",
+              },
+              "& p": { fontSize: "1rem", lineHeight: 1.6, color: "#4a5568" },
+              "& ul": { pl: 4, mb: 2 },
+              "& li": { mb: 1 },
+              "& strong": { color: "#2d3748" },
+              "& a": { color: "#2563eb", textDecoration: "underline" },
+            }}
+          >
+            <ReactMarkdown>{generateNotificationContent()}</ReactMarkdown>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPreviewDialog(false)} color="primary">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openDetailDialog}
+        onClose={() => setOpenDetailDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Chi tiết Chiến Dịch</DialogTitle>
+        <DialogContent>
+          {selectedNotification && selectedCampaign && (
+            <Box>
+              <Typography variant="body1" gutterBottom>
+                <strong>Tên chiến dịch:</strong> {selectedNotification.campaignName}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Ngày khám:</strong> {selectedNotification.scheduledDate}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Địa điểm:</strong> {selectedNotification.location}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Lớp học:</strong>{" "}
+                {getUniqueClassNames(selectedCampaign.assignments)}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Y tá phụ trách:</strong>{" "}
+                {selectedCampaign.participatingStaffs?.map(s => s.username).join(", ") || "N/A"}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Trạng thái:</strong>{" "}
+                {selectedCampaign.status === "DRAFT" && "Nháp"}
+                {selectedCampaign.status === "ANNOUNCED" && "Đã công bố"}
+                {selectedCampaign.status === "IN_PROGRESS" && "Đang thực hiện"}
+                {selectedCampaign.status === "COMPLETED" && "Hoàn thành"}
+                {selectedCampaign.status === "CANCELED" && `Đã hủy - ${selectedNotification.cancellationReason || ""}`}
+              </Typography>
+              <Typography variant="body1" mt={2}>
+                <strong>Nội dung thông báo:</strong>
+              </Typography>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "#f7fafc",
+                  borderRadius: 1,
+                  mt: 1,
+                  "& h1": { fontSize: "1.25rem", fontWeight: "bold" },
+                  "& h2": { fontSize: "1rem", fontWeight: "bold" },
+                  "& p": { fontSize: "0.875rem", lineHeight: 1.6 },
+                  "& ul": { pl: 4 },
+                }}
+              >
+                <ReactMarkdown>{selectedNotification.content}</ReactMarkdown>
+              </Box>
             </Box>
           )}
-        </CardContent>
-      </Card>
-
-      <PreviewDialog />
-    </Box>
+        </DialogContent>
+        <DialogActions>
+          {selectedCampaign?.status === "DRAFT" && (
+            <Button
+              onClick={() => handleActivateCampaign(selectedNotification)}
+              variant="contained"
+              color="primary"
+              disabled={loading}
+            >
+              Gửi thông báo
+            </Button>
+          )}
+          <Button onClick={() => setOpenDetailDialog(false)} color="primary">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <AlertDialog
+        open={alertDialog.open}
+        onClose={handleCloseAlertDialog}
+        message={alertDialog.message}
+        type={alertDialog.type}
+        onConfirm={alertDialog.onConfirm}
+      />
+    </Container>
   );
-};
+}
 
 export default SendCheckupNotice;
