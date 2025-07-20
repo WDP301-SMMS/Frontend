@@ -34,6 +34,7 @@ import {
 import NotFound from "../pages/basic-pages/NotFound";
 import DashboardHome from "~/pages/management/nurse/DashboardHome";
 import NurseDashboard from "~/pages/layout/Dashboard";
+import AdminLayout from "~/pages/management/admin/AdminLayout";
 import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications";
 import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/ManageMedicalSupplies";
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
@@ -208,14 +209,14 @@ const adminRoutes = [
     path: "/management/admin",
     element: (
       <ProtectedRoute allowedRoles={["Admin"]}>
-        <NurseDashboard />
+        <AdminLayout />
       </ProtectedRoute>
     ),
     children: [
       { path: "", element: <AdminDashboard /> },
       { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
-      { path: "students", element: <StudentManagementAdmin /> },
+      { path: "students", element: <StudentManagementAdmin /> }, 
       { path: "classes", element: <ClassManagement /> },
       { path: "partners", element: <PartnerManagement /> },
     ],

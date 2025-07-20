@@ -167,13 +167,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             active={path === "/management/admin/partners"}
           />
           <SidebarItem
-            to="/management/admin/inventory"
-            icon={faWarehouse}
-            label="Quản lý kho"
-            collapsed={isCollapsed}
-            active={path === "/management/admin/inventory"}
-          />
-          <SidebarItem
             to="/management/admin/blogs"
             icon={faBell}
             label="Quản lý bài viết"
