@@ -17,8 +17,10 @@ import {
   updateStudentHealthProfile,
   getStudentHealthProfile,
 } from "../../libs/api/parentService";
+import { set } from "lodash";
 
 const ParentHealthProfileForm = () => {
+  const [id, setId] = useState("");
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("basic");
   const [studentInfo, setStudentInfo] = useState({
@@ -125,6 +127,7 @@ const ParentHealthProfileForm = () => {
           if (response.success) {
             console.log("Fetched profile data:", response.data);
             const apiData = response.data;
+            setId(apiData._id);
             setHealthInfo({
               allergies:
                 apiData.allergies?.length > 0
@@ -235,20 +238,9 @@ const ParentHealthProfileForm = () => {
       [category]: newItems,
     });
   };
-
-  const handleCheckboxChange = (category, index, field) => {
-    const updatedItems = [...healthInfo[category]];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: !updatedItems[index][field],
-    };
-    setHealthInfo({
-      ...healthInfo,
-      [category]: updatedItems,
-    });
-  };
-
   const handleSubmit = async (e) => {
+    console.log(id);
+    
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
@@ -272,7 +264,7 @@ const ParentHealthProfileForm = () => {
       console.log("Submitting health profile data:", apiData);
       let response;
       if (isEditing) {
-        response = await updateStudentHealthProfile(profileId, apiData);
+        response = await updateStudentHealthProfile(id, apiData);
         console.log("Profile updated successfully:", response);
         setSuccessMessage("Hồ sơ sức khỏe đã được cập nhật thành công!");
       } else {
