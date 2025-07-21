@@ -159,7 +159,7 @@ export const mockData = {
       active: false,
     },
   ],
-  menuItemsNurse: [
+   menuItemsNurse: [
     {
       id: 'home',
       label: 'Trang chủ',
@@ -182,6 +182,25 @@ export const mockData = {
           label: 'Lịch sử sự cố',
           icon: 'Eye',
           route: '/management/nurse/view-medical-records',
+        },
+      ],
+    },
+    {
+      id: 'medication-requests-manager',
+      label: 'Gửi thuốc cho học sinh',
+      icon: 'Bell',
+      subItems: [
+        {
+          id: 'medication-requests',
+          label: 'Yêu cầu thuốc',
+          icon: 'FileBarChart',
+          route: '/management/nurse/medication-requests',
+        },
+        {
+          id: 'medication-schedules',
+          label: 'Lịch uống thuốc',
+          icon: 'Eye',
+          route: '/management/nurse/medication-schedules',
         },
       ],
     },
@@ -346,18 +365,24 @@ export const mockData = {
         },
       ],
     },
-    {
-      id: 'partner-management',
-      label: 'Quản lý đối tác',
-      icon: 'Shield',
-      subItems: [
-        {
-          id: 'manage-partner',
-          label: 'Quản lý đối tác',
-          icon: 'UserCheck',
-          route: '/management/manager/manage-partner',
-        },
-      ],
+    // {
+    //   id: 'partner-management',
+    //   label: 'Quản lý đối tác',
+    //   icon: 'Shield',
+    //   subItems: [
+    //     {
+    //       id: 'manage-partner',
+    //       label: 'Quản lý đối tác',
+    //       icon: 'UserCheck',
+    //       route: '/management/manager/manage-partner',
+    //     },
+    //   ],
+    // },
+     {
+      id: 'manage-blogs',
+      label: 'Quản lí blog',
+      icon: 'Book',
+      route: '/management/manager/manage-blogs',
     },
     {
       id: 'settings',

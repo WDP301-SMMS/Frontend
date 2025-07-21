@@ -1919,7 +1919,7 @@ const HealthCheckCampaignsManagement = () => {
                             </IconButton>
                           </span>
                         </Tooltip>
-                        <Tooltip title="Thay đổi trạng thái">
+                        {/* <Tooltip title="Thay đổi trạng thái">
                           <span>
                             <IconButton
                               color="warning"
@@ -1943,7 +1943,7 @@ const HealthCheckCampaignsManagement = () => {
                               <EditIcon />
                             </IconButton>
                           </span>
-                        </Tooltip>
+                        </Tooltip> */}
                       </Stack>
                     </TableCell>
                   </TableRow>
