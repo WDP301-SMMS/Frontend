@@ -39,7 +39,7 @@ import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
 const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
-const Settings = () => <div>Cài đặt</div>;
+import Settings from "../pages/setting/Profile";
 import Layout from "../pages/layout/Layout";
 import ManagementLayout from "../pages/management/Layout";
 import VaccinateRecord from "~/pages/management/nurse/InjectionManagement/VaccinateRecord";
@@ -157,11 +157,14 @@ const nurseRoutes = [
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
 
-      {path: "medication-requests", element: <MedicationRequests /> },
-      {path: "medication-schedules", element: <MedicationSchedules /> },
+      { path: "medication-requests", element: <MedicationRequests /> },
+      { path: "medication-schedules", element: <MedicationSchedules /> },
 
       { path: "message", element: <Message /> },
-      { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
+      {
+        path: "manage-medications",
+        element: <DispenseMedicationAndSupplies />,
+      },
       { path: "manage-supplies", element: <ManageMedicalSupplies /> },
       { path: "send-vaccination-consent", element: <SendVaccinationConsent /> },
       { path: "prepare-vaccination-list", element: <PrepareVaccinationList /> },
@@ -201,8 +204,12 @@ const managerRoutes = [
       { path: "manage-medications", element: <MedicineCRUD /> },
       { path: "manage-supplies", element: <SuppliesCRUD /> },
       { path: "manage-partner", element: <PartnerManagement /> },
-      { path: "manage-health-check-campaigns", element: <HealthCheckCampaignsManagement /> },
+      {
+        path: "manage-health-check-campaigns",
+        element: <HealthCheckCampaignsManagement />,
+      },
       { path: "manage-blogs", element: <BlogManagement /> },
+      { path: "settings", element: <Settings /> },
     ],
   },
 ];
@@ -219,7 +226,7 @@ const adminRoutes = [
       // { path: "", element: <AdminDashboard /> },
       // { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
-      { path: "students", element: <StudentManagementAdmin /> }, 
+      { path: "students", element: <StudentManagementAdmin /> },
       { path: "classes", element: <ClassManagement /> },
       { path: "partners", element: <PartnerManagement /> },
     ],
