@@ -157,8 +157,8 @@ const nurseRoutes = [
       { path: "record-incidents", element: <RecordIncident /> },
       { path: "view-medical-records", element: <IncidentHistory /> },
 
-      {path: "medication-requests", element: <MedicationRequests /> },
-      {path: "medication-schedules", element: <MedicationSchedules /> },
+      { path: "medication-requests", element: <MedicationRequests /> },
+      { path: "medication-schedules", element: <MedicationSchedules /> },
 
       { path: "message", element: <Message /> },
       { path: "manage-medications", element: <DispenseMedicationAndSupplies /> },
@@ -184,9 +184,11 @@ const managerRoutes = [
     path: "/management/manager",
     element: (
       <ProtectedRoute allowedRoles={["Manager"]}>
-        <div className="flex h-screen bg-gray-100 font-sans text-gray-800">
+        <div className="flex h-screen overflow-hidden bg-gray-100 font-sans text-gray-800">
           <SidebarManager />
-          <Outlet />
+          <div className="flex-1 overflow-y-auto">
+            <Outlet />
+          </div>
         </div>
       </ProtectedRoute>
     ),
@@ -219,7 +221,7 @@ const adminRoutes = [
       // { path: "", element: <AdminDashboard /> },
       // { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
-      { path: "students", element: <StudentManagementAdmin /> }, 
+      { path: "students", element: <StudentManagementAdmin /> },
       { path: "classes", element: <ClassManagement /> },
       { path: "partners", element: <PartnerManagement /> },
     ],
