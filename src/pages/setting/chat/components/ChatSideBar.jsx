@@ -17,6 +17,9 @@ const ChatSideBar = ({
   activeRoomId,
   onRoomSelect,
   currentUser,
+  selectedRoom,
+  setSelectedRoom,
+  onNewChatClick, // Add this prop
 }) => {
 
   return (
@@ -48,7 +51,11 @@ const ChatSideBar = ({
           </Typography>
 
           <Tooltip title="Tạo cuộc trò chuyện mới">
-            <IconButton size="small" sx={{ bgcolor: "primary" }}>
+            <IconButton 
+              size="small" 
+              sx={{ bgcolor: "primary.main", color: "white", "&:hover": { bgcolor: "primary.dark" } }}
+              onClick={onNewChatClick}
+            >
               <AddIcon fontSize="small" />
             </IconButton>
           </Tooltip>

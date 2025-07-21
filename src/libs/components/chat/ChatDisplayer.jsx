@@ -129,7 +129,7 @@ const ChatDisplayer = ({
   const groupMessagesByDate = (messages) => {
     const groups = {};
     messages.forEach((message) => {
-      const date = new Date(message.createdAt).toDateString();
+      const date = new Date(message?.createdAt).toDateString();
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -238,11 +238,11 @@ const ChatDisplayer = ({
 
             {/* Messages for this date */}
             {dayMessages.map((message) => {
-              const isCurrentUser = message.senderId._id === currentUser?._id;
+              const isCurrentUser = message?.senderId._id === currentUser?._id;
 
               return (
                 <Box
-                  key={message.id}
+                  key={message?.id}
                   sx={{
                     display: "flex",
                     justifyContent: isCurrentUser ? "flex-end" : "flex-start",
@@ -264,10 +264,10 @@ const ChatDisplayer = ({
                         color="text.secondary"
                         sx={{ ml: 1 }}
                       >
-                        {message.senderId?.username || "Unknown User"}
+                        {message?.senderId?.username || "Unknown User"}
                       </Typography>
                     )}
-                    {message.type === "FILE" ? (
+                    {message?.type === "FILE" ? (
                       <Box
                         sx={{
                           position: "relative",
@@ -323,7 +323,7 @@ const ChatDisplayer = ({
                         }}
                       >
                         <Typography variant="body2">
-                          {message.content}
+                          {message?.content}
                         </Typography>
                       </Paper>
                     )}
