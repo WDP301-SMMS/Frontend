@@ -223,7 +223,7 @@ const adminRoutes = [
       </ProtectedRoute>
     ),
     children: [
-      // { path: "", element: <AdminDashboard /> },
+      { path: "", element: <AdminDashboard /> },
       // { path: "blogs", element: <BlogManagement /> },
       { path: "users", element: <UserManagement /> },
       { path: "students", element: <StudentManagementAdmin /> },
