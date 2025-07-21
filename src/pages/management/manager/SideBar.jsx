@@ -30,7 +30,7 @@ import {
   HeartHandshake,
   TrendingUp,
   PillBottle,
-  
+
 } from "lucide-react";
 import { mockData } from "~/libs/utils/common";
 
@@ -63,12 +63,15 @@ const iconMap = {
 
 import { useAuth } from "~/libs/contexts/AuthContext";
 
-export const SidebarManager = () => {
+export const SidebarManager = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState(['vaccination-campaign-management']);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const menuItems =
+    role === "admin" ? mockData.menuItemsAdmin : mockData.menuItemsManager;
 
   const toggleMenuExpansion = (menuId) => {
     setExpandedMenus((prev) =>
@@ -100,9 +103,8 @@ export const SidebarManager = () => {
 
   return (
     <div
-      className={`bg-gradient-to-b from-blue-50 to-white border-r border-blue-100 shadow-lg transition-all duration-300 flex-shrink-0 flex flex-col ${
-        sidebarOpen ? "w-72" : "w-19"
-      }`}
+      className={`bg-gradient-to-b from-blue-50 to-white border-r border-blue-100 shadow-lg transition-all duration-300 flex-shrink-0 flex flex-col ${sidebarOpen ? "w-72" : "w-19"
+        }`}
     >
       <div className="p-4 border-b border-blue-100 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
@@ -140,7 +142,7 @@ export const SidebarManager = () => {
       </div>
 
       <div className="p-3 space-y-2 flex-1 overflow-y-auto custom-scrollbar">
-        {mockData.menuItemsManager.map((item) => {
+        {menuItems.map((item) => {
           const IconComponent = iconMap[item.icon];
           const isActive =
             item.route === location.pathname ||
@@ -152,17 +154,15 @@ export const SidebarManager = () => {
             <div key={item.id} className="group">
               <button
                 onClick={() => handleMenuItemClick(item)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                  isActive
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${isActive
                     ? "bg-blue-600 text-white shadow-lg transform scale-[1.02]"
                     : "text-gray-700 hover:bg-blue-100 hover:shadow-md hover:transform hover:scale-[1.01]"
-                }`}
+                  }`}
                 style={{ cursor: "pointer" }}
               >
                 <div
-                  className={`transition-all duration-200 ${
-                    isActive ? "text-white" : "text-blue-600 group-hover:text-blue-700"
-                  }`}
+                  className={`transition-all duration-200 ${isActive ? "text-white" : "text-blue-600 group-hover:text-blue-700"
+                    }`}
                 >
                   <IconComponent size={20} />
                 </div>
@@ -173,9 +173,8 @@ export const SidebarManager = () => {
                     </span>
                     {item.subItems && (
                       <div
-                        className={`transition-all duration-200 ${
-                          isActive ? "text-white" : "text-gray-400"
-                        }`}
+                        className={`transition-all duration-200 ${isActive ? "text-white" : "text-gray-400"
+                          }`}
                       >
                         {isExpanded ? (
                           <ChevronDown size={16} />
@@ -198,28 +197,25 @@ export const SidebarManager = () => {
                         <button
                           key={subItem.id}
                           onClick={() => handleSubItemClick(subItem)}
-                          className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-left text-sm transition-all duration-200 ${
-                            isSubActive
+                          className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-left text-sm transition-all duration-200 ${isSubActive
                               ? "bg-blue-600 text-white"
                               : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm"
-                          } border-l-2 border-transparent hover:border-blue-300`}
+                            } border-l-2 border-transparent hover:border-blue-300`}
                           style={{ cursor: "pointer" }}
                         >
                           <div
-                            className={`transition-colors ${
-                              isSubActive
+                            className={`transition-colors ${isSubActive
                                 ? "text-white"
                                 : "group-hover/sub:text-blue-600"
-                            }`}
+                              }`}
                           >
                             <SubIconComponent size={16} />
                           </div>
                           <span
-                            className={`transition-colors ${
-                              isSubActive
+                            className={`transition-colors ${isSubActive
                                 ? "text-white"
                                 : "group-hover/sub:text-blue-700 font-medium"
-                            }`}
+                              }`}
                           >
                             {subItem.label}
                           </span>

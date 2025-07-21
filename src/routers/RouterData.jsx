@@ -188,7 +188,7 @@ const managerRoutes = [
     element: (
       <ProtectedRoute allowedRoles={["Manager"]}>
         <div className="flex h-screen overflow-hidden bg-gray-100 font-sans text-gray-800">
-          <SidebarManager />
+          <SidebarManager role={"manager"} />
           <div className="flex-1 overflow-y-auto">
             <Outlet />
           </div>
@@ -221,7 +221,12 @@ const adminRoutes = [
     path: "/management/admin",
     element: (
       <ProtectedRoute allowedRoles={["Admin"]}>
-        <AdminLayout />
+        <div className="flex h-screen overflow-hidden bg-gray-100 font-sans text-gray-800">
+          <SidebarManager role={"admin"} />
+          <div className="flex-1 overflow-y-auto">
+            <Outlet />
+          </div>
+        </div>
       </ProtectedRoute>
     ),
     children: [
