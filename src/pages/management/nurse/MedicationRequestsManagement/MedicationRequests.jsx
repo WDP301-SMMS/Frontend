@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from "react";
 import {
+  AlertTriangle,
+  CheckCircle,
+  Search,
+  Plus,
+  Edit2,
+  X,
+  Save,
+  File,
+} from "lucide-react";
+import {
   Box,
-  Button,
-  TextField,
   Typography,
-  Paper,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Container,
+  Pagination,
+  Chip,
   Grid,
   Table,
   TableBody,
@@ -12,15 +33,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
+  Paper,
+  Autocomplete,
   InputAdornment,
-  MenuItem,
 } from "@mui/material";
-import { Search as SearchIcon, Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
+import { Warning } from "@mui/icons-material";
 import medicationRequestsService from "~/libs/api/services/medicationRequestsService";
 import userStudentServiceInstance from "~/libs/api/services/userStudentService";
 
@@ -31,43 +49,68 @@ const MedicationRequests = () => {
     studentId: "",
     startDate: "",
     endDate: "",
-    items: [{ medicationName: "", dosage: "", instruction: "" }],
+    items: [{ _id: "", medicationName: "", dosage: "", instruction: "" }],
     prescriptionFile: null,
   });
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
-  const [selectedRequest, setSelectedRequest] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [parents, setParents] = useState([]);
+  const [students, setStudents] = useState([]);
   const [editMode, setEditMode] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch all requests and parents on component mount
+  // Fetch all requests, parents, and students on component mount
   useEffect(() => {
     fetchRequests();
     fetchParents();
-  }, []);
+    fetchStudents();
+  }, [page]);
 
   const fetchRequests = async () => {
     try {
-      const res = await medicationRequestsService.getAllRequests();
+      const res = await medicationRequestsService.getAllRequests(page);
       setRequests(res.data);
       setFilteredRequests(res.data);
+      setTotalPages(res.totalPages || 1);
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi lấy danh sách yêu cầu");
+      setErrorMessage("Lỗi khi lấy danh sách yêu cầu");
+      setShowErrorDialog(true);
     }
   };
 
   const fetchParents = async () => {
     try {
-      const res = await userStudentServiceInstance.getAllUsers({ role: "Parent" });
-      console.log("Fetched parents:", res);
-      setParents(res.data.users);
+      const res = await userStudentServiceInstance.getAllUsers({
+        role: "Parent",
+      });
+      setParents(res.data.users || []);
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi lấy danh sách phụ huynh");
+      setErrorMessage("Lỗi khi lấy danh sách phụ huynh");
+      setShowErrorDialog(true);
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const res = await userStudentServiceInstance.getAllStudents({
+        page: 1,
+        limit: 100,
+      });
+      setStudents(res.data.students || []);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Lỗi khi lấy danh sách học sinh");
+      setShowErrorDialog(true);
     }
   };
 
@@ -84,7 +127,10 @@ const MedicationRequests = () => {
   const handleAddItem = () => {
     setForm({
       ...form,
-      items: [...form.items, { medicationName: "", dosage: "", instruction: "" }],
+      items: [
+        ...form.items,
+        { _id: "", medicationName: "", dosage: "", instruction: "" },
+      ],
     });
   };
 
@@ -93,69 +139,144 @@ const MedicationRequests = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append("parentId", form.parentId);
-      formData.append("studentId", form.studentId);
-      formData.append("startDate", form.startDate);
-      formData.append("endDate", form.endDate);
-      formData.append("prescriptionFile", form.prescriptionFile);
-      formData.append("items", JSON.stringify(form.items));
+  e.preventDefault();
 
-      if (editMode && form._id) {
-        await medicationRequestsService.updateRequestInfo(form._id, formData);
-        alert("Cập nhật yêu cầu thành công!");
-      } else {
-        await medicationRequestsService.createRequest(formData);
-        alert("Gửi yêu cầu uống thuốc thành công!");
-      }
-      setOpenDialog(false);
-      setForm({
-        _id: "",
-        parentId: "",
-        studentId: "",
-        startDate: "",
-        endDate: "",
-        items: [{ medicationName: "", dosage: "", instruction: "" }],
-        prescriptionFile: null,
-      });
-      setEditMode(false);
-      fetchRequests();
-    } catch (error) {
-      console.error(error);
-      alert("Có lỗi xảy ra khi gửi/cập nhật yêu cầu.");
+  // Validation
+  if (!form.parentId) {
+    setErrorMessage("Vui lòng chọn phụ huynh.");
+    setShowErrorDialog(true);
+    return;
+  }
+  if (!form.studentId) {
+    setErrorMessage("Vui lòng chọn học sinh.");
+    setShowErrorDialog(true);
+    return;
+  }
+  if (!form.startDate) {
+    setErrorMessage("Vui lòng chọn ngày bắt đầu.");
+    setShowErrorDialog(true);
+    return;
+  }
+  if (!form.endDate) {
+    setErrorMessage("Vui lòng chọn ngày kết thúc.");
+    setShowErrorDialog(true);
+    return;
+  }
+  // Validate startDate is not in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+  const startDate = new Date(form.startDate);
+  if (startDate < today) {
+    setErrorMessage("Ngày bắt đầu không được là ngày trong quá khứ.");
+    setShowErrorDialog(true);
+    return;
+  }
+  // Validate endDate is after startDate
+  const endDate = new Date(form.endDate);
+  if (endDate <= startDate) {
+    setErrorMessage("Ngày kết thúc phải sau ngày bắt đầu.");
+    setShowErrorDialog(true);
+    return;
+  }
+  // Validate items
+  for (const item of form.items) {
+    if (!item.medicationName.trim()) {
+      setErrorMessage("Vui lòng điền tên thuốc cho tất cả các mục.");
+      setShowErrorDialog(true);
+      return;
     }
-  };
+    if (!item.dosage.trim()) {
+      setErrorMessage("Vui lòng điền liều dùng cho tất cả các mục.");
+      setShowErrorDialog(true);
+      return;
+    }
+    if (!item.instruction.trim()) {
+      setErrorMessage("Vui lòng điền hướng dẫn cho tất cả các mục.");
+      setShowErrorDialog(true);
+      return;
+    }
+  }
+  console.log("Form data before validation:", form.prescriptionFile);
+  if (!form.prescriptionFile) {
+    setErrorMessage("File đơn thuốc phải là hình ảnh (jpg, jpeg, png) hoặc PDF.");
+    setShowErrorDialog(true);
+    return;
+  }
 
-  const handleEditRequest = (request) => {
+  try {
+    const formData = new FormData();
+    formData.append("parentId", form.parentId);
+    formData.append("studentId", form.studentId);
+    formData.append("startDate", form.startDate);
+    formData.append("endDate", form.endDate);
+    if (form.prescriptionFile) {
+      formData.append("prescriptionFile", form.prescriptionFile);
+    }
+    console.log("Form data before sending:", form);
+    // Phân loại items thành hai danh sách: cập nhật (có _id) và thêm mới (không có _id)
+    const itemsToUpdate = form.items.filter((item) => item._id);
+    const itemsToAdd = form.items
+      .filter((item) => !item._id)
+      .map(({ _id, ...rest }) => rest);
+    console.log("Items to update:", itemsToUpdate);
+    console.log("Items to add:", itemsToAdd);
+
+    if (editMode && form._id) {
+      // Cập nhật thông tin yêu cầu (parentId, studentId, dates, prescriptionFile)
+      await medicationRequestsService.updateRequestInfo(form._id, formData);
+      // Cập nhật các mục thuốc hiện có (itemsToUpdate)
+      if (itemsToUpdate.length > 0) {
+        await medicationRequestsService.updateItems(form._id, itemsToUpdate);
+      }
+      // Thêm các mục thuốc mới (itemsToAdd)
+      if (itemsToAdd.length > 0) {
+        await medicationRequestsService.addItems(form._id, itemsToAdd); // Giả định API addItems tồn tại
+      }
+    } else {
+      // Tạo mới yêu cầu với toàn bộ items (loại bỏ _id)
+      formData.append("items", JSON.stringify(form.items.map(({ _id, ...rest }) => rest)));
+      await medicationRequestsService.createRequest(formData);
+    }
+
+    setOpenDialog(false);
+    setForm({
+      _id: "",
+      parentId: "",
+      studentId: "", // Sửa từ StudentId thành studentId
+      startDate: "",
+      endDate: "",
+      items: [{ _id: "", medicationName: "", dosage: "", instruction: "" }],
+      prescriptionFile: null,
+    });
+    setEditMode(false);
+    setViewMode(false);
+    setShowSuccessDialog(true);
+    await fetchRequests();
+  } catch (error) {
+    console.error(error);
+    setErrorMessage("Có lỗi xảy ra khi gửi/cập nhật yêu cầu.");
+    setShowErrorDialog(true);
+  }
+};
+
+  const handleViewOrEditRequest = (request, mode = "view") => {
     setForm({
       _id: request._id,
       parentId: request.parentId._id,
       studentId: request.studentId._id,
       startDate: request.startDate.split("T")[0],
       endDate: request.endDate.split("T")[0],
-      items: request.requestItems.map(item => ({
+      items: request.requestItems.map((item) => ({
+        _id: item._id || "", // Đảm bảo _id được ánh xạ, mặc định là "" nếu không có
         medicationName: item.medicationName,
         dosage: item.dosage,
-        instruction: item.instruction
+        instruction: item.instruction,
       })),
-      prescriptionFile: null,
+      prescriptionFile: request.prescriptionFile || null,
     });
-    setEditMode(true);
+    setEditMode(mode === "edit");
+    setViewMode(mode === "view");
     setOpenDialog(true);
-  };
-
-  const handleUpdateItems = async () => {
-    try {
-      await medicationRequestsService.updateItems(selectedRequest._id, form.items);
-      alert("Cập nhật danh sách thuốc thành công!");
-      setSelectedRequest({ ...selectedRequest, requestItems: form.items });
-      setForm({ ...form, items: [{ medicationName: "", dosage: "", instruction: "" }] });
-    } catch (error) {
-      console.error(error);
-      alert("Có lỗi xảy ra khi cập nhật danh sách thuốc.");
-    }
   };
 
   const handleSearch = (e) => {
@@ -184,53 +305,94 @@ const MedicationRequests = () => {
     setFilteredRequests(filtered);
   };
 
-  const handleRowClick = async (requestId) => {
-    try {
-      const request = await medicationRequestsService.getRequestById(requestId);
-      setSelectedRequest(request.data);
-    } catch (error) {
-      console.error(error);
-      alert("Lỗi khi lấy chi tiết yêu cầu");
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return "#f59e0b"; // Orange
+      case "scheduled":
+        return "#3b82f6"; // Blue
+      case "in_progress":
+        return "#facc15"; // Yellow
+      case "completed":
+        return "#22c55e"; // Green
+      case "cancelled":
+        return "#ef4444"; // Red
+      default:
+        return "#6b7280"; // Gray
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return "Chờ xử lý";
+      case "scheduled":
+        return "Đã lên lịch";
+      case "in_progress":
+        return "Đang tiến hành";
+      case "completed":
+        return "Hoàn tất";
+      case "cancelled":
+        return "Đã hủy";
+      default:
+        return "Không xác định";
     }
   };
 
   return (
-    <Box sx={{ p: 4, maxWidth: 1200, margin: "auto" }}>
-      <Typography variant="h4" gutterBottom>
+    <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 2, fontWeight: "bold", color: "#1e3a8a" }}
+      >
         Quản lý yêu cầu uống thuốc
       </Typography>
 
+      <Alert severity="info" icon={<Warning />} sx={{ mb: 3 }}>
+        Xem và quản lý tất cả các yêu cầu uống thuốc của học sinh trong hệ
+        thống.
+      </Alert>
+
       {/* Search and Filter */}
-      <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
+      <Box display="flex" gap={2} mb={3} flexWrap="wrap">
         <TextField
+          type="text"
           label="Tìm kiếm theo tên học sinh/phụ huynh"
           value={searchTerm}
           onChange={handleSearch}
+          sx={{ width: { xs: "100%", sm: 300 } }}
+          variant="outlined"
+          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <Search size={20} />
               </InputAdornment>
             ),
           }}
-          sx={{ width: 300 }}
         />
-        <TextField
-          select
-          label="Lọc theo trạng thái"
-          value={filterStatus}
-          onChange={(e) => handleFilterStatus(e.target.value)}
-          SelectProps={{ native: true }}
-          sx={{ width: 200 }}
-        >
-          <option value="">Tất cả</option>
-          <option value="Scheduled">Scheduled</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
-        </TextField>
+        <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
+          <InputLabel>Trạng thái</InputLabel>
+          <Select
+            value={filterStatus}
+            onChange={(e) => handleFilterStatus(e.target.value)}
+            label="Trạng thái"
+            size="small"
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            <MenuItem value="Pending">Chờ xử lý</MenuItem>
+            <MenuItem value="Scheduled">Đã lên lịch</MenuItem>
+            <MenuItem value="In_progress">Đang tiến hành</MenuItem>
+            <MenuItem value="Completed">Hoàn tất</MenuItem>
+            <MenuItem value="Cancelled">Đã hủy</MenuItem>
+          </Select>
+        </FormControl>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
+          startIcon={<Plus size={18} />}
           onClick={() => {
             setForm({
               _id: "",
@@ -242,7 +404,12 @@ const MedicationRequests = () => {
               prescriptionFile: null,
             });
             setEditMode(false);
+            setViewMode(false);
             setOpenDialog(true);
+          }}
+          sx={{
+            backgroundColor: "#2563eb",
+            "&:hover": { backgroundColor: "#1d4ed8" },
           }}
         >
           Thêm yêu cầu
@@ -250,7 +417,7 @@ const MedicationRequests = () => {
       </Box>
 
       {/* Requests Table */}
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -267,19 +434,71 @@ const MedicationRequests = () => {
             {filteredRequests.map((request) => (
               <TableRow
                 key={request._id}
-                onClick={() => handleRowClick(request._id)}
-                sx={{ cursor: "pointer", "&:hover": { backgroundColor: "#f5f5f5" } }}
+                sx={{
+                  "&:hover": { backgroundColor: "#eff6ff" },
+                  transition: "all 0.2s",
+                }}
               >
                 <TableCell>{request.parentId.username}</TableCell>
                 <TableCell>{request.studentId.fullName}</TableCell>
-                <TableCell>{new Date(request.startDate).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(request.endDate).toLocaleDateString()}</TableCell>
-                <TableCell>{request.status}</TableCell>
-                <TableCell>{request.prescriptionFile}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleEditRequest(request)} color="primary">
-                    <EditIcon />
-                  </IconButton>
+                  {new Date(request.startDate).toLocaleDateString("vi-VN")}
+                </TableCell>
+                <TableCell>
+                  {new Date(request.endDate).toLocaleDateString("vi-VN")}
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={getStatusLabel(request.status)}
+                    size="small"
+                    sx={{
+                      bgcolor: getStatusColor(request.status),
+                      color: "white",
+                      fontWeight: "500",
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  {request.prescriptionFile ? (
+                    <a
+                      href={request.prescriptionFile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={request.prescriptionFile}
+                        alt="Prescription"
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </a>
+                  ) : (
+                    "Không có file"
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      onClick={() => handleViewOrEditRequest(request, "view")}
+                      size="small"
+                      sx={{
+                        color: "#3b82f6",
+                        "&:hover": { bgcolor: "#eff6ff" },
+                      }}
+                    >
+                      Xem
+                    </Button>
+                    <IconButton
+                      onClick={() => handleViewOrEditRequest(request, "edit")}
+                      color="primary"
+                      sx={{ "&:hover": { bgcolor: "#eff6ff" } }}
+                    >
+                      <Edit2 size={16} />
+                    </IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -287,177 +506,352 @@ const MedicationRequests = () => {
         </Table>
       </TableContainer>
 
-      {/* Request Details Dialog */}
-      <Dialog open={!!selectedRequest} onClose={() => setSelectedRequest(null)}>
-        <DialogTitle>Chi tiết yêu cầu</DialogTitle>
-        <DialogContent>
-          {selectedRequest && (
-            <Box>
-              <Typography>
-                <strong>Phụ huynh:</strong> {selectedRequest.parentId.username}
-              </Typography>
-              <Typography>
-                <strong>Học sinh:</strong> {selectedRequest.studentId.fullName}
-              </Typography>
-              <Typography>
-                <strong>Ngày bắt đầu:</strong>{" "}
-                {new Date(selectedRequest.startDate).toLocaleDateString()}
-              </Typography>
-              <Typography>
-                <strong>Ngày kết thúc:</strong>{" "}
-                {new Date(selectedRequest.endDate).toLocaleDateString()}
-              </Typography>
-              <Typography>
-                <strong>Trạng thái:</strong> {selectedRequest.status}
-              </Typography>
-              <Typography>
-                <strong>File đơn thuốc:</strong> {selectedRequest.prescriptionFile}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                Danh sách thuốc:
-              </Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tên thuốc</TableCell>
-                    <TableCell>Liều dùng</TableCell>
-                    <TableCell>Hướng dẫn</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {selectedRequest.requestItems.map((item) => (
-                    <TableRow key={item._id}>
-                      <TableCell>{item.medicationName}</TableCell>
-                      <TableCell>{item.dosage}</TableCell>
-                      <TableCell>{item.instruction}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  variant="contained"
-                  onClick={() => setForm({ ...form, items: selectedRequest.requestItems })}
-                >
-                  Chỉnh sửa danh sách thuốc
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleUpdateItems}
-                  sx={{ ml: 2 }}
-                  disabled={!form.items.length}
-                >
-                  Cập nhật danh sách
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSelectedRequest(null)}>Đóng</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Pagination */}
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          color="primary"
+          siblingCount={1}
+          boundaryCount={1}
+        />
+      </Box>
 
-      {/* Add/Edit Request Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editMode ? "Chỉnh sửa yêu cầu" : "Thêm yêu cầu uống thuốc"}</DialogTitle>
-        <DialogContent>
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Phụ huynh"
-                  value={form.parentId}
-                  onChange={(e) => handleInputChange("parentId", e.target.value)}
-                >
-                  {parents.map((parent) => (
-                    <MenuItem key={parent._id} value={parent._id}>
-                      {parent.username}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Student ID"
-                  value={form.studentId}
-                  onChange={(e) => handleInputChange("studentId", e.target.value)}
+      {/* Add/Edit/View Request Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="lg"
+        fullWidth
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2, maxHeight: "90vh" } }}
+      >
+        <DialogTitle
+          sx={{
+            bgcolor: "#f8fafc",
+            borderBottom: "1px solid #e2e8f0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {viewMode ? (
+              <Typography variant="h6" fontWeight="600" color="#1e293b">
+                Chi tiết yêu cầu
+              </Typography>
+            ) : (
+              <>
+                <Edit2 size={20} color="#3b82f6" />
+                <Typography variant="h6" fontWeight="600" color="#1e293b">
+                  {editMode ? "Chỉnh sửa yêu cầu" : "Thêm yêu cầu uống thuốc"}
+                </Typography>
+              </>
+            )}
+          </Box>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            size="small"
+            sx={{ minWidth: "auto", p: 1 }}
+          >
+            <X size={18} />
+          </Button>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} sx={{ width: "50%" }}>
+                <Autocomplete
+                  disabled={viewMode}
+                  options={parents}
+                  getOptionLabel={(option) => option.username || ""}
+                  value={
+                    parents.find((parent) => parent._id === form.parentId) ||
+                    null
+                  }
+                  onChange={(event, newValue) => {
+                    handleInputChange("parentId", newValue?._id || "");
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Phụ huynh"
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Search size={20} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
                 />
               </Grid>
-              <Grid item xs={6}>
+             <Grid item xs={12}>
+  <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+    File đơn thuốc:
+  </Typography>
+  {viewMode ? (
+    form.prescriptionFile ? (
+      <a href={form.prescriptionFile} target="_blank" rel="noopener noreferrer">
+        <File size={50} color="#3b82f6" />
+      </a>
+    ) : (
+      <Typography variant="body2" color="text.secondary">
+        Không có file
+      </Typography>
+    )
+  ) : (
+    <input
+      type="file"
+      accept="application/pdf,image/*"
+      onChange={handleFileChange}
+    />
+  )}
+</Grid>
+              <Grid item xs={12} md={6} sx={{ width: "50%" }}>
+                <Autocomplete
+                  disabled={viewMode}
+                  options={students}
+                  getOptionLabel={(option) =>
+                    `${option.fullName} - ${
+                      option.class?.className || "Không có lớp"
+                    }` || ""
+                  }
+                  value={
+                    students.find(
+                      (student) => student._id === form.studentId
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    handleInputChange("studentId", newValue?._id || "");
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Học sinh"
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Search size={20} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Start Date"
+                  label="Ngày bắt đầu"
                   type="date"
                   InputLabelProps={{ shrink: true }}
                   value={form.startDate}
-                  onChange={(e) => handleInputChange("startDate", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("startDate", e.target.value)
+                  }
+                  disabled={viewMode}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="End Date"
+                  label="Ngày kết thúc"
                   type="date"
                   InputLabelProps={{ shrink: true }}
                   value={form.endDate}
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  disabled={viewMode}
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle1">Tải file đơn thuốc (PDF):</Typography>
-                <input type="file" accept="application/pdf" onChange={handleFileChange} />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Thuốc được yêu cầu:</Typography>
-              </Grid>
-              {form.items.map((item, index) => (
-                <React.Fragment key={index}>
-                  <Grid item xs={4}>
-                    <TextField
-                      fullWidth
-                      label="Tên thuốc"
-                      value={item.medicationName}
-                      onChange={(e) => handleItemChange(index, "medicationName", e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      fullWidth
-                      label="Liều dùng"
-                      value={item.dosage}
-                      onChange={(e) => handleItemChange(index, "dosage", e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      fullWidth
-                      label="Hướng dẫn"
-                      value={item.instruction}
-                      onChange={(e) => handleItemChange(index, "instruction", e.target.value)}
-                    />
-                  </Grid>
-                </React.Fragment>
-              ))}
-              <Grid item xs={12}>
-                <Button variant="outlined" onClick={handleAddItem}>
-                  + Thêm thuốc
-                </Button>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="600"
+                  color="text.primary"
+                >
+                  Danh sách thuốc:
+                </Typography>
+                <TableContainer component={Paper} sx={{ mt: 2, boxShadow: 1 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên thuốc</TableCell>
+                        <TableCell>Liều dùng</TableCell>
+                        <TableCell>Hướng dẫn</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {form.items.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            {viewMode ? (
+                              item.medicationName
+                            ) : (
+                              <TextField
+                                fullWidth
+                                value={item.medicationName}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    index,
+                                    "medicationName",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {viewMode ? (
+                              item.dosage
+                            ) : (
+                              <TextField
+                                fullWidth
+                                value={item.dosage}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    index,
+                                    "dosage",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {viewMode ? (
+                              item.instruction
+                            ) : (
+                              <TextField
+                                fullWidth
+                                value={item.instruction}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    index,
+                                    "instruction",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                {!viewMode && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleAddItem}
+                    sx={{ mt: 2 }}
+                  >
+                    + Thêm thuốc
+                  </Button>
+                )}
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
-            {editMode ? "Cập nhật" : "Gửi yêu cầu"}
+        <DialogActions
+          sx={{
+            bgcolor: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+            p: 3,
+            gap: 2,
+          }}
+        >
+          <Button
+            onClick={() => setOpenDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: "#cbd5e0",
+              color: "#4a5568",
+              "&:hover": { backgroundColor: "#f7fafc", borderColor: "#a0aec0" },
+            }}
+          >
+            Hủy
+          </Button>
+          {!viewMode && (
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              sx={{
+                backgroundColor: "#2563eb",
+                "&:hover": { backgroundColor: "#1d4ed8" },
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Save size={18} />
+              {editMode ? "Cập nhật" : "Gửi yêu cầu"}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog
+        open={showSuccessDialog}
+        onClose={() => setShowSuccessDialog(false)}
+        sx={{
+          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
+        }}
+      >
+        <DialogContent>
+          <CheckCircle size={60} color="#22c55e" sx={{ mb: 2 }} />
+          <Typography variant="h6" color="text.primary">
+            {editMode ? "Cập nhật thành công!" : "Gửi yêu cầu thành công!"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Yêu cầu uống thuốc đã được xử lý thành công.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center" }}>
+          <Button
+            onClick={() => setShowSuccessDialog(false)}
+            variant="contained"
+            color="success"
+          >
+            Đóng
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+
+      {/* Error Dialog */}
+      <Dialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        sx={{
+          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
+        }}
+      >
+        <DialogContent>
+          <AlertTriangle size={60} color="#ef4444" sx={{ mb: 2 }} />
+          <Typography variant="h6" color="error">
+            Lỗi
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {errorMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center" }}>
+          <Button
+            onClick={() => setShowErrorDialog(false)}
+            variant="contained"
+            color="error"
+          >
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

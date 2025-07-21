@@ -370,14 +370,14 @@ Trân trọng,
       });
       return;
     }
-    if (!Object.values(form.channels).some((channel) => channel)) {
-      setAlertDialog({
-        open: true,
-        message: "Vui lòng chọn ít nhất một kênh gửi thông báo.",
-        type: "error",
-      });
-      return;
-    }
+    // if (!Object.values(form.channels).some((channel) => channel)) {
+    //   setAlertDialog({
+    //     open: true,
+    //     message: "Vui lòng chọn ít nhất một kênh gửi thông báo.",
+    //     type: "error",
+    //   });
+    //   return;
+    // }
     if (!form.location) {
       setAlertDialog({
         open: true,
@@ -834,7 +834,7 @@ Trân trọng,
               margin="normal"
               placeholder="Ví dụ: Phòng y tế trường"
             />
-            <Box mt={2}>
+            {/* <Box mt={2}>
               <Typography variant="subtitle1" gutterBottom>
                 Kênh gửi thông báo
               </Typography>
@@ -858,7 +858,7 @@ Trân trọng,
                 }
                 label="App"
               />
-            </Box>
+            </Box> */}
           </form>
         </DialogContent>
         <DialogActions>
@@ -966,13 +966,13 @@ Trân trọng,
                 <strong>Khối lớp mục tiêu:</strong>{" "}
                 {selectedNotification.targetGradeLevels?.join(", ") || "N/A"}
               </Typography>
-              <Typography variant="body1" gutterBottom>
+              {/* <Typography variant="body1" gutterBottom>
                 <strong>Kênh gửi:</strong>{" "}
                 {Object.keys(selectedNotification.channels)
                   .filter((key) => selectedNotification.channels[key])
                   .map((key) => (key === "email" ? "Email" : "App"))
                   .join(", ")}
-              </Typography>
+              </Typography> */}
               <Typography variant="body1" gutterBottom>
                 <strong>Thống kê:</strong>
                 <Box display="flex" gap={1} mt={1}>
