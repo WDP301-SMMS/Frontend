@@ -1,44 +1,38 @@
-import { update } from "lodash";
-import { classes } from "~/mock/mock"
-
 export const endpoints = {
   user: {
-    getProfile: "/user/me",           // GET /user/me
-    updateProfile: "/user/me",        // PUT /user/me
-    getAll: "/admin/users",                               // GET
+    getProfile: "/user/me",
+    updateProfile: "/user/me",
+    getAll: "/admin/users",
     updateStatus: "/admin/users/{userId}/status",
-    getProfile: "/user/me", // GET /user/me
-    updateProfile: "/user/me", // PUT /user/me
-    getAll: "/admin/users", // GET
-    updateStatus: "/admin/users/{userId}/status",
+    getAllUsers: "/admin/users",
   },
   students: {
-    getAll: "/admin/students",                            // GET
-    create: "/admin/students",                            // POST
+    getAll: "/admin/students",
+    create: "/admin/students",
   },
   classes: {
-    getAll: "/admin/classes",                             // GET
-    create: "/admin/classes",                             // POST
-    getById: "/admin/classes/{classId}",                  // GET  
+    getAll: "/admin/classes",
+    create: "/admin/classes",
+    getById: "/admin/classes/{classId}",
   },
   auth: {
-    login: "/auth/login", // POST /auth/login
-    register: "/auth/register", // POST /auth/register
-    forgotPass: "/auth/forgot-password", // POST /auth/forgot-password
-    verifyOTP: "/auth/verify-otp", // POST /auth/verify-otp
-    resetPassword: "/auth/reset-password", // POST /auth/reset-password
+    login: "/auth/login",
+    register: "/auth/register",
+    forgotPass: "/auth/forgot-password",
+    verifyOTP: "/auth/verify-otp",
+    resetPassword: "/auth/reset-password",
   },
   campaign: {
-    activeCampaign: "/vaccinationCampaigns/{campaignId}/dispatch", // POST
-    getListCampaign: "/vaccinationCampaigns", // GET
-    getCampaign: "/vaccinationCampaigns/{campaignId}", // GET
-    cancelCampaign: "/vaccinationCampaigns/{campaignId}", //PATCH
-    listRegistrants: "/vaccinationCampaigns/campaigns/{campaignId}/registrants", //GET
-    listVaccination: "/vaccinationCampaigns/campaigns/{campaignId}/checklist", //GET
-    getPartnerById: "/admin/partners/{partnerId}", //GET
-    injectionRecord: "/vaccinationCampaigns/records", //POSt
-    getListPartner: "/admin/partners", //GET
-    addCampaign: "/vaccinationCampaigns", //POST
+    activeCampaign: "/vaccinationCampaigns/{campaignId}/dispatch",
+    getListCampaign: "/vaccinationCampaigns",
+    getCampaign: "/vaccinationCampaigns/{campaignId}",
+    cancelCampaign: "/vaccinationCampaigns/{campaignId}",
+    listRegistrants: "/vaccinationCampaigns/campaigns/{campaignId}/registrants",
+    listVaccination: "/vaccinationCampaigns/campaigns/{campaignId}/checklist",
+    getPartnerById: "/admin/partners/{partnerId}",
+    injectionRecord: "/vaccinationCampaigns/records",
+    getListPartner: "/admin/partners",
+    addCampaign: "/vaccinationCampaigns",
     observations: "/vaccinationCampaigns/records/{consentId}/observations",
 
     StudentImmunizationHistory:
@@ -52,62 +46,59 @@ export const endpoints = {
     deleteTemplate: "/health-check/templates/{id}",
     setDefault: "/health-check/templates/set-default",
 
+    getHealthCheckCampaigns: "/health-check/campaigns",
+    createHealthCheckCampaign: "/health-check/campaigns",
+    searchHealthCheckCampaigns: "/health-check/campaigns/search",
+    getCampaignStatistics: "/health-check/campaigns/stats",
+    getCampaignsByStatus: "/health-check/campaigns/status/{status}",
+    getCampaignDetails: "/health-check/campaigns/{id}",
+    updateHealthCheckCampaign: "/health-check/campaigns/{id}",
+    updateCampaignStatus: "/health-check/campaigns/{id}/status",
+    assignStaffToCampaign: "/health-check/campaigns/{id}/assignments",
 
+    getAllConsents: "/health-check/consents",
+    getConsentsByCampaignId: "/health-check/consents/campaign/{campaignId}",
+    addStudentsToConsent: "/health-check/consents/campaign/add-students",
+    updateConsentStatus: "/health-check/consents/{consentId}/status",
 
-    getHealthCheckCampaigns: "/health-check/campaigns", // GET
-    getHealthCheckCampaigns: "/health-check/campaigns", // GET
-    createHealthCheckCampaign: "/health-check/campaigns", // POST
-    searchHealthCheckCampaigns: "/health-check/campaigns/search", // GET
-    getCampaignStatistics: "/health-check/campaigns/stats", // GET
-    getCampaignsByStatus: "/health-check/campaigns/status/{status}", // GET
-    getCampaignDetails: "/health-check/campaigns/{id}", // GET
-    updateHealthCheckCampaign: "/health-check/campaigns/{id}", // PUT
-    updateCampaignStatus: "/health-check/campaigns/{id}/status", // PATCH
-    assignStaffToCampaign: "/health-check/campaigns/{id}/assignments", // PUT
-
-
-    getAllConsents: "/health-check/consents", // GET
-    getConsentsByCampaignId: "/health-check/consents/campaign/{campaignId}", // GET
-    addStudentsToConsent: "/health-check/consents/campaign/add-students", // POST
-    updateConsentStatus: "/health-check/consents/{consentId}/status", // PATCH
-
-    // ✅ NEW: Health Check Records
-    getHealthCheckRecordByStudent: "/health-check/record/{id}", // GET
-    getLatestHealthCheckRecordByStudent: "/health-check/record/{id}/latest", // GET
-    createHealthCheckResult: "/health-check/record/create-result", // POST
-    updateHealthCheckRecord: "/health-check/record/result/{id}", // PUT
+    getHealthCheckRecordByStudent: "/health-check/record/{id}",
+    getLatestHealthCheckRecordByStudent: "/health-check/record/{id}/latest",
+    createHealthCheckResult: "/health-check/record/create-result",
+    updateHealthCheckRecord: "/health-check/record/result/{id}",
   },
   inventory: {
-    getAllItems: "/inventory/items", // GET ?type=
-    getItemById: "/inventory/items", // GET /:itemId
+    getAllItems: "/inventory/items",
+    getItemById: "/inventory/items",
     updateItemInfor: "/inventory/items",
-    updateStockBatch: "/inventory/adjustment", // PATCH /:itemId
+    updateStockBatch: "/inventory/adjustment",
     stockIn: "/inventory/stock-in",
     addBatch: "/inventory/items/{itemId}/batches",
   },
   incident: {
-    getAllIncidents: "/incident",                             // GET: Lấy tất cả sự cố
-    getMyIncidents: "/incident/nurse",                        // GET: Lấy sự cố của tôi (nurse)
-    getIncidentById: "/incident/{incidentId}",                // GET: Lấy sự cố theo ID
-    createIncident: "/incident",                              // POST: Tạo sự cố y tế
-    updateIncident: "/incident/{incidentId}",                 // PATCH: Cập nhật sự cố
+    getAllIncidents: "/incident",
+    getMyIncidents: "/incident/nurse",
+    getIncidentById: "/incident/{incidentId}",
+    createIncident: "/incident",
+    updateIncident: "/incident/{incidentId}",
 
-    getAllIncidentsToDispense: "/inventory/incidents-to-dispense", // GET: sự cố cần cấp phát
-    dispenseIncident: "/inventory/incidents/{incidentId}/dispense", // POST: cấp phát thuốc
-    dispenseHistory: "/inventory/dispense-history",                // GET: lịch sử cấp phát
+    getAllIncidentsToDispense: "/inventory/incidents-to-dispense",
+    dispenseIncident: "/inventory/incidents/{incidentId}/dispense",
+    dispenseHistory: "/inventory/dispense-history",
   },
   partner: {
-    createPartner: "/admin/partners", // POST
-    getPartnerById: "/admin/partners/{partnerId}", // GET
-    updatePartnerInfo: "/admin/partners/{partnerId}", // PATCH
-    updatePartnerManager: "/admin/partners/{partnerId}/manager", // PUT
-    updatePartnerStatus: "/admin/partners/{partnerId}/status", // PATCH
-    addPartnerStaff: "/admin/partners/{partnerId}/staff", // POST
-    deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}", // DELETE
+    createPartner: "/admin/partners",
+    getPartnerById: "/admin/partners/{partnerId}",
+    updatePartnerInfo: "/admin/partners/{partnerId}",
+    updatePartnerManager: "/admin/partners/{partnerId}/manager",
+    updatePartnerStatus: "/admin/partners/{partnerId}/status",
+    addPartnerStaff: "/admin/partners/{partnerId}/staff",
+    deletePartnerStaff: "/admin/partners/{partnerId}/staff/{staffId}",
   },
   chat: {
-    getAllMessagesByRoomId: "/messages/{roomId}", // GET
-    getAllRoomsByUserId: "/messages/user/{userId}", // GET
+    getAllMessagesByRoomId: "/messages/{roomId}",
+    getAllRoomsByUserId: "/messages/user/{userId}",
+    getAvailableUsers: "/messages/available-users",
+    createOrFindRoom: "/messages/room/create",
   },
   medication: {
     create: "/medication/requests", // POST: Tạo yêu cầu uống thuốc

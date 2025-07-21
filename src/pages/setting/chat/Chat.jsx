@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Box, Container, Paper, Alert, Snackbar } from "@mui/material";
 import ChatSideBar from "./components/ChatSideBar";
 import ChatSection from "./components/ChatSection";
+import NewChatModal from "./components/NewChatModal";
 import chatService from "~/libs/api/services/chatService";
 import { useAuth } from "~/libs/contexts/AuthContext";
 import { io } from "socket.io-client";
+import { userService } from "~/libs/api";
 
 const socket = io("http://localhost:3000");
 
@@ -15,6 +17,9 @@ export default function Chat() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [chatUsers, setChatUsers] = useState([]);
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Sort rooms by latest message time
   const sortRoomsByLatestMessage = (rooms) => {
@@ -29,8 +34,8 @@ export default function Chat() {
     });
   };
 
-  const loadRooms = useCallback(async () => {
-    if (!user?._id) return;
+  const loadRooms = useCallback(async (selectFirstRoom = false) => {
+    if (!user?._id) return [];
 
     setIsLoading(true);
     setError(null);
@@ -55,29 +60,35 @@ export default function Chat() {
           currentUserId: user._id,
         }));
 
-        console.log("Enhanced rooms:", enhancedRooms);
         const sortedRooms = sortRoomsByLatestMessage(enhancedRooms);
         setRooms(sortedRooms);
 
-        if (sortedRooms.length > 0 && !selectedRoom) {
+        // Only auto-select first room during initial load
+        if (selectFirstRoom && sortedRooms.length > 0) {
           setSelectedRoom(sortedRooms[0]);
         }
+
+        return sortedRooms;
       } else {
         setError(response.error || "Không thể tải danh sách cuộc trò chuyện");
+        return [];
       }
     } catch (err) {
       console.error("Get rooms error:", err);
       setError("Đã xảy ra lỗi khi tải dữ liệu");
+      return [];
     } finally {
       setIsLoading(false);
     }
-  }, [user, selectedRoom]);
+  }, [user?._id]);
+
+  // Remove the separate function since we combined the logic
 
   // Update room's last message when a new message is received
   const updateRoomLastMessage = useCallback((message) => {
     setRooms((prevRooms) => {
       const updatedRooms = prevRooms.map((room) => {
-        if (room.roomId === message.roomId) {
+        if (room?.roomId === message?.roomId) {
           return {
             ...room,
             lastMessage: {
@@ -95,25 +106,68 @@ export default function Chat() {
       // Sort rooms after updating
       return sortRoomsByLatestMessage(updatedRooms);
     });
-  }, []);
+  }, []); // No dependencies to keep it stable
+
+  const getUsersToChatWith = useCallback(async (role) => {
+    try {
+      const users = await userService.getAllUsers(role);
+      const userData = users.data?.users;
+      console.log("Fetched users:", userData);
+
+      if (userData && Array.isArray(userData)) {
+        const filteredUsers = userData.filter((u) => u._id !== user?._id);
+        setChatUsers(filteredUsers);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  }, [user?._id]);
+
+  // Separate ref to track if we've initially loaded rooms
+  const hasInitiallyLoadedRooms = useRef(false);
 
   useEffect(() => {
-    if (user && user._id) {
-      loadRooms();
+    if (user && user._id && !hasInitiallyLoadedRooms.current) {
+      hasInitiallyLoadedRooms.current = true;
+      
+      // Load rooms and select first one during initial load
+      loadRooms(true);
+      
+      switch (user?.role) {
+        case "Nurse":
+          getUsersToChatWith("Parent");
+          break;
+        case "Parent":
+          getUsersToChatWith("Nurse");
+          break;
+        default:
+          console.warn("Unsupported user role:", user?.role);
+          setError("Unsupported user role for chat");
+          return;
+      }
     }
 
     return () => {
-      setRooms([]);
-      setSelectedRoom(null);
+      if (!user?._id) {
+        hasInitiallyLoadedRooms.current = false;
+        setRooms([]);
+        setSelectedRoom(null);
+      }
     };
-  }, []);
+  }, [user, loadRooms, getUsersToChatWith]);
 
   useEffect(() => {
-    if (selectedRoom?.roomId) {
-      socket.emit("joinRoom", selectedRoom.roomId);
-
+    console.log("Selected room changed:", selectedRoom);
+    
+    if (selectedRoom?.roomId && selectedRoom?.senderId && selectedRoom?.receiverId) {
+      const roomId = selectedRoom.roomId;
+      const senderId = selectedRoom.senderId._id || selectedRoom.senderId;
+      const receiverId = selectedRoom.receiverId._id || selectedRoom.receiverId;
+      
+      socket.emit("joinRoom", senderId, receiverId);
+      
       const handleReceiveMessage = (message) => {
-        if (message.roomId === selectedRoom.roomId) {
+        if (message.roomId === roomId) {
           setMessages((prevMessages) => [...prevMessages, message]);
         }
 
@@ -123,7 +177,7 @@ export default function Chat() {
       socket.on("receiveMessage", handleReceiveMessage);
 
       return () => {
-        socket.emit("leaveRoom", selectedRoom.roomId);
+        socket.emit("leaveRoom", roomId);
         socket.off("receiveMessage", handleReceiveMessage);
       };
     }
@@ -137,6 +191,51 @@ export default function Chat() {
         r.roomId === room.roomId ? { ...r, unreadCount: 0 } : r
       )
     );
+  };
+
+  const handleNewChatClick = () => {
+    setIsNewChatModalOpen(true);
+  };
+
+  const handleNewChatClose = () => {
+    setIsNewChatModalOpen(false);
+  };
+
+  const handleRoomCreated = async ({ roomId, isNew, room, participant }) => {
+    try {
+      // Refresh rooms to get the latest data (don't auto-select first room)
+      const updatedRooms = await loadRooms(false);
+
+      // Show success message
+      setSuccessMessage(
+        isNew
+          ? `Đã tạo cuộc trò chuyện mới với ${participant.username}`
+          : `Đã mở cuộc trò chuyện với ${participant.username}`
+      );
+
+      // Find and select the new/existing room
+      const targetRoom = updatedRooms.find(r => r.roomId === roomId) || {
+        roomId,
+        senderId: room.senderId,
+        receiverId: room.receiverId,
+        lastMessage: room,
+        currentUserId: user._id,
+        unreadCount: 0,
+        isOnline: true,
+        type: "direct"
+      };
+
+      setSelectedRoom(targetRoom);
+
+      // Join the socket room
+      if (room.senderId && room.receiverId) {
+        socket.emit("joinRoom", room.senderId._id || room.senderId, room.receiverId._id || room.receiverId);
+      }
+
+    } catch (error) {
+      console.error("Error handling room creation:", error);
+      setError("Có lỗi xảy ra khi tạo cuộc trò chuyện");
+    }
   };
 
   if (isLoading) {
@@ -226,20 +325,6 @@ export default function Chat() {
     );
   }
 
-  if (error) {
-    return (
-      <Container maxWidth="xl" sx={{ height: "90vh", py: 2 }}>
-        <Alert
-          severity="error"
-          action={<button onClick={loadRooms}>Thử lại</button>}
-          sx={{ borderRadius: 2 }}
-        >
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth="xl" sx={{ height: "90vh", py: 2 }}>
       <Paper
@@ -258,6 +343,11 @@ export default function Chat() {
           activeRoomId={selectedRoom?.roomId}
           onRoomSelect={handleRoomSelect}
           currentUser={user}
+          selectedRoom={selectedRoom}
+          setSelectedRoom={setSelectedRoom}
+          chatUsers={chatUsers}
+          setChatUsers={setChatUsers}
+          onNewChatClick={handleNewChatClick}
         />
 
         {/* Chat Section */}
@@ -267,10 +357,34 @@ export default function Chat() {
             messages={messages}
             setMessages={setMessages}
             selectedRoom={selectedRoom}
-            onMessageSent={updateRoomLastMessage} // Pass the callback
+            onMessageSent={updateRoomLastMessage}
           />
         </Box>
       </Paper>
+
+      {/* New Chat Modal */}
+      <NewChatModal
+        open={isNewChatModalOpen}
+        onClose={handleNewChatClose}
+        onRoomCreated={handleRoomCreated}
+      />
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
