@@ -16,6 +16,28 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, loading } = useAuth();
 
+  const handleLoginSuccess = async (accessToken, isNewUser, hasMissingFields) => {
+    localStorage.setItem("hasGoogleLoggedIn", "true");
+    await login(accessToken);
+
+    toast.success("Đăng nhập thành công!", {
+      position: "bottom-right",
+      autoClose: 3000,
+    });
+
+    if (isNewUser || hasMissingFields) {
+      navigate("/complete-profile");
+    }
+  };
+
+  const handleLoginError = (error, defaultMsg = "Đăng nhập thất bại") => {
+    const message = error?.response?.data?.message || error?.message || defaultMsg;
+    toast.error(message, {
+      position: "bottom-right",
+      autoClose: 3000,
+    });
+  };
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -28,72 +50,33 @@ const Login = () => {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const response = await authService.login(values);
-        login(response.data.accessToken);
-        toast.success("Đăng nhập thành công!", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
+        await handleLoginSuccess(response.data.accessToken);
       } catch (error) {
-        toast.error(error.response.data.message, {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
+        handleLoginError(error);
       } finally {
         setSubmitting(false);
       }
-    },
+    }
   });
 
   const handleGoogle = async () => {
     try {
       const data = await authService.openGoogleLoginPopup();
       const { accessToken, isNewUser, hasMissingFields } = data;
-
-      if (!accessToken) {
-        toast.error("Không nhận được access token");
-        return;
-      }
-
-      localStorage.setItem("hasGoogleLoggedIn", "true");
-
-      await login(accessToken);
-      toast.success("Đăng nhập thành công!", {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-
-      if (isNewUser || hasMissingFields) {
-        navigate("/complete-profile");
-      }
+      if (!accessToken) return toast.error("Không nhận được access token");
+      await handleLoginSuccess(accessToken, isNewUser, hasMissingFields);
     } catch (error) {
-      toast.error(error.message || "Lỗi đăng nhập Google");
+      handleLoginError(error, "Lỗi đăng nhập Google");
     }
   };
 
   useEffect(() => {
     const receiveMessage = async (event) => {
       if (event.origin !== "http://localhost:3000") return;
-
       const { accessToken, isNewUser, hasMissingFields } = event.data;
-
-      if (!accessToken) {
-        toast.error("Không nhận được access token");
-        return;
-      }
-
-      localStorage.setItem("hasGoogleLoggedIn", "true");
-
-      await login(accessToken);
-      toast.success("Đăng nhập thành công!", {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-
-      if (isNewUser || hasMissingFields) {
-        navigate("/complete-profile");
-      }
+      if (!accessToken) return toast.error("Không nhận được access token");
+      await handleLoginSuccess(accessToken, isNewUser, hasMissingFields);
     };
-
     window.addEventListener("message", receiveMessage);
     return () => window.removeEventListener("message", receiveMessage);
   }, [login, navigate]);
