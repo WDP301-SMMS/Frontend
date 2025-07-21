@@ -58,7 +58,7 @@ class CampaignService {
         page: params.page || 1,
         limit: params.limit || 10,
         status: params.status || 'ANNOUNCED',
-        schoolYear: params.schoolYear || '2024-2025',
+        schoolYear: params.schoolYear || '',
         ...params
       };
       const response = await api.get(endpoints.campaign.getListCampaign, { params: queryParams });
@@ -74,7 +74,7 @@ class CampaignService {
       const queryParams = {
         page: params.page || 1,
         limit: params.limit || 10,
-        schoolYear: params.schoolYear || '2024-2025',
+        schoolYear: params.schoolYear || '',
         ...params
       };
       const response = await api.get(endpoints.campaign.getListCampaign, { params: queryParams });
