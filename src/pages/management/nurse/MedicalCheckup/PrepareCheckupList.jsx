@@ -24,6 +24,7 @@ import {
   Alert,
   Fade,
   TextField,
+  Chip,
 } from "@mui/material";
 import { Download, CheckCircle, AlertTriangle, RefreshCw } from "lucide-react";
 import { utils, writeFile } from "xlsx";
@@ -57,9 +58,9 @@ const AlertDialog = ({ open, onClose, message, type }) => {
 
 // Student Details Dialog Component
 const StudentDetailsDialog = ({ open, onClose, student }) => {
-    console.log("Student Details:", student);
+  console.log("Student Details:", student);
   if (!student) return null;
-  
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ fontWeight: "bold" }}>Chi tiết học sinh</DialogTitle>
@@ -171,22 +172,29 @@ function PrepareHealthCheckList() {
       if (response.success) {
         const consents = response.data || [];
         // Get campaigns with status "ANNOUNCED"
-        const campaignResponse = await healthCheckCampaignService.getCampaignsByStatus("ANNOUNCED");
+        const campaignResponse =
+          await healthCheckCampaignService.getCampaignsByStatus("ANNOUNCED");
         if (campaignResponse.success) {
-          const announcedCampaigns = campaignResponse.data.campaigns.map(campaign => ({
-            _id: campaign._id,
-            name: campaign.name,
-            schoolYear: campaign.schoolYear,
-            startDate: campaign.startDate,
-            endDate: campaign.endDate,
-          })).sort((a, b) => a.name.localeCompare(b.name, "vi"));
+          const announcedCampaigns = campaignResponse.data.campaigns
+            .map((campaign) => ({
+              _id: campaign._id,
+              name: campaign.name,
+              schoolYear: campaign.schoolYear,
+              startDate: campaign.startDate,
+              endDate: campaign.endDate,
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name, "vi"));
           setCampaigns(announcedCampaigns);
           // Filter consents to only include those from ANNOUNCED campaigns
-          setConsentsList(consents.filter(consent => 
-            announcedCampaigns.some(c => c._id === consent.campaignId._id)
-          ));
+          setConsentsList(
+            consents.filter((consent) =>
+              announcedCampaigns.some((c) => c._id === consent.campaignId._id)
+            )
+          );
         } else {
-          throw new Error(campaignResponse.message || "Không thể tải danh sách chiến dịch.");
+          throw new Error(
+            campaignResponse.message || "Không thể tải danh sách chiến dịch."
+          );
         }
       } else {
         throw new Error(response.message || "Không thể tải danh sách đồng ý.");
@@ -240,11 +248,15 @@ function PrepareHealthCheckList() {
   const fetchCampaignDetails = async (campaignId) => {
     try {
       setLoading(true);
-      const response = await healthCheckCampaignService.getCampaignDetails(campaignId);
+      const response = await healthCheckCampaignService.getCampaignDetails(
+        campaignId
+      );
       if (response.success) {
         setCampaignDetails(response.data);
       } else {
-        throw new Error(response.message || "Không thể tải thông tin chiến dịch.");
+        throw new Error(
+          response.message || "Không thể tải thông tin chiến dịch."
+        );
       }
     } catch (error) {
       console.error("Failed to fetch campaign details:", error);
@@ -304,9 +316,9 @@ function PrepareHealthCheckList() {
           stt: index + 1,
           studentName: consent.studentId.fullName,
           className: consent.classId.className,
-          dateOfBirth: new Date(consent.studentId.dateOfBirth).toLocaleDateString(
-            "vi-VN"
-          ),
+          dateOfBirth: new Date(
+            consent.studentId.dateOfBirth
+          ).toLocaleDateString("vi-VN"),
           parentName: consent.parentId.username,
           nurseName: consent.nurseId.username,
           status: consent.status,
@@ -471,7 +483,10 @@ function PrepareHealthCheckList() {
     setLoading(true);
     try {
       const statusData = { status: "IN_PROGRESS" };
-      await healthCheckCampaignService.updateCampaignStatus(selectedCampaign, statusData);
+      await healthCheckCampaignService.updateCampaignStatus(
+        selectedCampaign,
+        statusData
+      );
       setAlertDialog({
         open: true,
         message: "Chiến dịch đã chuyển sang trạng thái 'Đang thực hiện'.",
@@ -537,6 +552,57 @@ function PrepareHealthCheckList() {
   const handleRowClick = (student) => {
     setSelectedStudent(student);
     setOpenStudentDetails(true);
+  };
+  const getStatusChip = (status) => {
+    let color, label;
+
+    switch (status) {
+      case "PENDING":
+        color = "info";
+        label = "Chờ xử lý";
+        break;
+      case "APPROVED":
+        color = "success";
+        label = "Đã chấp thuận";
+        break;
+      case "DECLINED":
+        color = "error";
+        label = "Đã từ chối";
+        break;
+      case "COMPLETED":
+        color = "success";
+        label = "Hoàn thành";
+        break;
+      case "REVOKED":
+        color = "default";
+        label = "Đã thu hồi";
+        break;
+      case "UNDER_OBSERVATION":
+        color = "warning";
+        label = "Đang theo dõi";
+        break;
+      case "ADVERSE_REACTION":
+        color = "error";
+        label = "Phản ứng bất lợi";
+        break;
+      default:
+        color = "default";
+        label = status;
+    }
+    return (
+      <Chip
+        label={label}
+        color={color}
+        size="small"
+        sx={{
+          fontWeight: "medium",
+          minWidth: "100px",
+          "& .MuiChip-label": {
+            color: color === "default" ? "text.secondary" : "white",
+          },
+        }}
+      />
+    );
   };
 
   return (
@@ -692,7 +758,9 @@ function PrepareHealthCheckList() {
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#111827" }}>
                     {selectedCampaignDetails.startDate
-                      ? new Date(selectedCampaignDetails.startDate).toLocaleDateString("vi-VN")
+                      ? new Date(
+                          selectedCampaignDetails.startDate
+                        ).toLocaleDateString("vi-VN")
                       : "Chưa xác định"}
                   </Typography>
                 </Box>
@@ -705,7 +773,9 @@ function PrepareHealthCheckList() {
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#111827" }}>
                     {selectedCampaignDetails.endDate
-                      ? new Date(selectedCampaignDetails.endDate).toLocaleDateString("vi-VN")
+                      ? new Date(
+                          selectedCampaignDetails.endDate
+                        ).toLocaleDateString("vi-VN")
                       : "Chưa xác định"}
                   </Typography>
                 </Box>
@@ -811,7 +881,10 @@ function PrepareHealthCheckList() {
                         sx={{
                           backgroundColor:
                             index % 2 === 0 ? "#ffffff" : "#f9fafb",
-                          "&:hover": { backgroundColor: "#f1f5f9", cursor: "pointer" },
+                          "&:hover": {
+                            backgroundColor: "#f1f5f9",
+                            cursor: "pointer",
+                          },
                         }}
                         onClick={() => handleRowClick(consent)}
                       >
@@ -821,7 +894,7 @@ function PrepareHealthCheckList() {
                         <TableCell>{consent.dateOfBirth}</TableCell>
                         <TableCell>{consent.parentName}</TableCell>
                         <TableCell>{consent.nurseName}</TableCell>
-                        <TableCell>{consent.status}</TableCell>
+                        <TableCell>{getStatusChip(consent.status)}</TableCell>
                         <TableCell>{consent.reasonForDeclining}</TableCell>
                         <TableCell>{consent.confirmedAt}</TableCell>
                       </TableRow>

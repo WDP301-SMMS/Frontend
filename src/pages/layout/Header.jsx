@@ -92,11 +92,6 @@ export const Header = () => {
             to: "/health-profiles",
             icon: <FileText className="w-4 h-4 inline mr-2" />,
           },
-          {
-            label: "Khai báo hồ sơ mới",
-            to: "/health-profile/new",
-            icon: <FileText className="w-4 h-4 inline mr-2" />,
-          },
         ];
     }
   };
@@ -111,17 +106,42 @@ export const Header = () => {
               alt="EduCare Logo"
               className="h-12 w-auto transition-transform hover:scale-105"
             />
-            <span className="text-2xl font-semibold text-blue-600">EduCare</span>
+            <span className="text-2xl font-semibold text-blue-600">
+              EduCare
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-10">
-            <NavLink to="/" icon={<Home />} label="Trang chủ" active={isActive("/")} />
-            <NavLink to="/about" icon={<Info />} label="Giới thiệu" active={isActive("/about")} />
-            <NavLink to="/contact" icon={<Phone />} label="Liên hệ" active={isActive("/contact")} />
-            <NavLink to="/blogs" icon={<BookOpen />} label="Blogs" active={isActive("/blogs")} />
+            <NavLink
+              to="/"
+              icon={<Home />}
+              label="Trang chủ"
+              active={isActive("/")}
+            />
+            <NavLink
+              to="/about"
+              icon={<Info />}
+              label="Giới thiệu"
+              active={isActive("/about")}
+            />
+            <NavLink
+              to="/contact"
+              icon={<Phone />}
+              label="Liên hệ"
+              active={isActive("/contact")}
+            />
+            <NavLink
+              to="/blogs"
+              icon={<BookOpen />}
+              label="Blogs"
+              active={isActive("/blogs")}
+            />
           </nav>
 
-          <div ref={profileMenuRef} className="hidden md:flex items-center relative z-30">
+          <div
+            ref={profileMenuRef}
+            className="hidden md:flex items-center relative z-30"
+          >
             {isLoggedIn ? (
               <>
                 <button
@@ -131,12 +151,19 @@ export const Header = () => {
                   <User className="w-5 h-5 mr-2" />
                   {user?.username}
                   <svg
-                    className={`w-4 h-4 ml-2 transition-transform ${isProfileMenuOpen ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 ml-2 transition-transform ${
+                      isProfileMenuOpen ? "rotate-180" : ""
+                    }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -145,8 +172,12 @@ export const Header = () => {
                     className={`absolute right-0 top-full mt-1 w-56 bg-white shadow-xl rounded-lg ring-1 ring-gray-200 z-20 transition-all origin-top-right ${dropdownAnimation}`}
                   >
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{user?.username}</p>
-                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {user?.username}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user?.email}
+                      </p>
                     </div>
 
                     {getRoleBasedMenuItems().length > 0 && (
@@ -170,7 +201,10 @@ export const Header = () => {
                     )}
 
                     <div className="py-1">
-                      <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      <Link
+                        to="/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      >
                         Cài đặt tài khoản
                       </Link>
                       <button
@@ -186,10 +220,16 @@ export const Header = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md">
+                <Link
+                  to="/login"
+                  className="text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md"
+                >
                   Đăng nhập
                 </Link>
-                <Link to="/register" className="ml-2 text-sm text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md">
+                <Link
+                  to="/register"
+                  className="ml-2 text-sm text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
+                >
                   Đăng ký
                 </Link>
               </>
@@ -201,7 +241,11 @@ export const Header = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50"
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -209,15 +253,37 @@ export const Header = () => {
 
       {isMenuOpen && (
         <div className="md:hidden px-4 pt-4 pb-6 space-y-3 bg-white shadow-lg">
-          <MobileNavLink to="/" label="Trang chủ" icon={<Home />} active={isActive("/")} />
-          <MobileNavLink to="/about" label="Giới thiệu" icon={<Info />} active={isActive("/about")} />
-          <MobileNavLink to="/contact" label="Liên hệ" icon={<Phone />} active={isActive("/contact")} />
-          <MobileNavLink to="/blogs" label="Blogs" icon={<BookOpen />} active={isActive("/blogs")} />
+          <MobileNavLink
+            to="/"
+            label="Trang chủ"
+            icon={<Home />}
+            active={isActive("/")}
+          />
+          <MobileNavLink
+            to="/about"
+            label="Giới thiệu"
+            icon={<Info />}
+            active={isActive("/about")}
+          />
+          <MobileNavLink
+            to="/contact"
+            label="Liên hệ"
+            icon={<Phone />}
+            active={isActive("/contact")}
+          />
+          <MobileNavLink
+            to="/blogs"
+            label="Blogs"
+            icon={<BookOpen />}
+            active={isActive("/blogs")}
+          />
 
           <div className="pt-3 border-t border-gray-200">
             {isLoggedIn ? (
               <>
-                <p className="px-4 py-2 font-medium text-gray-900">{user?.username}</p>
+                <p className="px-4 py-2 font-medium text-gray-900">
+                  {user?.username}
+                </p>
 
                 {getRoleBasedMenuItems().length > 0 && (
                   <>
@@ -228,12 +294,23 @@ export const Header = () => {
                         : "Hồ sơ sức khỏe"}
                     </span>
                     {getRoleBasedMenuItems().map((item) => (
-                      <MobileNavLink key={item.to} to={item.to} label={item.label} indent active={isActive(item.to)} />
+                      <MobileNavLink
+                        key={item.to}
+                        to={item.to}
+                        label={item.label}
+                        indent
+                        active={isActive(item.to)}
+                      />
                     ))}
                   </>
                 )}
 
-                <MobileNavLink to="/settings" label="Cài đặt tài khoản" icon={<User />} active={isActive("/settings")} />
+                <MobileNavLink
+                  to="/settings"
+                  label="Cài đặt tài khoản"
+                  icon={<User />}
+                  active={isActive("/settings")}
+                />
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 rounded-lg text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600"
@@ -273,7 +350,9 @@ const MobileNavLink = ({ to, label, icon, indent = false, active }) => (
   <Link
     to={to}
     className={`block px-4 py-2 rounded-lg text-base font-medium transition-colors ${
-      active ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+      active
+        ? "bg-blue-600 text-white"
+        : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
     } ${indent ? "pl-8" : ""}`}
   >
     {icon && <span className="inline-block mr-2">{icon}</span>}

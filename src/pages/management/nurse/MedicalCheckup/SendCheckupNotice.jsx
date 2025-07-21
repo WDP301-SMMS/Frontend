@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Send, Eye, AlertTriangle, CheckCircle, X, RefreshCw, Search } from "lucide-react";
+import { Eye, AlertTriangle, CheckCircle, X, RefreshCw, Search } from "lucide-react";
 import {
   Dialog,
   DialogActions,
@@ -94,12 +94,6 @@ const AlertDialog = ({ open, onClose, message, type, onConfirm }) => {
 };
 
 function SendCheckupNotice() {
-  const [form, setForm] = useState({
-    selectedCampaignId: "",
-    scheduledDate: new Date().toISOString().substring(0, 10),
-    location: "",
-  });
-
   const [allCampaigns, setAllCampaigns] = useState([]);
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -110,12 +104,8 @@ function SendCheckupNotice() {
   const [nurseID, setNurseID] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [openDetailDialog, setOpenDetailDialog] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [alertDialog, setAlertDialog] = useState({
     open: false,
@@ -257,78 +247,8 @@ Trân trọng,
     `;
   };
 
-  const generateNotificationContent = () => {
-    if (!selectedCampaign) return "";
-
-    return `
-# THÔNG BÁO KHÁM SỨC KHỎE
-
-Kính gửi quý phụ huynh,
-
-Trường học tổ chức khám sức khỏe định kỳ cho học sinh.
-
-## Thông tin chi tiết
-- **Tên chiến dịch**: ${selectedCampaign.name || "N/A"}
-- **Ngày khám dự kiến**: ${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}
-- **Địa điểm**: ${form.location}
-- **Đối tượng**: ${getUniqueClassNames(selectedCampaign.assignments)}
-
-## Lưu ý
-- Đảm bảo học sinh ăn nhẹ trước khi khám.
-- Liên hệ: Y tá trường - SĐT: 0123 456 789, Email: nurse@school.edu.vn
-
-Vui lòng phản hồi trước ngày **${new Date(form.scheduledDate).toLocaleDateString("vi-VN")}**.
-
-Trân trọng,  
-**Ban Y tế Trường học**
-    `;
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
-  };
-
-  const handleCampaignSelect = async (e) => {
-    const campaignId = e.target.value;
+  const handleSubmit = async (campaignId, scheduledDate, location) => {
     if (!campaignId) {
-      setSelectedCampaign(null);
-      setForm((prevForm) => ({
-        ...prevForm,
-        selectedCampaignId: "",
-        scheduledDate: new Date().toISOString().substring(0, 10),
-        location: "",
-      }));
-      return;
-    }
-    try {
-      setLoading(true);
-      const campaignData = await healthCheckCampaignService.getCampaignDetails(campaignId);
-      setSelectedCampaign(campaignData.data);
-      setForm((prevForm) => ({
-        ...prevForm,
-        selectedCampaignId: campaignId,
-        scheduledDate: campaignData.data.startDate
-          ? new Date(campaignData.data.startDate).toISOString().substring(0, 10)
-          : new Date().toISOString().substring(0, 10),
-        location: campaignData.data.location || "",
-      }));
-    } catch (error) {
-      setAlertDialog({
-        open: true,
-        message: "Không thể tải thông tin chiến dịch. Vui lòng thử lại.",
-        type: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!form.selectedCampaignId) {
       setAlertDialog({
         open: true,
         message: "Vui lòng chọn một chiến dịch khám sức khỏe.",
@@ -336,7 +256,7 @@ Trân trọng,
       });
       return;
     }
-    if (!form.location) {
+    if (!location) {
       setAlertDialog({
         open: true,
         message: "Vui lòng nhập địa điểm khám.",
@@ -344,9 +264,18 @@ Trân trọng,
       });
       return;
     }
-    const selectedDate = new Date(form.scheduledDate);
-    const actualStartDate = new Date(selectedCampaign.startDate);
-    const endDate = new Date(selectedCampaign.endDate);
+    const selectedDate = new Date(scheduledDate);
+    const campaign = allCampaigns.find(c => c._id === campaignId);
+    if (!campaign) {
+      setAlertDialog({
+        open: true,
+        message: "Chiến dịch không tồn tại.",
+        type: "error",
+      });
+      return;
+    }
+    const actualStartDate = new Date(campaign.startDate);
+    const endDate = new Date(campaign.endDate);
     if (
       selectedDate < actualStartDate.setHours(0, 0, 0, 0) ||
       selectedDate > endDate.setHours(23, 59, 59, 999)
@@ -360,20 +289,15 @@ Trân trọng,
     }
     try {
       setLoading(true);
-      await healthCheckConsentService.addStudentsToConsent(form.selectedCampaignId);
-      await healthCheckCampaignService.updateCampaignStatus(form.selectedCampaignId, {
+      await healthCheckConsentService.addStudentsToConsent(campaignId);
+      await healthCheckCampaignService.updateCampaignStatus(campaignId, {
         status: "ANNOUNCED",
         createdBy: nurseID,
       });
 
       await loadAllCampaigns();
-      setForm({
-        selectedCampaignId: "",
-        scheduledDate: new Date().toISOString().substring(0, 10),
-        location: "",
-      });
       setSelectedCampaign(null);
-      setOpenDialog(false);
+      setOpenDetailDialog(false);
       setAlertDialog({
         open: true,
         message: "Thông báo đã được gửi thành công!",
@@ -383,7 +307,7 @@ Trân trọng,
       console.error("Error sending notification:", error);
       setAlertDialog({
         open: true,
-        message: "Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại.",
+        message: error.message || "Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại.",
         type: "error",
       });
     } finally {
@@ -447,18 +371,15 @@ Trân trọng,
       const campaign = campaignData.data;
       
       setSelectedCampaign(campaign);
-      setForm({
-        selectedCampaignId: campaign._id,
-        scheduledDate: campaign.startDate
-          ? new Date(campaign.startDate).toISOString().substring(0, 10)
-          : new Date().toISOString().substring(0, 10),
-        location: campaign.location || "Phòng y tế trường",
-      });
       setAlertDialog({
         open: true,
         message: `Bạn có chắc chắn muốn gửi thông báo cho chiến dịch "${campaign.name}"?`,
         type: "confirm",
-        onConfirm: handleSubmit,
+        onConfirm: () => handleSubmit(
+          campaign._id,
+          campaign.startDate ? new Date(campaign.startDate).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10),
+          campaign.location || "Phòng y tế trường"
+        ),
       });
     } catch (error) {
       setAlertDialog({
@@ -494,14 +415,14 @@ Trân trọng,
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-        Gửi Thông Báo Khám Sức Khỏe
+        Quản Lý Thông Báo Khám Sức Khỏe
       </Typography>
       <Alert
         severity="info"
         icon={<Warning />}
         sx={{ mb: 3, fontWeight: "medium" }}
       >
-        Gửi thông báo khám sức khỏe đến phụ huynh học sinh.
+        Xem và quản lý các thông báo khám sức khỏe đã gửi đến phụ huynh học sinh.
       </Alert>
       <Box display="flex" gap={2} mb={4}>
         <TextField
@@ -664,182 +585,6 @@ Trân trọng,
           />
         </Box>
       )}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Gửi Thông Báo Khám Sức Khỏe</DialogTitle>
-        <DialogContent>
-          <form>
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Chiến Dịch Khám Sức Khỏe</InputLabel>
-              <Select
-                name="selectedCampaignId"
-                value={form.selectedCampaignId}
-                onChange={handleCampaignSelect}
-                label="Chiến Dịch Khám Sức Khỏe"
-                disabled={campaignsLoading}
-              >
-                <MenuItem value="">
-                  <em>-- Chọn một chiến dịch --</em>
-                </MenuItem>
-                {allCampaigns
-                  .filter(campaign => campaign.status === "DRAFT")
-                  .map((campaign) => (
-                    <MenuItem key={campaign._id} value={campaign._id}>
-                      {`${campaign.name}`}
-                    </MenuItem>
-                  ))}
-              </Select>
-              {campaignsLoading && (
-                <Box display="flex" justifyContent="center" mt={1}>
-                  <CircularProgress size={20} />
-                </Box>
-              )}
-            </FormControl>
-            {selectedCampaign && (
-              <Box sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9", borderRadius: 1 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  <strong>Thông tin chiến dịch:</strong>
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Tên chiến dịch:</strong> {selectedCampaign.name || "N/A"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Lớp học:</strong>{" "}
-                  {getUniqueClassNames(selectedCampaign.assignments)}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Ngày bắt đầu:</strong>{" "}
-                  {new Date(selectedCampaign.startDate).toLocaleDateString("vi-VN") || "N/A"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Ngày kết thúc:</strong>{" "}
-                  {new Date(selectedCampaign.endDate).toLocaleDateString("vi-VN") || "N/A"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Y tá phụ trách:</strong>{" "}
-                  {selectedCampaign.participatingStaffs?.map(s => s.username).join(", ") || "N/A"}
-                </Typography>
-              </Box>
-            )}
-            <TextField
-              name="scheduledDate"
-              label="Ngày khám dự kiến"
-              type="date"
-              value={form.scheduledDate}
-              onChange={handleFormChange}
-              required
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
-              inputProps={{
-                min: selectedCampaign
-                  ? new Date(selectedCampaign.startDate).toISOString().substring(0, 10)
-                  : undefined,
-                max: selectedCampaign
-                  ? new Date(selectedCampaign.endDate).toISOString().substring(0, 10)
-                  : undefined,
-              }}
-            />
-            <TextField
-              name="location"
-              label="Địa điểm khám"
-              value={form.location}
-              onChange={handleFormChange}
-              required
-              fullWidth
-              variant="outlined"
-              margin="normal"
-              placeholder="Ví dụ: Phòng y tế trường"
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setOpenDialog(false)}
-            color="inherit"
-            disabled={loading}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={() => setOpenPreviewDialog(true)}
-            variant="outlined"
-            color="primary"
-            disabled={
-              loading ||
-              !form.selectedCampaignId ||
-              !form.location
-            }
-          >
-            Xem trước
-          </Button>
-          <Button
-            onClick={() => setAlertDialog({
-              open: true,
-              message: `Bạn có chắc chắn muốn gửi thông báo cho chiến dịch "${selectedCampaign?.name}"?`,
-              type: "confirm",
-              onConfirm: handleSubmit,
-            })}
-            variant="contained"
-            color="primary"
-            disabled={
-              loading ||
-              !form.selectedCampaignId ||
-              !form.location
-            }
-          >
-            {loading ? <CircularProgress size={20} /> : "Gửi"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={openPreviewDialog}
-        onClose={() => setOpenPreviewDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Xem trước Thông Báo</DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              p: 3,
-              bgcolor: "white",
-              borderRadius: 2,
-              boxShadow: 1,
-              "& h1": {
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                mb: 2,
-                color: "#1a202c",
-              },
-              "& h2": {
-                fontSize: "1.25rem",
-                fontWeight: "bold",
-                mt: 3,
-                mb: 1,
-                color: "#2d3748",
-              },
-              "& p": { fontSize: "1rem", lineHeight: 1.6, color: "#4a5568" },
-              "& ul": { pl: 4, mb: 2 },
-              "& li": { mb: 1 },
-              "& strong": { color: "#2d3748" },
-              "& a": { color: "#2563eb", textDecoration: "underline" },
-            }}
-          >
-            <ReactMarkdown>{generateNotificationContent()}</ReactMarkdown>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenPreviewDialog(false)} color="primary">
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         open={openDetailDialog}
         onClose={() => setOpenDetailDialog(false)}

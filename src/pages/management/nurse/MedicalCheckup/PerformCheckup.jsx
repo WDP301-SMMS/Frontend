@@ -163,11 +163,12 @@ const PerformCheckup = () => {
           await fetchTemplate(campaign.templateId._id);
         }
         const approvedStudents = response.data.filter(
-          (student) => student.status !== "PENDING"
+          (student) => student.status !== "PENDING" && student.status !== "DECLINED"
         );
         console.log("Approved students:", approvedStudents);
         const mappedStudents = await Promise.all(
           approvedStudents.map(async (student) => {
+            console.log("Fetching student details for:", student.status);
             return {
               _id: student.studentId._id,
               name: student.studentId.fullName,
@@ -229,21 +230,21 @@ const PerformCheckup = () => {
   };
 
   const handleStudentSelect = async (studentId) => {
-    const student = students.find((s) => s._id === studentId);
-    setSelectedStudent(student);
-    setOpenDialog(true);
-    try {
-      setLoading(true);
-      const record =
-        await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
+  const student = students.find((s) => s._id === studentId);
+  setSelectedStudent(student);
+  setOpenDialog(true);
+
+  try {
+    setLoading(true);
+    if (student.healthStatus === "COMPLETED") {
+      // Fetch latest record only if status is COMPLETED
+      const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
       if (record?.data) {
+        console.log("Fetched record:", record);
         setLatestRecord(record.data);
-        // Update student's health status
-        setStudents((prevStudents) =>
-          prevStudents.map((s) =>
-            s._id === studentId ? { ...s, healthStatus: record.data.status } : s
-          )
-        );
+        // Update student's health status based on the record
+        // No need to update students state here since no property is changed
+        console.log("Fetched students:", students);
         const initialData = template?.checkupItems.reduce(
           (acc, item) => {
             const result =
@@ -276,6 +277,7 @@ const PerformCheckup = () => {
         };
         setCheckupData(initialData);
       } else {
+        // If no record found even for COMPLETED, initialize empty data
         setLatestRecord(null);
         const initialData = template?.checkupItems.reduce(
           (acc, item) => ({
@@ -300,7 +302,8 @@ const PerformCheckup = () => {
         };
         setCheckupData(initialData);
       }
-    } catch (error) {
+    } else {
+      // For non-COMPLETED status, initialize empty data for new record
       setLatestRecord(null);
       const initialData = template?.checkupItems.reduce(
         (acc, item) => ({
@@ -324,10 +327,41 @@ const PerformCheckup = () => {
         isAbnormal: false,
       };
       setCheckupData(initialData);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error in handleStudentSelect:", error);
+    setLatestRecord(null);
+    const initialData = template?.checkupItems.reduce(
+      (acc, item) => ({
+        ...acc,
+        [item.itemId]: {
+          value: item.dataType === CheckupItemDataType.BOOLEAN ? false : "",
+          isAbnormal: false,
+          notes: "",
+        },
+      }),
+      {
+        notes: "",
+        recommendations: "",
+        overallConclusion: "",
+        isAbnormal: false,
+      }
+    ) || {
+      notes: "",
+      recommendations: "",
+      overallConclusion: "",
+      isAbnormal: false,
+    };
+    setCheckupData(initialData);
+    setAlert({
+      open: true,
+      message: "Không thể tải dữ liệu kiểm tra sức khỏe. Vui lòng thử lại.",
+      type: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleViewRecord = async (studentId) => {
     try {
@@ -690,7 +724,8 @@ const PerformCheckup = () => {
         selectedCampaign,
         { status: "COMPLETED" }
       );
-      if (response.data.success) {
+      console.log("Complete campaign response:", response);
+      if (response.success) {
         setAlert({
           open: true,
           message: "Chiến dịch đã hoàn thành!",
@@ -702,7 +737,7 @@ const PerformCheckup = () => {
         setCheckupData({});
       } else {
         throw new Error(
-          response.data.message || "Không thể hoàn thành chiến dịch."
+          response.message || "Không thể hoàn thành chiến dịch."
         );
       }
     } catch (error) {
@@ -732,11 +767,11 @@ const PerformCheckup = () => {
     );
 
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  console.log("filteredStudents:", students);
   const paginatedList = filteredStudents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  console.log("Paginated list:", paginatedList);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
