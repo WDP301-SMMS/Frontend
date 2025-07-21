@@ -30,11 +30,11 @@ const ChatSection = ({
   // Load messages when room changes
   useEffect(() => {
     if (selectedRoom?.roomId) {
-      loadMessages(selectedRoom.roomId);
+      loadMessages(selectedRoom?.roomId);
     } else {
-      setMessages([selectedRoom.roomId]);
+      setMessages([selectedRoom?.roomId]);
     }
-  }, [selectedRoom.roomId]);
+  }, [selectedRoom?.roomId]);
 
   const loadMessages = async (roomId) => {
     setIsLoading(true);
@@ -89,12 +89,12 @@ const ChatSection = ({
             sx={{
               width: 80,
               height: 80,
-              bgcolor: "primary.light",
+              bgcolor: "#2260FF",
               mx: "auto",
               mb: 3,
             }}
           >
-            <ChatIcon sx={{ fontSize: 40, color: "primary.main" }} />
+            <ChatIcon sx={{ fontSize: 40 }} />
           </Avatar>
 
           <Typography
