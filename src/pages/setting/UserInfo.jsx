@@ -57,11 +57,7 @@ export default function UserInfo() {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [isEditing, setIsEditing] = useState(false);
-
-  const [isIdVisible, setIsIdVisible] = useState(false);
-  const [copyText, setCopyText] = useState("Sao chép");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -128,14 +124,6 @@ export default function UserInfo() {
       }
     }
     setSubmitting(false);
-  };
-
-  const handleCopyId = () => {
-    if (!userData?._id) return;
-    navigator.clipboard.writeText(userData._id).then(() => {
-      setCopyText("Đã sao chép!");
-      setTimeout(() => setCopyText("Sao chép"), 2000);
-    });
   };
 
   if (isLoading)
@@ -215,6 +203,15 @@ export default function UserInfo() {
                       Chỉnh sửa
                     </button>
                   )}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                    >
+                      Đổi mật khẩu
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -283,37 +280,6 @@ export default function UserInfo() {
                     </div>
                   )}
                 </FormField>
-              </div>
-
-              <div className="mt-12">
-                <h3 className="text-lg font-semibold text-gray-700">
-                  ID Người Dùng
-                </h3>
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg border flex items-center justify-between">
-                  <p className="font-mono text-gray-700 tracking-wider">
-                    {isIdVisible ? userData._id : "••••••••••••••••••••••••"}
-                  </p>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsIdVisible(!isIdVisible)}
-                      className="text-gray-500 hover:text-gray-800 transition-colors"
-                    >
-                      {isIdVisible ? <VisibilityOff /> : <Visibility />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCopyId}
-                      className="flex items-center space-x-2 px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
-                    >
-                      <ContentCopy style={{ fontSize: "16px" }} />
-                      <span>{copyText}</span>
-                    </button>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-yellow-700">
-                  Không tiết lộ thông tin này với bất kì ai.
-                </p>
               </div>
             </div>
           </div>
