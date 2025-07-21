@@ -365,19 +365,19 @@ export const mockData = {
         },
       ],
     },
-    {
-      id: 'partner-management',
-      label: 'Quản lý đối tác',
-      icon: 'Shield',
-      subItems: [
-        {
-          id: 'manage-partner',
-          label: 'Quản lý đối tác',
-          icon: 'UserCheck',
-          route: '/management/manager/manage-partner',
-        },
-      ],
-    },
+    // {
+    //   id: 'partner-management',
+    //   label: 'Quản lý đối tác',
+    //   icon: 'Shield',
+    //   subItems: [
+    //     {
+    //       id: 'manage-partner',
+    //       label: 'Quản lý đối tác',
+    //       icon: 'UserCheck',
+    //       route: '/management/manager/manage-partner',
+    //     },
+    //   ],
+    // },
      {
       id: 'manage-blogs',
       label: 'Quản lí blog',

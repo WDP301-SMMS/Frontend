@@ -476,15 +476,15 @@ function RecordIncidents() {
                   label="Mức độ nghiêm trọng"
                 >
                   <MenuItem value="">-- Chọn mức độ --</MenuItem>
-                  <MenuItem value="Nhẹ">Nhẹ</MenuItem>
-                  <MenuItem value="Trung bình">Trung bình</MenuItem>
-                  <MenuItem value="Nặng">Nặng</MenuItem>
-                  <MenuItem value="Khẩn cấp">Khẩn cấp</MenuItem>
+                  <MenuItem value="Mild">Nhẹ</MenuItem>
+                  <MenuItem value="Moderate">Trung bình</MenuItem>
+                  <MenuItem value="Severe">Nặng</MenuItem>
+                  <MenuItem value="Critical">Khẩn cấp</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+            {/* <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
               <FormControl fullWidth>
                 <InputLabel>Trạng thái xử lý</InputLabel>
                 <Select
@@ -500,7 +500,7 @@ function RecordIncidents() {
                   <MenuItem value="Đã chuyển viện">Đã chuyển viện</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Grid> */}
 
             {/* Row 2: Date and Time */}
             <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>

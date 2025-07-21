@@ -102,14 +102,14 @@ function ViewMedicalRecords() {
   const handleDateTimeChange = (field, value) => {
     setEditForm((prev) => {
       const currentDateTime = prev.incidentTime || new Date().toISOString();
-      const [date, time] = currentDateTime.split('T');
-      
-      if (field === 'date') {
+      const [date, time] = currentDateTime.split("T");
+
+      if (field === "date") {
         return {
           ...prev,
           incidentTime: `${value}T${time}`,
         };
-      } else if (field === 'time') {
+      } else if (field === "time") {
         return {
           ...prev,
           incidentTime: `${date}T${value}:00.000Z`,
@@ -121,31 +121,29 @@ function ViewMedicalRecords() {
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
-    
+
     const updateData = {
-      studentId: editRecord.studentId,
+      studentId: editRecord.studentId._id,
       note: editForm.note,
-      status: editForm.status,
       severity: editForm.severity,
       incidentType: editForm.incidentType,
       description: editForm.description,
       actionsTaken: editForm.actionsTaken,
       incidentTime: editForm.incidentTime,
     };
-console.log("Update Data:", updateData);
+    console.log("Update Data:", updateData);
     try {
-      const res = await incidentsService.updateIncident(editRecord._id, updateData);
+      const res = await incidentsService.updateIncident(
+        editRecord._id,
+        updateData
+      );
       if (res.message === "Validation failed") {
-        setErrorMessage(res.errors.map(err => `${err.field}: ${err.message}`).join('\n'));
+        setErrorMessage(
+          res.errors.map((err) => `${err.field}: ${err.message}`).join("\n")
+        );
         setShowErrorDialog(true);
         return;
       }
-      const updatedRecords = historicalRecords.map((record) =>
-        record._id === editRecord._id
-          ? { ...record, ...updateData }
-          : record
-      );
-      setHistoricalRecords(updatedRecords);
       setEditRecord(null);
       setEditForm({
         note: "",
@@ -157,6 +155,17 @@ console.log("Update Data:", updateData);
         incidentTime: "",
       });
       setShowSuccessDialog(true);
+      // Reload the incidents list from the server
+      const fetchIncidents = async () => {
+        try {
+          const res = await incidentsService.getAllIncidents();
+          setHistoricalRecords(res.data);
+          setTotalPages(res.totalPages);
+        } catch (error) {
+          console.error("Failed to fetch incidents:", error);
+        }
+      };
+      await fetchIncidents();
     } catch (error) {
       console.error("Failed to update incident:", error);
       setErrorMessage("Cập nhật thất bại. Vui lòng thử lại.");
@@ -181,68 +190,88 @@ console.log("Update Data:", updateData);
   const handleCloseErrorDialog = () => setShowErrorDialog(false);
 
   const getCurrentDate = () => {
-    return editForm.incidentTime ? editForm.incidentTime.split('T')[0] : '';
+    return editForm.incidentTime ? editForm.incidentTime.split("T")[0] : "";
   };
 
   const getCurrentTime = () => {
-    return editForm.incidentTime ? editForm.incidentTime.split('T')[1]?.slice(0, 5) : '';
+    return editForm.incidentTime
+      ? editForm.incidentTime.split("T")[1]?.slice(0, 5)
+      : "";
   };
-
   const getSeverityColor = (severity) => {
     switch (severity?.toLowerCase()) {
-      case 'cao':
-      case 'nặng':
-      case 'khẩn cấp':
-      case 'high':
-        return '#ef4444';
-      case 'trung bình':
-      case 'medium':
-        return '#f59e0b';
-      case 'thấp':
-      case 'nhẹ':
-      case 'low':
-        return '#22c55e';
+      case "critical":
+      case "khẩn cấp":
+        return "#ef4444"; // Đỏ cho Khẩn cấp
+      case "severe":
+      case "nặng":
+        return "#dc2626"; // Đỏ đậm hơn cho Nặng
+      case "moderate":
+      case "trung bình":
+        return "#f59e0b"; // Cam cho Trung bình
+      case "mild":
+      case "nhẹ":
+        return "#22c55e"; // Xanh lá cho Nhẹ
       default:
-        return '#6b7280';
+        return "#6b7280"; // Xám cho không xác định
+    }
+  };
+
+  const getSeverityLabel = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case "critical":
+      case "khẩn cấp":
+        return "Khẩn cấp";
+      case "severe":
+      case "nặng":
+        return "Nặng";
+      case "moderate":
+      case "trung bình":
+        return "Trung bình";
+      case "mild":
+      case "nhẹ":
+        return "Nhẹ";
+      default:
+        return "Không xác định";
     }
   };
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'đã xử lý':
-      case 'hoàn tất':
-      case 'resolved':
-        return '#22c55e';
-      case 'đang xử lý':
-      case 'in progress':
-        return '#f59e0b';
-      case 'chưa xử lý':
-      case 'pending':
-        return '#ef4444';
-      case 'cần theo dõi':
-        return '#8b5cf6';
-      case 'đã chuyển viện':
-        return '#06b6d4';
+      case "đã xử lý":
+      case "hoàn tất":
+      case "resolved":
+        return "#22c55e";
+      case "đang xử lý":
+      case "in progress":
+        return "#f59e0b";
+      case "chưa xử lý":
+      case "pending":
+        return "#ef4444";
+      case "cần theo dõi":
+        return "#8b5cf6";
+      case "đã chuyển viện":
+        return "#06b6d4";
       default:
-        return '#6b7280';
+        return "#6b7280";
     }
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+    <Container
+      maxWidth="xl"
+      sx={{ py: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}
+    >
       <Typography
         variant="h4"
         sx={{ mb: 2, fontWeight: "bold", color: "#1e3a8a" }}
       >
         Lịch sử sự cố
       </Typography>
-      
-      <Alert
-        severity="info"
-        icon={<Warning />}
-        sx={{ mb: 3 }}
-      >
-        Xem và quản lý tất cả các hồ sơ y tế đã được ghi nhận của học sinh trong hệ thống.
+
+      <Alert severity="info" icon={<Warning />} sx={{ mb: 3 }}>
+        Xem và quản lý tất cả các hồ sơ y tế đã được ghi nhận của học sinh trong
+        hệ thống.
       </Alert>
 
       {/* Search Bar */}
@@ -302,11 +331,15 @@ console.log("Update Data:", updateData);
                     }}
                   >
                     <Box>
-                      <Typography variant="h6" fontWeight="600" color="text.primary">
-                        {record.studentId.name}
+                      <Typography
+                        variant="h6"
+                        fontWeight="600"
+                        color="text.primary"
+                      >
+                        {record.studentId.fullName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Lớp: {record.studentId.class}
+                        {record.studentId.className}
                       </Typography>
                     </Box>
                     <Button
@@ -332,7 +365,9 @@ console.log("Update Data:", updateData);
                     }}
                   >
                     {/* Left Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    >
                       {/* Event Type */}
                       <Box
                         sx={{
@@ -374,32 +409,20 @@ console.log("Update Data:", updateData);
                             Thời gian
                           </Typography>
                           <Typography variant="body1" fontWeight="600">
-                            {new Date(record.incidentTime).toLocaleString("vi-VN")}
+                            {new Date(record.incidentTime).toLocaleString(
+                              "vi-VN"
+                            )}
                           </Typography>
                         </Box>
-                        {/* <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
-                          {record.description}
-                        </Typography> */}
                       </Box>
-
-                      
 
                       {/* Status & Severity */}
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <Chip
-                          label={record.severity}
+                          label={getSeverityLabel(record.severity)}
                           size="small"
                           sx={{
                             bgcolor: getSeverityColor(record.severity),
-                            color: "white",
-                            fontWeight: "500",
-                          }}
-                        />
-                        <Chip
-                          label={record.status}
-                          size="small"
-                          sx={{
-                            bgcolor: getStatusColor(record.status),
                             color: "white",
                             fontWeight: "500",
                           }}
@@ -417,10 +440,19 @@ console.log("Update Data:", updateData);
                             minHeight: 60,
                           }}
                         >
-                          <Typography variant="body2" color="text.secondary" fontWeight="500" mb={1}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight="500"
+                            mb={1}
+                          >
                             Ghi chú
                           </Typography>
-                          <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            sx={{ lineHeight: 1.5 }}
+                          >
                             {record.note}
                           </Typography>
                         </Box>
@@ -428,7 +460,9 @@ console.log("Update Data:", updateData);
                     </Box>
 
                     {/* Right Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    >
                       {/* Description */}
                       <Box
                         sx={{
@@ -439,13 +473,28 @@ console.log("Update Data:", updateData);
                           minHeight: 80,
                         }}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 1,
+                          }}
+                        >
                           <FileText size={16} color="#64748b" />
-                          <Typography variant="body2" color="text.secondary" fontWeight="500">
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight="500"
+                          >
                             Mô tả
                           </Typography>
                         </Box>
-                        <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.primary"
+                          sx={{ lineHeight: 1.5 }}
+                        >
                           {record.description}
                         </Typography>
                       </Box>
@@ -460,29 +509,37 @@ console.log("Update Data:", updateData);
                           minHeight: 80,
                         }}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 1,
+                          }}
+                        >
                           <Settings size={16} color="#f59e0b" />
-                          <Typography variant="body2" color="text.secondary" fontWeight="500">
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight="500"
+                          >
                             Hành động xử lý
                           </Typography>
                         </Box>
-                        <Typography variant="body2" color="text.primary" sx={{ lineHeight: 1.5 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.primary"
+                          sx={{ lineHeight: 1.5 }}
+                        >
                           {record.actionsTaken}
                         </Typography>
                       </Box>
                     </Box>
                   </Box>
-
-                  {/* Timestamp */}
-                  <Box sx={{ pt: 2, borderTop: "1px solid #e5e7eb" }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Ghi nhận lúc: {new Date(record.incidentTime).toLocaleString("vi-VN")}
-                    </Typography>
-                  </Box>
                 </Box>
               </Box>
             ))}
-            
+
             {/* Pagination */}
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Pagination
@@ -552,7 +609,7 @@ console.log("Update Data:", updateData);
             <X size={18} />
           </Button>
         </DialogTitle>
-        
+
         <DialogContent sx={{ p: 3 }}>
           {editRecord && (
             <Box component="form" onSubmit={handleSaveEdit} sx={{ mt: 1 }}>
@@ -567,11 +624,15 @@ console.log("Update Data:", updateData);
                       border: "1px solid #cbd5e1",
                     }}
                   >
-                    <Typography variant="subtitle1" fontWeight="600" color="text.primary">
-                      Học sinh: {editRecord.studentId.name}
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="600"
+                      color="text.primary"
+                    >
+                      Học sinh: {editRecord.studentId.fullName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Lớp: {editRecord.studentId.class}
+                      {editRecord.studentId.className}
                     </Typography>
                   </Box>
                 </Grid>
@@ -586,8 +647,12 @@ console.log("Update Data:", updateData);
                       onChange={handleFormChange}
                       label="Loại sự kiện"
                     >
-                      <MenuItem value="Chấn thương nhẹ">Chấn thương nhẹ</MenuItem>
-                      <MenuItem value="Chấn thương nặng">Chấn thương nặng</MenuItem>
+                      <MenuItem value="Chấn thương nhẹ">
+                        Chấn thương nhẹ
+                      </MenuItem>
+                      <MenuItem value="Chấn thương nặng">
+                        Chấn thương nặng
+                      </MenuItem>
                       <MenuItem value="Sốt">Sốt</MenuItem>
                       <MenuItem value="Đau đầu">Đau đầu</MenuItem>
                       <MenuItem value="Dị ứng">Dị ứng</MenuItem>
@@ -606,27 +671,10 @@ console.log("Update Data:", updateData);
                       onChange={handleFormChange}
                       label="Mức độ nghiêm trọng"
                     >
-                      <MenuItem value="Nhẹ">Nhẹ</MenuItem>
-                      <MenuItem value="Trung bình">Trung bình</MenuItem>
-                      <MenuItem value="Nặng">Nặng</MenuItem>
-                      <MenuItem value="Khẩn cấp">Khẩn cấp</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} md={4} sx={{ width: "24%" }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Trạng thái xử lý</InputLabel>
-                    <Select
-                      name="status"
-                      value={editForm.status}
-                      onChange={handleFormChange}
-                      label="Trạng thái xử lý"
-                    >
-                      <MenuItem value="Đang xử lý">Đang xử lý</MenuItem>
-                      <MenuItem value="Đã xử lý">Đã xử lý</MenuItem>
-                      <MenuItem value="Cần theo dõi">Cần theo dõi</MenuItem>
-                      <MenuItem value="Đã chuyển viện">Đã chuyển viện</MenuItem>
+                      <MenuItem value="Mild">Nhẹ</MenuItem>
+                      <MenuItem value="Moderate">Trung bình</MenuItem>
+                      <MenuItem value="Severe">Nặng</MenuItem>
+                      <MenuItem value="Critical">Khẩn cấp</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -638,7 +686,9 @@ console.log("Update Data:", updateData);
                     type="date"
                     label="Ngày xảy ra"
                     value={getCurrentDate()}
-                    onChange={(e) => handleDateTimeChange('date', e.target.value)}
+                    onChange={(e) =>
+                      handleDateTimeChange("date", e.target.value)
+                    }
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
@@ -649,7 +699,9 @@ console.log("Update Data:", updateData);
                     type="time"
                     label="Thời gian xảy ra"
                     value={getCurrentTime()}
-                    onChange={(e) => handleDateTimeChange('time', e.target.value)}
+                    onChange={(e) =>
+                      handleDateTimeChange("time", e.target.value)
+                    }
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
@@ -745,7 +797,9 @@ console.log("Update Data:", updateData);
       <Dialog
         open={showSuccessDialog}
         onClose={handleCloseSuccessDialog}
-        sx={{ "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" } }}
+        sx={{
+          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
+        }}
       >
         <DialogContent>
           <CheckCircle size={60} color="#22c55e" sx={{ mb: 2 }} />
@@ -757,7 +811,11 @@ console.log("Update Data:", updateData);
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center" }}>
-          <Button onClick={handleCloseSuccessDialog} variant="contained" color="success">
+          <Button
+            onClick={handleCloseSuccessDialog}
+            variant="contained"
+            color="success"
+          >
             Đóng
           </Button>
         </DialogActions>
@@ -767,7 +825,9 @@ console.log("Update Data:", updateData);
       <Dialog
         open={showErrorDialog}
         onClose={handleCloseErrorDialog}
-        sx={{ "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" } }}
+        sx={{
+          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
+        }}
       >
         <DialogContent>
           <AlertTriangle size={60} color="#ef4444" sx={{ mb: 2 }} />
@@ -779,7 +839,11 @@ console.log("Update Data:", updateData);
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center" }}>
-          <Button onClick={handleCloseErrorDialog} variant="contained" color="error">
+          <Button
+            onClick={handleCloseErrorDialog}
+            variant="contained"
+            color="error"
+          >
             Đóng
           </Button>
         </DialogActions>
