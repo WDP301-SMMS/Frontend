@@ -34,53 +34,56 @@ export default function Chat() {
     });
   };
 
-  const loadRooms = useCallback(async (selectFirstRoom = false) => {
-    if (!user?._id) return [];
+  const loadRooms = useCallback(
+    async (selectFirstRoom = false) => {
+      if (!user?._id) return [];
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await chatService.getAllRoomsByUserId(user._id);
+      try {
+        const response = await chatService.getAllRoomsByUserId(user._id);
 
-      if (response.success !== false) {
-        const roomsData = response.data || response || [];
+        if (response.success !== false) {
+          const roomsData = response.data || response || [];
 
-        const enhancedRooms = roomsData.map((room) => ({
-          ...room,
-          unreadCount: Math.floor(Math.random() * 5),
-          isOnline: Math.random() > 0.5,
-          type:
-            room.type || (room.participants?.length > 2 ? "group" : "direct"),
-          lastMessage: room.lastMessage || {
-            content: "Tin nhắn mẫu để hiển thị",
-            createdAt: new Date().toISOString(),
-            senderId: room.participants?.[0]?.id || "other",
-          },
-          currentUserId: user._id,
-        }));
+          const enhancedRooms = roomsData.map((room) => ({
+            ...room,
+            unreadCount: Math.floor(Math.random() * 5),
+            isOnline: Math.random() > 0.5,
+            type:
+              room.type || (room.participants?.length > 2 ? "group" : "direct"),
+            lastMessage: room.lastMessage || {
+              content: "Tin nhắn mẫu để hiển thị",
+              createdAt: new Date().toISOString(),
+              senderId: room.participants?.[0]?.id || "other",
+            },
+            currentUserId: user._id,
+          }));
 
-        const sortedRooms = sortRoomsByLatestMessage(enhancedRooms);
-        setRooms(sortedRooms);
+          const sortedRooms = sortRoomsByLatestMessage(enhancedRooms);
+          setRooms(sortedRooms);
 
-        // Only auto-select first room during initial load
-        if (selectFirstRoom && sortedRooms.length > 0) {
-          setSelectedRoom(sortedRooms[0]);
+          // Only auto-select first room during initial load
+          if (selectFirstRoom && sortedRooms.length > 0) {
+            setSelectedRoom(sortedRooms[0]);
+          }
+
+          return sortedRooms;
+        } else {
+          setError(response.error || "Không thể tải danh sách cuộc trò chuyện");
+          return [];
         }
-
-        return sortedRooms;
-      } else {
-        setError(response.error || "Không thể tải danh sách cuộc trò chuyện");
+      } catch (err) {
+        console.error("Get rooms error:", err);
+        setError("Đã xảy ra lỗi khi tải dữ liệu");
         return [];
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Get rooms error:", err);
-      setError("Đã xảy ra lỗi khi tải dữ liệu");
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?._id]);
+    },
+    [user?._id]
+  );
 
   // Remove the separate function since we combined the logic
 
@@ -108,20 +111,23 @@ export default function Chat() {
     });
   }, []); // No dependencies to keep it stable
 
-  const getUsersToChatWith = useCallback(async (role) => {
-    try {
-      const users = await userService.getAllUsers(role);
-      const userData = users.data?.users;
-      console.log("Fetched users:", userData);
+  const getUsersToChatWith = useCallback(
+    async (role) => {
+      try {
+        const users = await userService.getAllUsers(role);
+        const userData = users.data?.users;
+        console.log("Fetched users:", userData);
 
-      if (userData && Array.isArray(userData)) {
-        const filteredUsers = userData.filter((u) => u._id !== user?._id);
-        setChatUsers(filteredUsers);
+        if (userData && Array.isArray(userData)) {
+          const filteredUsers = userData.filter((u) => u._id !== user?._id);
+          setChatUsers(filteredUsers);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  }, [user?._id]);
+    },
+    [user?._id]
+  );
 
   // Separate ref to track if we've initially loaded rooms
   const hasInitiallyLoadedRooms = useRef(false);
@@ -129,10 +135,10 @@ export default function Chat() {
   useEffect(() => {
     if (user && user._id && !hasInitiallyLoadedRooms.current) {
       hasInitiallyLoadedRooms.current = true;
-      
+
       // Load rooms and select first one during initial load
       loadRooms(true);
-      
+
       switch (user?.role) {
         case "Nurse":
           getUsersToChatWith("Parent");
@@ -158,14 +164,18 @@ export default function Chat() {
 
   useEffect(() => {
     console.log("Selected room changed:", selectedRoom);
-    
-    if (selectedRoom?.roomId && selectedRoom?.senderId && selectedRoom?.receiverId) {
+
+    if (
+      selectedRoom?.roomId &&
+      selectedRoom?.senderId &&
+      selectedRoom?.receiverId
+    ) {
       const roomId = selectedRoom.roomId;
       const senderId = selectedRoom.senderId._id || selectedRoom.senderId;
       const receiverId = selectedRoom.receiverId._id || selectedRoom.receiverId;
-      
+
       socket.emit("joinRoom", senderId, receiverId);
-      
+
       const handleReceiveMessage = (message) => {
         if (message.roomId === roomId) {
           setMessages((prevMessages) => [...prevMessages, message]);
@@ -214,7 +224,7 @@ export default function Chat() {
       );
 
       // Find and select the new/existing room
-      const targetRoom = updatedRooms.find(r => r.roomId === roomId) || {
+      const targetRoom = updatedRooms.find((r) => r.roomId === roomId) || {
         roomId,
         senderId: room.senderId,
         receiverId: room.receiverId,
@@ -222,16 +232,19 @@ export default function Chat() {
         currentUserId: user._id,
         unreadCount: 0,
         isOnline: true,
-        type: "direct"
+        type: "direct",
       };
 
       setSelectedRoom(targetRoom);
 
       // Join the socket room
       if (room.senderId && room.receiverId) {
-        socket.emit("joinRoom", room.senderId._id || room.senderId, room.receiverId._id || room.receiverId);
+        socket.emit(
+          "joinRoom",
+          room.senderId._id || room.senderId,
+          room.receiverId._id || room.receiverId
+        );
       }
-
     } catch (error) {
       console.error("Error handling room creation:", error);
       setError("Có lỗi xảy ra khi tạo cuộc trò chuyện");
