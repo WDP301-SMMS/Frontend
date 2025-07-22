@@ -311,7 +311,7 @@ const MedicationRequests = () => {
         return "#f59e0b"; // Orange
       case "scheduled":
         return "#3b82f6"; // Blue
-      case "in_progress":
+      case "in progress":
         return "#facc15"; // Yellow
       case "completed":
         return "#22c55e"; // Green
@@ -328,7 +328,7 @@ const MedicationRequests = () => {
         return "Chờ xử lý";
       case "scheduled":
         return "Đã lên lịch";
-      case "in_progress":
+      case "in progress":
         return "Đang tiến hành";
       case "completed":
         return "Hoàn tất";

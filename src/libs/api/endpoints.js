@@ -116,6 +116,12 @@ export const endpoints = {
     getByParent: "/medication/requests/parent", // GET: Lấy yêu cầu theo phụ huynh
     updateInfo: "/medication/requests/{requestId}", // PATCH: cập nhật thời gian, file
     updateItems: "/medication/requests/{requestId}/items", // PATCH: cập nhật hoặc thêm thuốc
-  }
+  },
+  medicationSchedule: {
+  createMany: "/medication/schedules", // POST: Tạo nhiều lịch uống thuốc
+  updateStatus: "/medication/schedules/update/{scheduleId}", // PATCH: Cập nhật trạng thái lịch uống thuốc
+  getByRequestId: "/medication/schedules/request/{requestId}", // GET: Lấy lịch theo Request ID
+  getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
+},
 
 };

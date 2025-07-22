@@ -160,12 +160,12 @@ export const mockData = {
     },
   ],
    menuItemsNurse: [
-    {
-      id: 'home',
-      label: 'Trang chủ',
-      icon: 'Home',
-      route: '/management/nurse',
-    },
+    // {
+    //   id: 'home',
+    //   label: 'Trang chủ',
+    //   icon: 'Home',
+    //   route: '/management/nurse',
+    // },
     {
       id: 'medical-event-management',
       label: 'Quản lý sự kiện y tế',
@@ -285,35 +285,35 @@ export const mockData = {
         },
       ],
     },
-    {
-      id: 'settings',
-      label: 'Cài đặt',
-      icon: 'Settings',
-      route: '/management/nurse/settings',
-    },
+    // {
+    //   id: 'settings',
+    //   label: 'Cài đặt',
+    //   icon: 'Settings',
+    //   route: '/management/nurse/settings',
+    // },
   ],
 
 
   menuItemsManager: [
-    {
-      id: 'home',
-      label: 'Trang chủ',
-      icon: 'Home',
-      route: '/management/manager',
-    },
-    {
-      id: 'nurse-management',
-      label: 'Quản lý y tá',
-      icon: 'Bell',
-      subItems: [
-        {
-          id: 'manage-nurse-records',
-          label: 'Quản lý hồ sơ y tá',
-          icon: 'FileBarChart',
-          route: '/management/manager/nurse-management',
-        },
-      ],
-    },
+    // {
+    //   id: 'home',
+    //   label: 'Trang chủ',
+    //   icon: 'Home',
+    //   route: '/management/manager',
+    // },
+    // {
+    //   id: 'nurse-management',
+    //   label: 'Quản lý y tá',
+    //   icon: 'Bell',
+    //   subItems: [
+    //     {
+    //       id: 'manage-nurse-records',
+    //       label: 'Quản lý hồ sơ y tá',
+    //       icon: 'FileBarChart',
+    //       route: '/management/manager/nurse-management',
+    //     },
+    //   ],
+    // },
     {
       id: 'medication-supply-management',
       label: 'Quản lý thuốc & vật tư',
@@ -384,12 +384,12 @@ export const mockData = {
       icon: 'Book',
       route: '/management/manager/manage-blogs',
     },
-    {
-      id: 'settings',
-      label: 'Cài đặt',
-      icon: 'Settings',
-      route: '/management/manager/settings',
-    },
+    // {
+    //   id: 'settings',
+    //   label: 'Cài đặt',
+    //   icon: 'Settings',
+    //   route: '/management/manager/settings',
+    // },
   ]
 
 };
