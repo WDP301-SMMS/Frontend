@@ -221,7 +221,7 @@ function PostVaccinationMonitoring() {
             health_notes:
               [
                 ...(record.allergies?.length > 0
-                  ? record.allergies.map((c) => `Dị ứng: ${record.allergies}`)
+                  ? record.allergies.map((c) => `Dị ứng: ${c.type}`)
                   : []),
                 ...(record.chronicConditions?.length > 0
                   ? record.chronicConditions.map(
@@ -993,7 +993,7 @@ function PostVaccinationMonitoring() {
                     </TableCell>
                     <TableCell sx={{ minWidth: "180px", p: 1.5 }}>
                       <Stack spacing={1} direction="row">
-                        <Tooltip title="Ghi nhận反応" arrow>
+                        <Tooltip title="Ghi nhận" arrow>
                           <Button
                             variant="outlined"
                             color="warning"
