@@ -5,6 +5,7 @@ export const endpoints = {
     getAll: "/admin/users",
     updateStatus: "/admin/users/{userId}/status",
     getAllUsers: "/admin/users",
+    changePassword: '/user/me/change-password'
   },
   students: {
     getAll: "/admin/students",

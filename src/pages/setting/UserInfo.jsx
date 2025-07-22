@@ -3,10 +3,10 @@ import { api, userService } from "~/libs/api";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
-import { Visibility, VisibilityOff, ContentCopy } from "@mui/icons-material";
+import { ChangePasswordLayout } from "./components/ChangePasswordLayout";
 
 // --- Component con ---
-function FormField({ label, children }) {
+export function FormField({ label, children }) {
   return (
     <div className="relative pb-5">
       <label className="block text-sm font-medium text-gray-500 mb-2">
@@ -58,6 +58,7 @@ export default function UserInfo() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -135,156 +136,163 @@ export default function UserInfo() {
   if (!userData) return null;
 
   return (
-    <Formik
-      initialValues={{
-        username: userData.username || "",
-        phone: userData.phone || "",
-        email: userData.email || "",
-        dob: userData.dob
-          ? new Date(userData.dob).toISOString().split("T")[0]
-          : "",
-        gender: userData.gender || "MALE",
-      }}
-      validationSchema={ProfileValidationSchema}
-      onSubmit={handleUpdateProfile}
-      enableReinitialize
-    >
-      {({ isSubmitting, resetForm, values }) => (
-        <Form>
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            {/* --- BANNER ĐÃ ĐƯỢC CẬP NHẬT MÀU --- */}
-            <div className="h-40 bg-gradient-to-r from-blue-100 to-blue-200"></div>
-            {/* --- KẾT THÚC CẬP NHẬT --- */}
-            <div className="p-8">
-              <div className="flex items-end -mt-44">
-                <img
-                  src={`https://i.pravatar.cc/150?u=${userData._id}`}
-                  alt={userData.username}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                />
-                <div className="ml-6 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {userData.username}
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    {userData.email}{" "}
-                    <span className="font-semibold text-gray-600">
-                      ({userData.role})
-                    </span>
-                  </p>
-                </div>
-                <div className="ml-auto flex items-center space-x-3">
-                  {isEditing ? (
-                    <>
+    <>
+      <Formik
+        initialValues={{
+          username: userData.username || "",
+          phone: userData.phone || "",
+          email: userData.email || "",
+          dob: userData.dob
+            ? new Date(userData.dob).toISOString().split("T")[0]
+            : "",
+          gender: userData.gender || "MALE",
+        }}
+        validationSchema={ProfileValidationSchema}
+        onSubmit={handleUpdateProfile}
+        enableReinitialize
+      >
+        {({ isSubmitting, resetForm, values }) => (
+          <Form>
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+              {/* --- BANNER ĐÃ ĐƯỢC CẬP NHẬT MÀU --- */}
+              <div className="h-40 bg-gradient-to-r from-blue-100 to-blue-200"></div>
+              {/* --- KẾT THÚC CẬP NHẬT --- */}
+              <div className="p-8">
+                <div className="flex items-end -mt-44">
+                  <img
+                    src={`https://i.pravatar.cc/150?u=${userData._id}`}
+                    alt={userData.username}
+                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                  <div className="ml-6 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {userData.username}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      {userData.email}{" "}
+                      <span className="font-semibold text-gray-600">
+                        ({userData.role})
+                      </span>
+                    </p>
+                  </div>
+                  <div className="ml-auto flex items-center space-x-3">
+                    {isEditing ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            resetForm();
+                            setIsEditing(false);
+                          }}
+                          className="px-7 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300"
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-300"
+                        >
+                          {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+                        </button>
+                      </>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => {
-                          resetForm();
-                          setIsEditing(false);
-                        }}
-                        className="px-7 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300"
+                        onClick={() => setIsEditing(true)}
+                        className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
                       >
-                        Hủy
+                        Chỉnh sửa
                       </button>
+                    )}
+                    <div>
                       <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-300"
+                        type="button"
+                        onClick={() => setIsChangingPassword(true)}
+                        className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
                       >
-                        {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+                        Đổi mật khẩu
                       </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(true)}
-                      className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-                    >
-                      Chỉnh sửa
-                    </button>
-                  )}
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(true)}
-                      className="px-7 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-                    >
-                      Đổi mật khẩu
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1">
-                <FormField label="Tên người dùng">
-                  <Field
-                    name="username"
-                    as={CustomInput}
-                    disabled={!isEditing}
-                  />
-                  <ErrorMessage
-                    name="username"
-                    component="div"
-                    className="absolute text-red-500 text-xs"
-                  />
-                </FormField>
-                <FormField label="Số điện thoại">
-                  <Field name="phone" as={CustomInput} disabled={!isEditing} />
-                  <ErrorMessage
-                    name="phone"
-                    component="div"
-                    className="absolute text-red-500 text-xs"
-                  />
-                </FormField>
-                <FormField label="Địa chỉ Email">
-                  <Field
-                    name="email"
-                    type="email"
-                    as={CustomInput}
-                    disabled={true}
-                  />
-                </FormField>
-                <FormField label="Ngày sinh">
-                  <Field
-                    name="dob"
-                    type="date"
-                    as={CustomInput}
-                    disabled={!isEditing}
-                  />
-                  <ErrorMessage
-                    name="dob"
-                    component="div"
-                    className="absolute text-red-500 text-xs"
-                  />
-                </FormField>
-                <FormField label="Giới tính">
-                  {isEditing ? (
-                    <>
-                      <Field
-                        name="gender"
-                        as={CustomSelect}
-                        disabled={!isEditing}
-                      >
-                        <option value="MALE">Nam</option>
-                        <option value="FEMALE">Nữ</option>
-                      </Field>
-                      <ErrorMessage
-                        name="gender"
-                        component="div"
-                        className="absolute text-red-500 text-xs"
-                      />
-                    </>
-                  ) : (
-                    <div className="w-full px-4 py-2.5 bg-gray-200 text-gray-700 border border-transparent rounded-lg cursor-not-allowed">
-                      {values.gender === "MALE" ? "Nam" : "Nữ"}
-                    </div>
-                  )}
-                </FormField>
+                <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1">
+                  <FormField label="Tên người dùng">
+                    <Field
+                      name="username"
+                      as={CustomInput}
+                      disabled={!isEditing}
+                    />
+                    <ErrorMessage
+                      name="username"
+                      component="div"
+                      className="absolute text-red-500 text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Số điện thoại">
+                    <Field
+                      name="phone"
+                      as={CustomInput}
+                      disabled={!isEditing}
+                    />
+                    <ErrorMessage
+                      name="phone"
+                      component="div"
+                      className="absolute text-red-500 text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Địa chỉ Email">
+                    <Field
+                      name="email"
+                      type="email"
+                      as={CustomInput}
+                      disabled={true}
+                    />
+                  </FormField>
+                  <FormField label="Ngày sinh">
+                    <Field
+                      name="dob"
+                      type="date"
+                      as={CustomInput}
+                      disabled={!isEditing}
+                    />
+                    <ErrorMessage
+                      name="dob"
+                      component="div"
+                      className="absolute text-red-500 text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Giới tính">
+                    {isEditing ? (
+                      <>
+                        <Field
+                          name="gender"
+                          as={CustomSelect}
+                          disabled={!isEditing}
+                        >
+                          <option value="MALE">Nam</option>
+                          <option value="FEMALE">Nữ</option>
+                        </Field>
+                        <ErrorMessage
+                          name="gender"
+                          component="div"
+                          className="absolute text-red-500 text-xs"
+                        />
+                      </>
+                    ) : (
+                      <div className="w-full px-4 py-2.5 bg-gray-200 text-gray-700 border border-transparent rounded-lg cursor-not-allowed">
+                        {values.gender === "MALE" ? "Nam" : "Nữ"}
+                      </div>
+                    )}
+                  </FormField>
+                </div>
               </div>
             </div>
-          </div>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+      <ChangePasswordLayout isOpen={isChangingPassword} onClose={() => setIsChangingPassword(false)} />
+    </>
   );
 }

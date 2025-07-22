@@ -196,4 +196,20 @@ export const userService = {
       };
     }
   },
+
+  changePassword: async (data) => {
+    try {
+      const response = await api.patch(endpoints.user.changePassword, data);
+
+      return response.data
+    } catch (error) {
+      console.error("Change password error:", error);
+
+      return {
+        success: false,
+        error: error.response?.data?.message || "Không thể đổi mật khẩu",
+        statusCode: error.response?.status,
+      };
+    }
+  },
 };
