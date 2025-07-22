@@ -108,43 +108,50 @@ const MedicationSchedules = () => {
   };
 
   const handleConfirm = async () => {
-  if (selectedSchedule) {
-    await updateScheduleStatus(selectedSchedule.date, selectedSchedule.slot, true);
-    setConfirmDialogOpen(false);
-    setSelectedSchedule(null);
-  }
-};
+    if (selectedSchedule) {
+      await updateScheduleStatus(
+        selectedSchedule.date,
+        selectedSchedule.slot,
+        true
+      );
+      setConfirmDialogOpen(false);
+      setSelectedSchedule(null);
+    }
+  };
 
   const updateScheduleStatus = async (date, slot, newStatus, reason = null) => {
-  setScheduleStatus((prev) => ({
-    ...prev,
-    [`${date}_${slot}`]: newStatus,
-  }));
-  
-  try {
-    const schedule = viewSchedule.schedules.find(
-      (s) =>
-        new Date(s.date).toISOString().split("T")[0] === date &&
-        s.sessionSlots === slot
-    );
-    
-    if (schedule) {
-      const updateData = {
-        status: newStatus ? "Done" : "Not taken", // Sửa từ "NotTaken" thành "Not taken"
-      };
-      
-      // Chỉ thêm reason khi status là "Not taken"
-      if (!newStatus && reason) {
-        updateData.reason = reason;
+    setScheduleStatus((prev) => ({
+      ...prev,
+      [`${date}_${slot}`]: newStatus,
+    }));
+
+    try {
+      const schedule = viewSchedule.schedules.find(
+        (s) =>
+          new Date(s.date).toISOString().split("T")[0] === date &&
+          s.sessionSlots === slot
+      );
+
+      if (schedule) {
+        const updateData = {
+          status: newStatus ? "Done" : "Not taken", // Sửa từ "NotTaken" thành "Not taken"
+        };
+
+        // Chỉ thêm reason khi status là "Not taken"
+        if (!newStatus && reason) {
+          updateData.reason = reason;
+        }
+
+        await medicationSchedulesService.updateScheduleStatus(
+          schedule._id,
+          updateData
+        );
       }
-      
-      await medicationSchedulesService.updateScheduleStatus(schedule._id, updateData);
+    } catch (error) {
+      setErrorMessage("Lỗi khi cập nhật trạng thái.");
+      setShowErrorDialog(true);
     }
-  } catch (error) {
-    setErrorMessage("Lỗi khi cập nhật trạng thái.");
-    setShowErrorDialog(true);
-  }
-};
+  };
   const handleReasonSubmit = async () => {
     if (pendingStatusChange && reason.trim()) {
       await updateScheduleStatus(
@@ -583,10 +590,19 @@ const MedicationSchedules = () => {
 
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   {daySchedules.map((schedule) => {
-                    const scheduleKey = `${date.toISOString().split("T")[0]}_${
-                      schedule.sessionSlots
-                    }`;
+                    console.log("Schedule:", date);
+                    // date ở đây đã là string dạng "2025-07-22"
+                    const scheduleKey = `${date}_${schedule.sessionSlots}`;
                     const isCompleted = scheduleStatus[scheduleKey] || false;
+                    const isPastOrFuture = (scheduleDate) => {
+                      const currentDate = new Date();
+                      currentDate.setHours(0, 0, 0, 0); // Chỉ so sánh ngày, không giờ
+                      const dateToCheck = new Date(scheduleDate);
+                      dateToCheck.setHours(0, 0, 0, 0); // Chỉ so sánh ngày
+                      return (
+                        dateToCheck < currentDate || dateToCheck > currentDate
+                      );
+                    };
                     const isDisabled = isPastOrFuture || isCompleted; // Disable if past/future or already completed
 
                     return (
