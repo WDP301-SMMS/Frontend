@@ -972,13 +972,17 @@ function VaccinateRecord() {
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                   Tiền sử dị ứng
                 </Typography>
-                <Typography
-                  color={
-                    selectedStudent.allergies !== "Không có" ? "red" : "inherit"
-                  }
-                >
-                  {selectedStudent.allergies}
-                </Typography>
+                {Array.isArray(selectedStudent.allergies) && selectedStudent.allergies.length > 0 ? (
+                  <Box color="red">
+                    {selectedStudent.allergies.map((item, index) => (
+                      <Typography key={index} variant="body2">
+                        <strong>{item.type}</strong>: {item.notes} ({item.reaction})
+                      </Typography>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography color="inherit">Không có</Typography>
+                )}
               </Box>
 
               <Box>
