@@ -40,7 +40,7 @@ const AdminDashboard = () => {
       setLoading(true);
       const response = await getDashboardData();
       console.log("Dashboard data fetched:", response.data);
-      
+
       setDashboardData(response.data);
       setError(null);
     } catch (err) {
@@ -96,17 +96,23 @@ const AdminDashboard = () => {
   const campaignData = [
     {
       name: "Đã duyệt",
-      value: data.operationalMonitoring.latestCampaignStatus.approved,
+      value:
+        data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
+          .approved,
       color: "#10B981",
     },
     {
       name: "Từ chối",
-      value: data.operationalMonitoring.latestCampaignStatus.declined,
+      value:
+        data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
+          .declined,
       color: "#EF4444",
     },
     {
       name: "Chờ xử lý",
-      value: data.operationalMonitoring.latestCampaignStatus.pending,
+      value:
+        data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
+          .pending,
       color: "#F59E0B",
     },
   ];
@@ -232,17 +238,22 @@ const AdminDashboard = () => {
             </div>
             <div className="mb-4">
               <h4 className="text-lg font-medium text-gray-700 mb-2">
-                {data.operationalMonitoring.latestCampaignStatus.name}
+                {data.operationalMonitoring?.latestCampaignsSummary
+                  ?.healthCheckSummary?.name || "Không có chiến dịch"}
               </h4>
             </div>
 
-            {data.operationalMonitoring.latestCampaignStatus.total > 0 ? (
+            {data.operationalMonitoring?.latestCampaignsSummary
+              ?.healthCheckSummary?.total > 0 ? (
               <>
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-500 font-medium">Tổng</p>
                     <p className="text-2xl font-bold text-gray-800">
-                      {data.operationalMonitoring.latestCampaignStatus.total}
+                      {
+                        data.operationalMonitoring.latestCampaignsSummary
+                          .healthCheckSummary.total
+                      }
                     </p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -250,13 +261,19 @@ const AdminDashboard = () => {
                       Đã duyệt
                     </p>
                     <p className="text-2xl font-bold text-green-600">
-                      {data.operationalMonitoring.latestCampaignStatus.approved}
+                      {
+                        data.operationalMonitoring.latestCampaignsSummary
+                          .healthCheckSummary.approved
+                      }
                     </p>
                   </div>
                   <div className="text-center p-4 bg-red-50 rounded-lg">
                     <p className="text-sm text-gray-500 font-medium">Từ chối</p>
                     <p className="text-2xl font-bold text-red-600">
-                      {data.operationalMonitoring.latestCampaignStatus.declined}
+                      {
+                        data.operationalMonitoring.latestCampaignsSummary
+                          .healthCheckSummary.declined
+                      }
                     </p>
                   </div>
                 </div>

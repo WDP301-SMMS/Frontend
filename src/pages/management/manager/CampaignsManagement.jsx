@@ -110,7 +110,7 @@ const CampaignManager = () => {
           page: 1,
           limit: 50,
           status: "",
-          schoolYear: "2024-2025",
+          schoolYear: "",
         });
         if (campaignResponse.success) {
           setCampaigns(campaignResponse.data);

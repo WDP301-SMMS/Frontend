@@ -65,7 +65,7 @@ const ChatDisplayer = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (file) => {
+  const handleSendMessage = async (file = null) => {
     let fileData = null;
     console.log("Sending message:", newMessage, "with file:", file);
     if (!newMessage.trim() && !file) {
@@ -92,26 +92,30 @@ const ChatDisplayer = ({
       return;
     }
 
-    if (file) {
-      const response = await uploadService.uploadFile(file);
-      fileData = response.url;
-      console.log("File uploaded successfully:", fileData);
+    // Only try to upload if file exists and is a valid File object
+    if (file && file instanceof File) {
+      try {
+        const response = await uploadService.uploadFile(file);
+        fileData = response.url;
+        console.log("File uploaded successfully:", fileData);
+      } catch (error) {
+        console.error("File upload failed:", error);
+        return; // Don't send message if file upload fails
+      }
     }
-
-    console.log(fileData);
 
     const messageData = {
       roomId: room.roomId,
       senderId: currentUser,
-      content: file ? fileData : newMessage,
+      content: file && file instanceof File ? fileData : newMessage,
       receiverId: actualReceiver,
-      type: file ? "FILE" : "TEXT",
+      type: file && file instanceof File ? "FILE" : "TEXT",
       createdAt: new Date().toISOString(),
     };
 
-    socket.emit("sendMessage", messageData);
+    console.log("Sending message data:", messageData);
 
-    // Notify parent component about the sent message for sidebar update
+    socket.emit("sendMessage", messageData);
     if (onMessageSent) {
       onMessageSent(messageData);
     }
@@ -119,17 +123,22 @@ const ChatDisplayer = ({
     setNewMessage("");
   };
 
+  // Separate function for sending text messages (from button click)
+  const handleSendTextMessage = () => {
+    handleSendMessage(null);
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendTextMessage();
     }
   };
 
   const groupMessagesByDate = (messages) => {
     const groups = {};
     messages.forEach((message) => {
-      const date = new Date(message.createdAt).toDateString();
+      const date = new Date(message?.createdAt).toDateString();
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -238,11 +247,11 @@ const ChatDisplayer = ({
 
             {/* Messages for this date */}
             {dayMessages.map((message) => {
-              const isCurrentUser = message.senderId._id === currentUser?._id;
+              const isCurrentUser = message?.senderId._id === currentUser?._id;
 
               return (
                 <Box
-                  key={message.id}
+                  key={message?.id}
                   sx={{
                     display: "flex",
                     justifyContent: isCurrentUser ? "flex-end" : "flex-start",
@@ -264,10 +273,10 @@ const ChatDisplayer = ({
                         color="text.secondary"
                         sx={{ ml: 1 }}
                       >
-                        {message.senderId?.username || "Unknown User"}
+                        {message?.senderId?.username || "Unknown User"}
                       </Typography>
                     )}
-                    {message.type === "FILE" ? (
+                    {message?.type === "FILE" ? (
                       <Box
                         sx={{
                           position: "relative",
@@ -323,7 +332,7 @@ const ChatDisplayer = ({
                         }}
                       >
                         <Typography variant="body2">
-                          {message.content}
+                          {message?.content}
                         </Typography>
                       </Paper>
                     )}
@@ -404,7 +413,7 @@ const ChatDisplayer = ({
           />
           <Tooltip title="Gửi tin nhắn">
             <IconButton
-              onClick={handleSendMessage}
+              onClick={handleSendTextMessage}
               disabled={!newMessage.trim() || isLoading}
               sx={{
                 bgcolor: newMessage.trim() ? "primary.main" : "grey.300",
