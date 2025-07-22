@@ -401,6 +401,38 @@ export const mockData = {
     //   icon: 'Settings',
     //   route: '/management/manager/settings',
     // },
-  ]
+  ],
+  menuItemsAdmin: [
+    {
+      id: "admin-dashboard",
+      label: "Báo cáo",
+      icon: "BarChart3",
+      route: "/management/admin",
+    },
+    {
+      id: "nurse-management",
+      label: "Quản lý y tá",
+      icon: "Stethoscope",
+      route: "/management/admin/users",
+    },
+    {
+      id: "student-management",
+      label: "Quản lý học sinh",
+      icon: "Users2",
+      route: "/management/admin/students",
+    },
+    {
+      id: "class-management",
+      label: "Quản lý lớp học",
+      icon: "Book",
+      route: "/management/admin/classes",
+    },
+    {
+      id: "partner-management",
+      label: "Quản lý đối tác",
+      icon: "Building2",
+      route: "/management/admin/partners",
+    },
+  ],
 
 };
