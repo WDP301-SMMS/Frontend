@@ -171,7 +171,7 @@ export const mockData = {
       active: false,
     },
   ],
-   menuItemsNurse: [
+  menuItemsNurse: [
     // {
     //   id: 'home',
     //   label: 'Trang chủ',
@@ -364,7 +364,7 @@ export const mockData = {
       subItems: [
         {
           id: "manage-consent-forms",
-          label: "Quản lý phiếu đồng thuận",
+          label: "Quản lý Mẫu khám",
           icon: "UserCheck",
           route: "/management/manager/medical-check-up-management",
         },
@@ -434,5 +434,4 @@ export const mockData = {
       route: "/management/admin/partners",
     },
   ],
-
 };
