@@ -215,8 +215,9 @@ const handleConfirmComplete = async () => {
             health_notes:
               [
                 ...(record.allergies?.length > 0
-                  ? [`Dị ứng: ${record.allergies.join(", ")}`]
-                  : []),
+                  ? record.allergies.map(
+                    (c) => `Dị ứng: ${record.allergies}`
+                  ):[]),
                 ...(record.chronicConditions?.length > 0
                   ? record.chronicConditions.map(
                       (c) => `Bệnh mãn tính: ${c.conditionName}`
