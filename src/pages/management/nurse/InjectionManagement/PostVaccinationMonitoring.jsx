@@ -85,39 +85,45 @@ function PostVaccinationMonitoring() {
     return "";
   };
 
-
   // Handle opening completion dialog
   const handleOpenCompleteDialog = () => {
     setOpenCompleteDialog(true);
   };
   // Handle confirming completion
-const handleConfirmComplete = async () => {
-  if (!selectedCampaign) return;
-  setLoading(true);
-  try {
-    const nurseID= localStorage.getItem("nurseID");
-    const campaignData = {
-      status: "COMPLETED",
-      createdBy: nurseID, // Replace "userId" with actual user ID
-    };
-    const response = await campaignService.updateCampaign(selectedCampaign, campaignData);
-    setSnackbarMessage("Chiến dịch đã được hoàn tất thành công!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
-    setOpenCompleteDialog(false);
-    // Optionally refresh campaigns or monitoring records
-    const refreshedResponse = await campaignService.getCampaignsByStatus("IN_PROGRESS", 1, 100);
-    if (refreshedResponse.success) {
-      setCampaigns(refreshedResponse.data || []);
+  const handleConfirmComplete = async () => {
+    if (!selectedCampaign) return;
+    setLoading(true);
+    try {
+      const nurseID = localStorage.getItem("nurseID");
+      const campaignData = {
+        status: "COMPLETED",
+        createdBy: nurseID, // Replace "userId" with actual user ID
+      };
+      const response = await campaignService.updateCampaign(
+        selectedCampaign,
+        campaignData
+      );
+      setSnackbarMessage("Chiến dịch đã được hoàn tất thành công!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      setOpenCompleteDialog(false);
+      // Optionally refresh campaigns or monitoring records
+      const refreshedResponse = await campaignService.getCampaignsByStatus(
+        "IN_PROGRESS",
+        1,
+        100
+      );
+      if (refreshedResponse.success) {
+        setCampaigns(refreshedResponse.data || []);
+      }
+    } catch (error) {
+      setSnackbarMessage("Có lỗi xảy ra khi hoàn tất chiến dịch!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    setSnackbarMessage("Có lỗi xảy ra khi hoàn tất chiến dịch!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   // Handle closing dialogs
   const handleCloseCompleteDialog = () => {
     setOpenCompleteDialog(false);
@@ -215,7 +221,7 @@ const handleConfirmComplete = async () => {
             health_notes:
               [
                 ...(record.allergies?.length > 0
-                  ? [`Dị ứng: ${record.allergies.join(", ")}`]
+                  ? record.allergies.map((c) => `Dị ứng: ${c.type}`)
                   : []),
                 ...(record.chronicConditions?.length > 0
                   ? record.chronicConditions.map(
@@ -570,7 +576,9 @@ const handleConfirmComplete = async () => {
         icon={<Warning />}
         sx={{ mb: 3, fontWeight: "medium" }}
       >
-     Theo dõi sau tiêm là quá trình quan trọng để đảm bảo sức khỏe của học sinh sau khi tiêm chủng. Vui lòng chọn chiến dịch tiêm chủng và theo dõi tình trạng sức khỏe của học sinh.
+        Theo dõi sau tiêm là quá trình quan trọng để đảm bảo sức khỏe của học
+        sinh sau khi tiêm chủng. Vui lòng chọn chiến dịch tiêm chủng và theo dõi
+        tình trạng sức khỏe của học sinh.
       </Alert>
       {/* Filters */}
       <Card
@@ -658,185 +666,206 @@ const handleConfirmComplete = async () => {
         </CardContent>
       </Card>
       {/* Statistics */}
-<Card
-  sx={{
-    mb: 3,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-    borderRadius: 3,
-    overflow: "hidden",
-    border: "1px solid rgba(0,0,0,0.06)",
-  }}
->
-  <CardContent sx={{ p: 3 }}>
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        mb: 3,
-      }}
-    >
-      <Typography
-        variant="h5"
+      <Card
         sx={{
-          fontWeight: "700",
-          color: "text.primary",
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
+          mb: 3,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          borderRadius: 3,
+          overflow: "hidden",
+          border: "1px solid rgba(0,0,0,0.06)",
         }}
       >
-        📊 Thống kê theo dõi
-      </Typography>
-      <Button
-        variant="contained"
-        color="success"
-        onClick={handleOpenCompleteDialog}
-        disabled={!selectedCampaign || loading}
-        sx={{
-          textTransform: "none",
-          fontWeight: "600",
-          borderRadius: 2,
-          px: 3,
-          py: 1,
-          boxShadow: "0 4px 12px rgba(46, 125, 50, 0.3)",
-        }}
-      >
-        Hoàn tất tiêm chủng
-      </Button>
-    </Box>
+        <CardContent sx={{ p: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: "700",
+                color: "text.primary",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              📊 Thống kê theo dõi
+            </Typography>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleOpenCompleteDialog}
+              disabled={!selectedCampaign || loading}
+              sx={{
+                textTransform: "none",
+                fontWeight: "600",
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+                boxShadow: "0 4px 12px rgba(46, 125, 50, 0.3)",
+              }}
+            >
+              Hoàn tất tiêm chủng
+            </Button>
+          </Box>
 
-    <Grid container spacing={3}>
-      <Grid item xs={6} md={3}>
-        <Box
-          sx={{
-            textAlign: "center",
-            p: 3,
-            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-            borderRadius: 3,
-            color: "white",
-            boxShadow: "0 6px 20px rgba(25, 118, 210, 0.3)",
-            transition: "transform 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-            {stats.total}
-          </Typography>
-          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
-            Tổng số
-          </Typography>
-        </Box>
-      </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  background:
+                    "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  borderRadius: 3,
+                  color: "white",
+                  boxShadow: "0 6px 20px rgba(25, 118, 210, 0.3)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+                  {stats.total}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "500", opacity: 0.9 }}
+                >
+                  Tổng số
+                </Typography>
+              </Box>
+            </Grid>
 
-      <Grid item xs={6} md={3}>
-        <Box
-          sx={{
-            textAlign: "center",
-            p: 3,
-            background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
-            borderRadius: 3,
-            color: "white",
-            boxShadow: "0 6px 20px rgba(245, 124, 0, 0.3)",
-            transition: "transform 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-            {stats.monitoring}
-          </Typography>
-          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
-            Đang theo dõi
-          </Typography>
-        </Box>
-      </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  background:
+                    "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
+                  borderRadius: 3,
+                  color: "white",
+                  boxShadow: "0 6px 20px rgba(245, 124, 0, 0.3)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+                  {stats.monitoring}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "500", opacity: 0.9 }}
+                >
+                  Đang theo dõi
+                </Typography>
+              </Box>
+            </Grid>
 
-      <Grid item xs={6} md={3}>
-        <Box
-          sx={{
-            textAlign: "center",
-            p: 3,
-            background: "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
-            borderRadius: 3,
-            color: "white",
-            boxShadow: "0 6px 20px rgba(56, 142, 60, 0.3)",
-            transition: "transform 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-            {stats.completed}
-          </Typography>
-          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
-            Đã hoàn thành
-          </Typography>
-        </Box>
-      </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  background:
+                    "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
+                  borderRadius: 3,
+                  color: "white",
+                  boxShadow: "0 6px 20px rgba(56, 142, 60, 0.3)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+                  {stats.completed}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "500", opacity: 0.9 }}
+                >
+                  Đã hoàn thành
+                </Typography>
+              </Box>
+            </Grid>
 
-      <Grid item xs={6} md={3}>
-        <Box
-          sx={{
-            textAlign: "center",
-            p: 3,
-            background: "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
-            borderRadius: 3,
-            color: "white",
-            boxShadow: "0 6px 20px rgba(211, 47, 47, 0.3)",
-            transition: "transform 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-            {stats.withReactions}
-          </Typography>
-          <Typography variant="body1" sx={{ fontWeight: "500", opacity: 0.9 }}>
-            Có phản ứng
-          </Typography>
-        </Box>
-      </Grid>
-    </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  background:
+                    "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
+                  borderRadius: 3,
+                  color: "white",
+                  boxShadow: "0 6px 20px rgba(211, 47, 47, 0.3)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
+                  {stats.withReactions}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "500", opacity: 0.9 }}
+                >
+                  Có phản ứng
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
 
-    {/* Progress Bar */}
-    <Box sx={{ mt: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 1,
-        }}
-      >
-        <Typography variant="body1" fontWeight="600" color="text.secondary">
-          Tỷ lệ hoàn thành
-        </Typography>
-        <Typography variant="h6" fontWeight="700" color="success.main">
-          {stats.completionRate}%
-        </Typography>
-      </Box>
-      <LinearProgress
-        variant="determinate"
-        value={parseFloat(stats.completionRate)}
-        sx={{
-          height: 12,
-          borderRadius: 6,
-          bgcolor: "grey.200",
-          "& .MuiLinearProgress-bar": {
-            background: "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)",
-            borderRadius: 6,
-          },
-        }}
-      />
-    </Box>
-  </CardContent>
-</Card>
+          {/* Progress Bar */}
+          <Box sx={{ mt: 4 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
+              <Typography
+                variant="body1"
+                fontWeight="600"
+                color="text.secondary"
+              >
+                Tỷ lệ hoàn thành
+              </Typography>
+              <Typography variant="h6" fontWeight="700" color="success.main">
+                {stats.completionRate}%
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={parseFloat(stats.completionRate)}
+              sx={{
+                height: 12,
+                borderRadius: 6,
+                bgcolor: "grey.200",
+                "& .MuiLinearProgress-bar": {
+                  background:
+                    "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)",
+                  borderRadius: 6,
+                },
+              }}
+            />
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Main Table */}
       {loading ? (
@@ -964,7 +993,7 @@ const handleConfirmComplete = async () => {
                     </TableCell>
                     <TableCell sx={{ minWidth: "180px", p: 1.5 }}>
                       <Stack spacing={1} direction="row">
-                        <Tooltip title="Ghi nhận反応" arrow>
+                        <Tooltip title="Ghi nhận" arrow>
                           <Button
                             variant="outlined"
                             color="warning"
@@ -1459,19 +1488,60 @@ const handleConfirmComplete = async () => {
                           >
                             Dị ứng
                           </Typography>
-                          <Typography
-                            variant="body1"
-                            fontWeight="600"
-                            color={
-                              selectedStudent.allergies?.length > 0
-                                ? "error.main"
-                                : "success.main"
-                            }
-                          >
-                            {selectedStudent.allergies?.length > 0
-                              ? selectedStudent.allergies.join(", ")
-                              : "Không có"}
-                          </Typography>
+                          {selectedStudent.allergies?.length > 0 ? (
+                            <Box sx={{ maxHeight: 150, overflowY: "auto" }}>
+                              {selectedStudent.allergies.map(
+                                (allergy, index) => (
+                                  <Box
+                                    key={index}
+                                    sx={{
+                                      mb: 1.5,
+                                      p: 1.5,
+                                      bgcolor: "#fff4e6",
+                                      borderRadius: 1,
+                                      border: "1px solid #ffd6a3",
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      color="warning.main"
+                                      fontWeight="600"
+                                    >
+                                      {allergy.type}
+                                    </Typography>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.primary"
+                                    >
+                                      <strong>Phản ứng:</strong>{" "}
+                                      {allergy.reaction}
+                                    </Typography>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.primary"
+                                    >
+                                      <strong>Mức độ:</strong>{" "}
+                                      {allergy.severity}
+                                    </Typography>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.primary"
+                                    >
+                                      <strong>Ghi chú:</strong> {allergy.notes}
+                                    </Typography>
+                                  </Box>
+                                )
+                              )}
+                            </Box>
+                          ) : (
+                            <Typography
+                              variant="body1"
+                              fontWeight="600"
+                              color="success.main"
+                            >
+                              Không có
+                            </Typography>
+                          )}
                         </Box>
 
                         <Box>
