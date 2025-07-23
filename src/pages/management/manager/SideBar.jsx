@@ -65,7 +65,7 @@ import { userService } from "~/libs/api";
 
 export const SidebarManager = ({ role }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedMenus, setExpandedMenus] = useState(['vaccination-campaign-management']);
+  const [expandedMenus, setExpandedMenus] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const { logout } = useAuth();
