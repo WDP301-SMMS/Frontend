@@ -3,14 +3,16 @@ import { endpoints } from "../endpoints";
 
 class AppointmentsService {
   // 1. Lấy học sinh có kết quả bất thường
-  async getStudentsWithAbnormalResults() {
-    try {
-      const res = await api.get(endpoints.appointments.getStudentsWithAbnormalResults);
-      return res.data;
-    } catch (error) {
-      throw error?.response?.data || error;
-    }
+async getStudentsWithAbnormalResults(campaignId) {
+  try {
+    const url = endpoints.appointments.getStudentsWithAbnormalResults.replace("{campaignId}", campaignId);
+    const res = await api.get(url);
+    return res.data;
+  } catch (error) {
+    throw error?.response?.data || error;
   }
+}
+
 
   // 2. Lấy danh sách cuộc hẹn (theo phân trang, status, studentId)
   async getAppointments({ page = 1, limit = 10, status, studentId } = {}) {
