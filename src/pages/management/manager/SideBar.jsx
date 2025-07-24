@@ -49,6 +49,7 @@ const iconMap = {
   Book,
   Calendar,
   Users2,
+  User,
   Activity,
   BarChart3,
   FileBarChart,

@@ -97,22 +97,21 @@ const AdminDashboard = () => {
     {
       name: "Đã duyệt",
       value:
-        data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
-          .approved,
+        data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary?.approved || 0,
       color: "#10B981",
     },
     {
       name: "Từ chối",
       value:
         data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
-          .declined,
+          ?.declined || 0,
       color: "#EF4444",
     },
     {
       name: "Chờ xử lý",
       value:
         data.operationalMonitoring.latestCampaignsSummary.healthCheckSummary
-          .pending,
+          ?.pending || 0,
       color: "#F59E0B",
     },
   ];
