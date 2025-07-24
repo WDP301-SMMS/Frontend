@@ -161,7 +161,7 @@ export const Sidebar = () => {
       <div className="p-4 border-b border-blue-100 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           {sidebarOpen && (
-            <div className="flex items-center space-x-3" onClick={() => navigate("/management")}>
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/management")}>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
                 <img
                   src="/src/assets/images/logo_w.png"
@@ -294,7 +294,7 @@ export const Sidebar = () => {
                 </div>
               </div>
             ) : userProfile ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/settings")}>
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                   {getInitials(userProfile.username)}
                 </div>

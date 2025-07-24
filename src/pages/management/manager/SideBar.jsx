@@ -170,7 +170,7 @@ export const SidebarManager = ({ role }) => {
       <div className="p-4 border-b border-blue-100 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           {sidebarOpen && (
-            <div className="flex items-center space-x-3" onClick={() => navigate("/management")}>
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/management")}>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
                 <img
                   src="/src/assets/images/logo_w.png"
@@ -216,8 +216,8 @@ export const SidebarManager = ({ role }) => {
               <button
                 onClick={() => handleMenuItemClick(item)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${isActive
-                    ? "bg-blue-600 text-white shadow-lg transform scale-[1.02]"
-                    : "text-gray-700 hover:bg-blue-100 hover:shadow-md hover:transform hover:scale-[1.01]"
+                  ? "bg-blue-600 text-white shadow-lg transform scale-[1.02]"
+                  : "text-gray-700 hover:bg-blue-100 hover:shadow-md hover:transform hover:scale-[1.01]"
                   }`}
                 style={{ cursor: "pointer" }}
               >
@@ -259,23 +259,23 @@ export const SidebarManager = ({ role }) => {
                           key={subItem.id}
                           onClick={() => handleSubItemClick(subItem)}
                           className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-left text-sm transition-all duration-200 ${isSubActive
-                              ? "bg-blue-600 text-white"
-                              : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm"
+                            ? "bg-blue-600 text-white"
+                            : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm"
                             } border-l-2 border-transparent hover:border-blue-300`}
                           style={{ cursor: "pointer" }}
                         >
                           <div
                             className={`transition-colors ${isSubActive
-                                ? "text-white"
-                                : "group-hover/sub:text-blue-600"
+                              ? "text-white"
+                              : "group-hover/sub:text-blue-600"
                               }`}
                           >
                             {SubIconComponent && <SubIconComponent size={16} />}
                           </div>
                           <span
                             className={`transition-colors ${isSubActive
-                                ? "text-white"
-                                : "group-hover/sub:text-blue-700 font-medium"
+                              ? "text-white"
+                              : "group-hover/sub:text-blue-700 font-medium"
                               }`}
                           >
                             {subItem.label}
@@ -304,7 +304,7 @@ export const SidebarManager = ({ role }) => {
                 </div>
               </div>
             ) : userProfile ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/settings")}>
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                   {getInitials(userProfile.username)}
                 </div>
