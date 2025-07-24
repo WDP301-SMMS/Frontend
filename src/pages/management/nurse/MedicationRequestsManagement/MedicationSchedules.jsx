@@ -29,6 +29,11 @@ import {
 import { Warning, Search } from "@mui/icons-material";
 import medicationRequestsService from "~/libs/api/services/medicationRequestsService";
 import medicationSchedulesService from "~/libs/api/services/medicationSchedulesService";
+import SuccessDialog from "~/libs/components/dialog/SuccessDialog";
+import ErrorDialog from "~/libs/components/dialog/ErrorDialog";
+import ConfirmDialog from "~/libs/components/dialog/ConfirmDialog";
+import DeleteConfirmDialog from "~/libs/components/dialog/DeleteConfirmDialog";
+import { AlertTriangle, CheckCircle, HelpCircle, Trash2 } from "lucide-react";
 
 // Enum for slots and frequency
 const SlotEnum = {
@@ -1279,132 +1284,70 @@ const MedicationSchedules = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-        sx={{
-          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
-        }}
-      >
-        <DialogContent>
-          <Alert severity="info">
-            <Typography variant="h6" color="info.main">
-              Xác nhận
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Bạn chắc chắn đã uống thuốc vào buổi{" "}
-              {selectedSchedule?.slot === SlotEnum.Morning
-                ? "Sáng"
-                : selectedSchedule?.slot === SlotEnum.Afternoon
-                ? "Chiều"
-                : "Tối"}{" "}
-              ngày{" "}
-              {new Date(selectedSchedule?.date).toLocaleDateString("vi-VN")}?
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
-          <Button
-            onClick={() => setConfirmDialogOpen(false)}
-            variant="outlined"
-            color="info"
-          >
-            Hủy
-          </Button>
-          <Button onClick={handleConfirm} variant="contained" color="info">
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Add Success Dialog */}
-      <Dialog
-        open={showSuccessDialog}
-        onClose={() => setShowSuccessDialog(false)}
-        sx={{
-          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
-        }}
-      >
-        <DialogContent>
-          <Alert severity="success">
-            <Typography variant="h6" color="success.main">
-              Thành công
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Tạo lịch uống thuốc thành công!
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          <Button
-            onClick={() => setShowSuccessDialog(false)}
-            variant="contained"
-            color="success"
-          >
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
 
-      {/* Reason Dialog */}
-      <Dialog
-        open={showReasonDialog}
-        onClose={() => setShowReasonDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Lý do không uống thuốc</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Nhập lý do"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Vui lòng nhập lý do tại sao không uống thuốc..."
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowReasonDialog(false)}>Hủy</Button>
-          <Button
-            onClick={handleReasonSubmit}
-            variant="contained"
-            disabled={!reason.trim()}
-          >
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
 
-      {/* Error Dialog */}
-      <Dialog
-        open={showErrorDialog}
-        onClose={() => setShowErrorDialog(false)}
-        sx={{
-          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
-        }}
-      >
-        <DialogContent>
-          <Alert severity="error">
-            <Typography variant="h6" color="error">
-              Lỗi
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {errorMessage}
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          <Button
-            onClick={() => setShowErrorDialog(false)}
-            variant="contained"
-            color="error"
-          >
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <SuccessDialog
+  open={showSuccessDialog}
+  onClose={() => setShowSuccessDialog(false)}
+  title="Thành công"
+  message="Tạo lịch uống thuốc thành công!"
+  buttonText="Đóng"
+  buttonColor="success"
+  icon={<CheckCircle size={60} color="#22c55e" />}
+/>
+<ErrorDialog
+  open={showErrorDialog}
+  onClose={() => setShowErrorDialog(false)}
+  title="Lỗi"
+  message={errorMessage}
+  buttonText="Đóng"
+  buttonColor="error"
+  icon={<AlertTriangle size={60} color="#ef4444" />}
+/>
+<ConfirmDialog
+  open={confirmDialogOpen}
+  onClose={() => setConfirmDialogOpen(false)}
+  onConfirm={handleConfirm}
+  title="Xác nhận"
+  message={`Bạn chắc chắn đã uống thuốc vào buổi ${
+    selectedSchedule?.slot === SlotEnum.Morning
+      ? "Sáng"
+      : selectedSchedule?.slot === SlotEnum.Afternoon
+      ? "Chiều"
+      : "Tối"
+  } ngày ${new Date(selectedSchedule?.date).toLocaleDateString("vi-VN")}?`}
+  confirmButtonText="Xác nhận"
+  cancelButtonText="Hủy"
+  confirmButtonColor="info"
+  icon={<HelpCircle size={20} color="#3b82f6" />}
+/>
+<DeleteConfirmDialog
+  open={showReasonDialog}
+  onClose={() => setShowReasonDialog(false)}
+  onConfirm={handleReasonSubmit}
+  title="Lý do không uống thuốc"
+  message={
+    <TextField
+      fullWidth
+      multiline
+      rows={3}
+      label="Nhập lý do"
+      value={reason}
+      onChange={(e) => setReason(e.target.value)}
+      placeholder="Vui lòng nhập lý do tại sao không uống thuốc..."
+      sx={{ mt: 2 }}
+    />
+  }
+  confirmButtonText="Xác nhận"
+  cancelButtonText="Hủy"
+  confirmButtonColor="error"
+  icon={<Trash2 size={20} color="#ef4444" />}
+  extraContent={
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+      Lý do là bắt buộc để xác nhận trạng thái không uống thuốc.
+    </Typography>
+  }
+/>
     </Container>
   );
 };

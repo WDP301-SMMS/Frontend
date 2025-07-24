@@ -714,121 +714,106 @@ function PostVaccinationMonitoring() {
             </Button>
           </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 3,
-                  background:
-                    "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                  borderRadius: 3,
-                  color: "white",
-                  boxShadow: "0 6px 20px rgba(25, 118, 210, 0.3)",
-                  transition: "transform 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-                  {stats.total}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "500", opacity: 0.9 }}
-                >
-                  Tổng số
-                </Typography>
-              </Box>
-            </Grid>
+          <Grid container spacing={2}>
+  <Grid item xs={6} md={3}>
+    <Box
+      sx={{
+        textAlign: "center",
+        p: 2, // giảm padding
+        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+        borderRadius: 2,
+        color: "white",
+        boxShadow: "0 4px 12px rgba(25, 118, 210, 0.2)",
+        transition: "transform 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+        },
+      }}
+    >
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+        {stats.total}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+        Tổng số
+      </Typography>
+    </Box>
+  </Grid>
 
-            <Grid item xs={6} md={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 3,
-                  background:
-                    "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
-                  borderRadius: 3,
-                  color: "white",
-                  boxShadow: "0 6px 20px rgba(245, 124, 0, 0.3)",
-                  transition: "transform 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-                  {stats.monitoring}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "500", opacity: 0.9 }}
-                >
-                  Đang theo dõi
-                </Typography>
-              </Box>
-            </Grid>
+  <Grid item xs={6} md={3}>
+    <Box
+      sx={{
+        textAlign: "center",
+        p: 2,
+        background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
+        borderRadius: 2,
+        color: "white",
+        boxShadow: "0 4px 12px rgba(245, 124, 0, 0.2)",
+        transition: "transform 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+        },
+      }}
+    >
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+        {stats.monitoring}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+        Đang theo dõi
+      </Typography>
+    </Box>
+  </Grid>
 
-            <Grid item xs={6} md={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 3,
-                  background:
-                    "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
-                  borderRadius: 3,
-                  color: "white",
-                  boxShadow: "0 6px 20px rgba(56, 142, 60, 0.3)",
-                  transition: "transform 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-                  {stats.completed}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "500", opacity: 0.9 }}
-                >
-                  Đã hoàn thành
-                </Typography>
-              </Box>
-            </Grid>
+  <Grid item xs={6} md={3}>
+    <Box
+      sx={{
+        textAlign: "center",
+        p: 2,
+        background: "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
+        borderRadius: 2,
+        color: "white",
+        boxShadow: "0 4px 12px rgba(56, 142, 60, 0.2)",
+        transition: "transform 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+        },
+      }}
+    >
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+        {stats.completed}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+        Đã hoàn thành
+      </Typography>
+    </Box>
+  </Grid>
 
-            <Grid item xs={6} md={3}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 3,
-                  background:
-                    "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
-                  borderRadius: 3,
-                  color: "white",
-                  boxShadow: "0 6px 20px rgba(211, 47, 47, 0.3)",
-                  transition: "transform 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                <Typography variant="h3" fontWeight="700" sx={{ mb: 1 }}>
-                  {stats.withReactions}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "500", opacity: 0.9 }}
-                >
-                  Có phản ứng
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+  <Grid item xs={6} md={3}>
+    <Box
+      sx={{
+        textAlign: "center",
+        p: 2,
+        background: "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
+        borderRadius: 2,
+        color: "white",
+        boxShadow: "0 4px 12px rgba(211, 47, 47, 0.2)",
+        transition: "transform 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+        },
+      }}
+    >
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+        {stats.withReactions}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+        Có phản ứng
+      </Typography>
+    </Box>
+  </Grid>
+</Grid>
 
-          {/* Progress Bar */}
+
+          {/* Progress Bar
           <Box sx={{ mt: 4 }}>
             <Box
               sx={{
@@ -863,7 +848,7 @@ function PostVaccinationMonitoring() {
                 },
               }}
             />
-          </Box>
+          </Box> */}
         </CardContent>
       </Card>
 
