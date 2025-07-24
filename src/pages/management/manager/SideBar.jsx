@@ -27,9 +27,17 @@ import {
   LogOut,
   Stethoscope,
   Package,
+  Package2,
   HeartHandshake,
   TrendingUp,
   PillBottle,
+  Target,
+  Heart,
+  History,
+  Clock,
+  FileCheck,
+  List,
+  BookOpen,
 } from "lucide-react";
 import { mockData } from "~/libs/utils/common";
 
@@ -55,9 +63,17 @@ const iconMap = {
   LogOut,
   Stethoscope,
   Package,
+  Package2,
   HeartHandshake,
   TrendingUp,
   PillBottle,
+  Target,
+  Heart,
+  History,
+  Clock,
+  FileCheck,
+  List,
+  BookOpen,
 };
 
 import { useAuth } from "~/libs/contexts/AuthContext";
@@ -209,7 +225,7 @@ export const SidebarManager = ({ role }) => {
                   className={`transition-all duration-200 ${isActive ? "text-white" : "text-blue-600 group-hover:text-blue-700"
                     }`}
                 >
-                  <IconComponent size={20} />
+                  {IconComponent && <IconComponent size={20} />}
                 </div>
                 {sidebarOpen && (
                   <>
@@ -254,7 +270,7 @@ export const SidebarManager = ({ role }) => {
                                 : "group-hover/sub:text-blue-600"
                               }`}
                           >
-                            <SubIconComponent size={16} />
+                            {SubIconComponent && <SubIconComponent size={16} />}
                           </div>
                           <span
                             className={`transition-colors ${isSubActive

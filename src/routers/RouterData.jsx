@@ -38,7 +38,6 @@ import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSupplie
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
-const SendResultsConsult = () => <div>Gửi kết quả & Tư vấn</div>;
 import Settings from "../pages/setting/Profile";
 import Layout from "../pages/layout/Layout";
 import ManagementLayout from "../pages/management/Layout";
@@ -64,6 +63,7 @@ import PrepareCheckupList from "~/pages/management/nurse/MedicalCheckup/PrepareC
 import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheckup";
 import MedicationRequests from "~/pages/management/nurse/MedicationRequestsManagement/MedicationRequests";
 import MedicationSchedules from "~/pages/management/nurse/MedicationRequestsManagement/MedicationSchedules";
+import AppointmentHealthCheck from "~/pages/management/nurse/AppointmentManagement/AppointmentHealthCheck";
 
 const basicRoutes = [
   {
@@ -176,7 +176,7 @@ const nurseRoutes = [
       { path: "send-checkup-notice", element: <SendCheckupNotice /> },
       { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "perform-checkup", element: <PerformCheckup /> },
-      { path: "send-results-consult", element: <SendResultsConsult /> },
+      { path: "send-results-consult", element: <AppointmentHealthCheck /> },
       { path: "settings", element: <Settings /> },
     ],
   },

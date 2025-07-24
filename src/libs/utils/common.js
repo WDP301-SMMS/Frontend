@@ -113,7 +113,7 @@ export const mockData = {
       active: true,
       subItems: [
         { id: "auto-check", label: "Auto Check Booster", icon: "Bell" },
-        { id: "view-records", label: "View Records", icon: "Eye" },
+        { id: "view-records", label: "View Records", icon: "FileText" },
         {
           id: "schedule-vaccination",
           label: "Schedule Vaccination",
@@ -130,7 +130,7 @@ export const mockData = {
     {
       id: "health-records",
       label: "Health Records",
-      icon: "Activity",
+      icon: "Heart",
       active: false,
     },
     {
@@ -149,13 +149,13 @@ export const mockData = {
           label: "Compliance Reports",
           icon: "Shield",
         },
-        { id: "health-analytics", label: "Health Analytics", icon: "Activity" },
+        { id: "health-analytics", label: "Health Analytics", icon: "TrendingUp" },
       ],
     },
     {
       id: "user-management",
       label: "User Management",
-      icon: "UserCheck",
+      icon: "Users",
       active: false,
     },
     {
@@ -181,18 +181,18 @@ export const mockData = {
     {
       id: "medical-event-management",
       label: "Quản lý sự kiện y tế",
-      icon: "Bell",
+      icon: "AlertTriangle",
       subItems: [
         {
           id: "record-incidents",
           label: "Ghi nhận sự cố",
-          icon: "FileBarChart",
+          icon: "FileText",
           route: "/management/nurse/record-incidents",
         },
         {
           id: "view-medical-records",
           label: "Lịch sử sự cố",
-          icon: "Eye",
+          icon: "History",
           route: "/management/nurse/view-medical-records",
         },
       ],
@@ -200,18 +200,18 @@ export const mockData = {
     {
       id: "medication-requests-manager",
       label: "Gửi thuốc cho học sinh",
-      icon: "Bell",
+      icon: "Pill",
       subItems: [
         {
           id: "medication-requests",
           label: "Yêu cầu thuốc",
-          icon: "FileBarChart",
+          icon: "FileText",
           route: "/management/nurse/medication-requests",
         },
         {
           id: "medication-schedules",
           label: "Lịch uống thuốc",
-          icon: "Eye",
+          icon: "Clock",
           route: "/management/nurse/medication-schedules",
         },
       ],
@@ -219,18 +219,18 @@ export const mockData = {
     {
       id: "medication-supply-management",
       label: "Cấp phát thuốc & vật tư",
-      icon: "Syringe",
+      icon: "Package",
       subItems: [
         {
           id: "manage-medications",
           label: "Cấp phát",
-          icon: "Syringe",
+          icon: "Package",
           route: "/management/nurse/manage-medications",
         },
         {
           id: "manage-supplies",
           label: "Lịch sử cấp phát",
-          icon: "Settings",
+          icon: "History",
           route: "/management/nurse/manage-supplies",
         },
       ],
@@ -238,18 +238,18 @@ export const mockData = {
     {
       id: "vaccination-management",
       label: "Quản lý tiêm chủng",
-      icon: "Shield",
+      icon: "Syringe",
       subItems: [
         {
           id: "send-consent",
           label: "Gửi phiếu đồng thuận",
-          icon: "UserCheck",
+          icon: "FileCheck",
           route: "/management/nurse/send-vaccination-consent",
         },
         {
           id: "prepare-list",
           label: "Chuẩn bị danh sách",
-          icon: "Users2",
+          icon: "List",
           route: "/management/nurse/prepare-vaccination-list",
         },
         {
@@ -269,7 +269,7 @@ export const mockData = {
     {
       id: "periodic-medical-checkup",
       label: "Kiểm tra y tế định kỳ",
-      icon: "Calendar",
+      icon: "Activity",
       subItems: [
         {
           id: "send-checkup-notice",
@@ -280,19 +280,19 @@ export const mockData = {
         {
           id: "prepare-checkup-list",
           label: "Chuẩn bị danh sách khám",
-          icon: "Users2",
+          icon: "List",
           route: "/management/nurse/prepare-checkup-list",
         },
         {
           id: "perform-checkup",
           label: "Thực hiện khám & Ghi nhận",
-          icon: "Activity",
+          icon: "Heart",
           route: "/management/nurse/perform-checkup",
         },
         {
           id: "send-results-consult",
-          label: "Gửi kết quả & Tư vấn",
-          icon: "BarChart3",
+          label: "Theo dõi sau khám",
+          icon: "Eye",
           route: "/management/nurse/send-results-consult",
         },
       ],
@@ -328,7 +328,7 @@ export const mockData = {
     {
       id: "medication-supply-management",
       label: "Quản lý thuốc & vật tư",
-      icon: "Syringe",
+      icon: "Package",
       subItems: [
         {
           id: "manage-medications",
@@ -339,7 +339,7 @@ export const mockData = {
         {
           id: "manage-supplies",
           label: "Quản lý vật tư",
-          icon: "PillBottle",
+          icon: "Package2",
           route: "/management/manager/manage-supplies",
         },
       ],
@@ -347,12 +347,12 @@ export const mockData = {
     {
       id: "vaccination-campaign-management",
       label: "Quản lý chiến dịch tiêm chủng",
-      icon: "Syringe",
+      icon: "Shield",
       subItems: [
         {
           id: "manage-vaccination-campaigns",
           label: "Quản lý chiến dịch",
-          icon: "Syringe",
+          icon: "Target",
           route: "/management/manager/campaigns-management",
         },
       ],
@@ -360,18 +360,18 @@ export const mockData = {
     {
       id: "periodic-checkup-management",
       label: "Quản lý khám định kỳ",
-      icon: "Shield",
+      icon: "Calendar",
       subItems: [
         {
           id: "manage-consent-forms",
           label: "Quản lý Mẫu khám",
-          icon: "UserCheck",
+          icon: "FileText",
           route: "/management/manager/medical-check-up-management",
         },
         {
           id: "manage-health-check-campaigns",
           label: "Quản lý chiến dịch kiểm tra sức khỏe",
-          icon: "UserCheck",
+          icon: "Heart",
           route: "/management/manager/manage-health-check-campaigns",
         },
       ],
@@ -392,7 +392,7 @@ export const mockData = {
     {
       id: "manage-blogs",
       label: "Quản lí blog",
-      icon: "Book",
+      icon: "BookOpen",
       route: "/management/manager/manage-blogs",
     },
     // {
@@ -412,7 +412,7 @@ export const mockData = {
     {
       id: "nurse-management",
       label: "Quản lý y tá",
-      icon: "Stethoscope",
+      icon: "User",
       route: "/management/admin/users",
     },
     {

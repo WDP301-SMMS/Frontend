@@ -110,10 +110,18 @@ export const endpoints = {
     updateItems: "/medication/requests/{requestId}/items", // PATCH: cập nhật hoặc thêm thuốc
   },
   medicationSchedule: {
-  createMany: "/medication/schedules", // POST: Tạo nhiều lịch uống thuốc
-  updateStatus: "/medication/schedules/update/{scheduleId}", // PATCH: Cập nhật trạng thái lịch uống thuốc
-  getByRequestId: "/medication/schedules/request/{requestId}", // GET: Lấy lịch theo Request ID
-  getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
-},
+    createMany: "/medication/schedules", // POST: Tạo nhiều lịch uống thuốc
+    updateStatus: "/medication/schedules/update/{scheduleId}", // PATCH: Cập nhật trạng thái lịch uống thuốc
+    getByRequestId: "/medication/schedules/request/{requestId}", // GET: Lấy lịch theo Request ID
+    getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
+  },
+  appointments: {
+    getStudentsWithAbnormalResults: "/appointments/students/abnormal-results", // GET
+    getAppointments: "/appointments", // GET
+    createAppointment: "/appointments", // POST
+    updateAppointmentStatus: "/appointments/{appointmentId}/status", // PATCH
+    addAfterMeetingNotes: "/appointments/{appointmentId}/notes", // PATCH
+  },
+
 
 };

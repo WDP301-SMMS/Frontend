@@ -20,14 +20,21 @@ import {
   Building2,
   Settings,
   Pill,
-  ClipboardList,
   FileText,
   AlertTriangle,
   LogOut,
-  Stethoscope,
   Package,
-  HeartHandshake,
   TrendingUp,
+  Users,
+  Heart,
+  History,
+  Clock,
+  FileCheck,
+  List,
+  Target,
+  Package2,
+  BookOpen,
+  Book,
 } from "lucide-react";
 import { mockData } from "~/libs/utils/common";
 
@@ -46,14 +53,22 @@ const iconMap = {
   Building2,
   Settings,
   Pill,
-  ClipboardList,
   FileText,
   AlertTriangle,
   LogOut,
-  Stethoscope,
   Package,
-  HeartHandshake,
   TrendingUp,
+  Users,
+  Heart,
+  History,
+  Clock,
+  FileCheck,
+  List,
+  Target,
+  Package2,
+  BookOpen,
+  Book,
+  User,
 };
 
 import { useAuth } from "~/libs/contexts/AuthContext";
@@ -200,7 +215,7 @@ export const Sidebar = () => {
                     : "text-blue-600 group-hover:text-blue-700"
                     }`}
                 >
-                  <IconComponent size={20} />
+                  {IconComponent && <IconComponent size={20} />}
                 </div>
                 {sidebarOpen && (
                   <>
@@ -245,7 +260,7 @@ export const Sidebar = () => {
                               : "group-hover/sub:text-blue-600"
                               }`}
                           >
-                            <SubIconComponent size={16} />
+                            {SubIconComponent && <SubIconComponent size={16} />}
                           </div>
                           <span
                             className={`transition-colors ${isSubActive

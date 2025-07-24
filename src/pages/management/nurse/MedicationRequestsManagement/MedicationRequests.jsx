@@ -230,7 +230,7 @@ const MedicationRequests = () => {
       }
       // Thêm các mục thuốc mới (itemsToAdd)
       if (itemsToAdd.length > 0) {
-        await medicationRequestsService.addItems(form._id, itemsToAdd); // Giả định API addItems tồn tại
+        await medicationRequestsService.updateItems(form._id, itemsToAdd); // Giả định API addItems tồn tại
       }
     } else {
       // Tạo mới yêu cầu với toàn bộ items (loại bỏ _id)
