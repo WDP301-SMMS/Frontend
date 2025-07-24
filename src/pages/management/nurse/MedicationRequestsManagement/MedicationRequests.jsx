@@ -41,6 +41,8 @@ import {
 import { Warning } from "@mui/icons-material";
 import medicationRequestsService from "~/libs/api/services/medicationRequestsService";
 import userStudentServiceInstance from "~/libs/api/services/userStudentService";
+import SuccessDialog from "~/libs/components/dialog/SuccessDialog";
+import ErrorDialog from "~/libs/components/dialog/ErrorDialog";
 
 const MedicationRequests = () => {
   const [form, setForm] = useState({
@@ -139,125 +141,130 @@ const MedicationRequests = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Validation
-  if (!form.parentId) {
-    setErrorMessage("Vui lòng chọn phụ huynh.");
-    setShowErrorDialog(true);
-    return;
-  }
-  if (!form.studentId) {
-    setErrorMessage("Vui lòng chọn học sinh.");
-    setShowErrorDialog(true);
-    return;
-  }
-  if (!form.startDate) {
-    setErrorMessage("Vui lòng chọn ngày bắt đầu.");
-    setShowErrorDialog(true);
-    return;
-  }
-  if (!form.endDate) {
-    setErrorMessage("Vui lòng chọn ngày kết thúc.");
-    setShowErrorDialog(true);
-    return;
-  }
-  // Validate startDate is not in the past
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Reset time to compare only dates
-  const startDate = new Date(form.startDate);
-  if (startDate < today) {
-    setErrorMessage("Ngày bắt đầu không được là ngày trong quá khứ.");
-    setShowErrorDialog(true);
-    return;
-  }
-  // Validate endDate is after startDate
-  const endDate = new Date(form.endDate);
-  if (endDate <= startDate) {
-    setErrorMessage("Ngày kết thúc phải sau ngày bắt đầu.");
-    setShowErrorDialog(true);
-    return;
-  }
-  // Validate items
-  for (const item of form.items) {
-    if (!item.medicationName.trim()) {
-      setErrorMessage("Vui lòng điền tên thuốc cho tất cả các mục.");
+    // Validation
+    if (!form.parentId) {
+      setErrorMessage("Vui lòng chọn phụ huynh.");
       setShowErrorDialog(true);
       return;
     }
-    if (!item.dosage.trim()) {
-      setErrorMessage("Vui lòng điền liều dùng cho tất cả các mục.");
+    if (!form.studentId) {
+      setErrorMessage("Vui lòng chọn học sinh.");
       setShowErrorDialog(true);
       return;
     }
-    if (!item.instruction.trim()) {
-      setErrorMessage("Vui lòng điền hướng dẫn cho tất cả các mục.");
+    if (!form.startDate) {
+      setErrorMessage("Vui lòng chọn ngày bắt đầu.");
       setShowErrorDialog(true);
       return;
     }
-  }
-  console.log("Form data before validation:", form.prescriptionFile);
-  if (!form.prescriptionFile) {
-    setErrorMessage("File đơn thuốc phải là hình ảnh (jpg, jpeg, png) hoặc PDF.");
-    setShowErrorDialog(true);
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("parentId", form.parentId);
-    formData.append("studentId", form.studentId);
-    formData.append("startDate", form.startDate);
-    formData.append("endDate", form.endDate);
-    if (form.prescriptionFile) {
-      formData.append("prescriptionFile", form.prescriptionFile);
+    if (!form.endDate) {
+      setErrorMessage("Vui lòng chọn ngày kết thúc.");
+      setShowErrorDialog(true);
+      return;
     }
-    console.log("Form data before sending:", form);
-    // Phân loại items thành hai danh sách: cập nhật (có _id) và thêm mới (không có _id)
-    const itemsToUpdate = form.items.filter((item) => item._id);
-    const itemsToAdd = form.items
-      .filter((item) => !item._id)
-      .map(({ _id, ...rest }) => rest);
-    console.log("Items to update:", itemsToUpdate);
-    console.log("Items to add:", itemsToAdd);
-
-    if (editMode && form._id) {
-      // Cập nhật thông tin yêu cầu (parentId, studentId, dates, prescriptionFile)
-      await medicationRequestsService.updateRequestInfo(form._id, formData);
-      // Cập nhật các mục thuốc hiện có (itemsToUpdate)
-      if (itemsToUpdate.length > 0) {
-        await medicationRequestsService.updateItems(form._id, itemsToUpdate);
+    // Validate startDate is not in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+    const startDate = new Date(form.startDate);
+    if (startDate < today) {
+      setErrorMessage("Ngày bắt đầu không được là ngày trong quá khứ.");
+      setShowErrorDialog(true);
+      return;
+    }
+    // Validate endDate is after startDate
+    const endDate = new Date(form.endDate);
+    if (endDate <= startDate) {
+      setErrorMessage("Ngày kết thúc phải sau ngày bắt đầu.");
+      setShowErrorDialog(true);
+      return;
+    }
+    // Validate items
+    for (const item of form.items) {
+      if (!item.medicationName.trim()) {
+        setErrorMessage("Vui lòng điền tên thuốc cho tất cả các mục.");
+        setShowErrorDialog(true);
+        return;
       }
-      // Thêm các mục thuốc mới (itemsToAdd)
-      if (itemsToAdd.length > 0) {
-        await medicationRequestsService.updateItems(form._id, itemsToAdd); // Giả định API addItems tồn tại
+      if (!item.dosage.trim()) {
+        setErrorMessage("Vui lòng điền liều dùng cho tất cả các mục.");
+        setShowErrorDialog(true);
+        return;
       }
-    } else {
-      // Tạo mới yêu cầu với toàn bộ items (loại bỏ _id)
-      formData.append("items", JSON.stringify(form.items.map(({ _id, ...rest }) => rest)));
-      await medicationRequestsService.createRequest(formData);
+      if (!item.instruction.trim()) {
+        setErrorMessage("Vui lòng điền hướng dẫn cho tất cả các mục.");
+        setShowErrorDialog(true);
+        return;
+      }
+    }
+    console.log("Form data before validation:", form.prescriptionFile);
+    if (!form.prescriptionFile) {
+      setErrorMessage(
+        "File đơn thuốc phải là hình ảnh (jpg, jpeg, png) hoặc PDF."
+      );
+      setShowErrorDialog(true);
+      return;
     }
 
-    setOpenDialog(false);
-    setForm({
-      _id: "",
-      parentId: "",
-      studentId: "", // Sửa từ StudentId thành studentId
-      startDate: "",
-      endDate: "",
-      items: [{ _id: "", medicationName: "", dosage: "", instruction: "" }],
-      prescriptionFile: null,
-    });
-    setEditMode(false);
-    setViewMode(false);
-    setShowSuccessDialog(true);
-    await fetchRequests();
-  } catch (error) {
-    console.error(error);
-    setErrorMessage("Có lỗi xảy ra khi gửi/cập nhật yêu cầu.");
-    setShowErrorDialog(true);
-  }
-};
+    try {
+      const formData = new FormData();
+      formData.append("parentId", form.parentId);
+      formData.append("studentId", form.studentId);
+      formData.append("startDate", form.startDate);
+      formData.append("endDate", form.endDate);
+      if (form.prescriptionFile) {
+        formData.append("prescriptionFile", form.prescriptionFile);
+      }
+      console.log("Form data before sending:", form);
+      // Phân loại items thành hai danh sách: cập nhật (có _id) và thêm mới (không có _id)
+      const itemsToUpdate = form.items.filter((item) => item._id);
+      const itemsToAdd = form.items
+        .filter((item) => !item._id)
+        .map(({ _id, ...rest }) => rest);
+      console.log("Items to update:", itemsToUpdate);
+      console.log("Items to add:", itemsToAdd);
+
+      if (editMode && form._id) {
+        // Cập nhật thông tin yêu cầu (parentId, studentId, dates, prescriptionFile)
+        await medicationRequestsService.updateRequestInfo(form._id, formData);
+        // Cập nhật các mục thuốc hiện có (itemsToUpdate)
+        if (itemsToUpdate.length > 0) {
+          await medicationRequestsService.updateItems(form._id, itemsToUpdate);
+        }
+        // Thêm các mục thuốc mới (itemsToAdd)
+        if (itemsToAdd.length > 0) {
+          await medicationRequestsService.updateItems(form._id, itemsToAdd); // Giả định API addItems tồn tại
+        }
+      } else {
+        // Tạo mới yêu cầu với toàn bộ items (loại bỏ _id)
+        formData.append(
+          "items",
+          JSON.stringify(form.items.map(({ _id, ...rest }) => rest))
+        );
+        await medicationRequestsService.createRequest(formData);
+      }
+
+      setOpenDialog(false);
+      setForm({
+        _id: "",
+        parentId: "",
+        studentId: "", // Sửa từ StudentId thành studentId
+        startDate: "",
+        endDate: "",
+        items: [{ _id: "", medicationName: "", dosage: "", instruction: "" }],
+        prescriptionFile: null,
+      });
+      setEditMode(false);
+      setViewMode(false);
+      setShowSuccessDialog(true);
+      await fetchRequests();
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Có lỗi xảy ra khi gửi/cập nhật yêu cầu.");
+      setShowErrorDialog(true);
+    }
+  };
 
   const handleViewOrEditRequest = (request, mode = "view") => {
     setForm({
@@ -589,28 +596,36 @@ const MedicationRequests = () => {
                   )}
                 />
               </Grid>
-             <Grid item xs={12}>
-  <Typography variant="subtitle1" fontWeight="600" color="text.primary">
-    File đơn thuốc:
-  </Typography>
-  {viewMode ? (
-    form.prescriptionFile ? (
-      <a href={form.prescriptionFile} target="_blank" rel="noopener noreferrer">
-        <File size={50} color="#3b82f6" />
-      </a>
-    ) : (
-      <Typography variant="body2" color="text.secondary">
-        Không có file
-      </Typography>
-    )
-  ) : (
-    <input
-      type="file"
-      accept="application/pdf,image/*"
-      onChange={handleFileChange}
-    />
-  )}
-</Grid>
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="600"
+                  color="text.primary"
+                >
+                  File đơn thuốc:
+                </Typography>
+                {viewMode ? (
+                  form.prescriptionFile ? (
+                    <a
+                      href={form.prescriptionFile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <File size={50} color="#3b82f6" />
+                    </a>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Không có file
+                    </Typography>
+                  )
+                ) : (
+                  <input
+                    type="file"
+                    accept="application/pdf,image/*"
+                    onChange={handleFileChange}
+                  />
+                )}
+              </Grid>
               <Grid item xs={12} md={6} sx={{ width: "50%" }}>
                 <Autocomplete
                   disabled={viewMode}
@@ -796,61 +811,18 @@ const MedicationRequests = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Success Dialog */}
-      <Dialog
+      <SuccessDialog
         open={showSuccessDialog}
         onClose={() => setShowSuccessDialog(false)}
-        sx={{
-          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
-        }}
-      >
-        <DialogContent>
-          <CheckCircle size={60} color="#22c55e" sx={{ mb: 2 }} />
-          <Typography variant="h6" color="text.primary">
-            {editMode ? "Cập nhật thành công!" : "Gửi yêu cầu thành công!"}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Yêu cầu uống thuốc đã được xử lý thành công.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          <Button
-            onClick={() => setShowSuccessDialog(false)}
-            variant="contained"
-            color="success"
-          >
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Error Dialog */}
-      <Dialog
+        title={editMode ? "Cập nhật thành công!" : "Gửi yêu cầu thành công!"}
+        message="Yêu cầu uống thuốc đã được xử lý thành công."
+      />
+      <ErrorDialog
         open={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
-        sx={{
-          "& .MuiDialog-paper": { borderRadius: 2, p: 2, textAlign: "center" },
-        }}
-      >
-        <DialogContent>
-          <AlertTriangle size={60} color="#ef4444" sx={{ mb: 2 }} />
-          <Typography variant="h6" color="error">
-            Lỗi
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {errorMessage}
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          <Button
-            onClick={() => setShowErrorDialog(false)}
-            variant="contained"
-            color="error"
-          >
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
+        title="Lỗi"
+        message={errorMessage}
+      />
     </Container>
   );
 };
