@@ -116,7 +116,7 @@ export const endpoints = {
     getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
   },
   appointments: {
-    getStudentsWithAbnormalResults: "/appointments/students/abnormal-results", // GET
+    getStudentsWithAbnormalResults: "/appointments/students/abnormal-results/{campaignId}", // GET
     getAppointments: "/appointments", // GET
     createAppointment: "/appointments", // POST
     updateAppointmentStatus: "/appointments/{appointmentId}/status", // PATCH

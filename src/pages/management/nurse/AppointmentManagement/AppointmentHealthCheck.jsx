@@ -42,6 +42,7 @@ import appointmentsService from "~/libs/api/services/appointmentsService";
 import healthCheckRecordService from "~/libs/api/services/healthCheckRecordService";
 import dayjs from "dayjs";
 import { CheckCircle } from "lucide-react";
+import healthCheckCampaignService from "~/libs/api/services/healthCheckCampainService";
 
 const AbnormalHealthCheck = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -49,6 +50,8 @@ const AbnormalHealthCheck = () => {
   const [filteredAbnormalStudents, setFilteredAbnormalStudents] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignFilter, setCampaignFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [classFilter, setClassFilter] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -79,21 +82,46 @@ const AbnormalHealthCheck = () => {
   const [openNotification, setOpenNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
 
-  const currentDate = new Date(); // Kept as per your instruction
+  const currentDate = new Date();
 
   useEffect(() => {
+    fetchCampaigns();
     fetchAbnormalStudents();
     fetchAppointments();
   }, []);
 
+  const fetchCampaigns = async () => {
+    try {
+      const response = await healthCheckCampaignService.getCampaignsByStatus(
+        "COMPLETED"
+      );
+      console.log("Campaigns:", response);
+      if (response.success) {
+        setCampaigns(response.data.campaigns);
+      }
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+    }
+  };
+
   const fetchAbnormalStudents = async () => {
     try {
-      const response =
-        await appointmentsService.getStudentsWithAbnormalResults();
+      if (!campaignFilter) {
+        setAbnormalStudents([]);
+        setFilteredAbnormalStudents([]);
+        return;
+      }
+      console.log(
+        "Fetching abnormal students with campaign filter:",
+        campaignFilter
+      );
+      const response = await appointmentsService.getStudentsWithAbnormalResults(
+        campaignFilter || undefined
+      );
       if (response.success) {
         const studentsWithClass = response.data.map((student) => ({
           ...student,
-          className: `Class ${student.studentId.slice(-2)}`, // Placeholder; replace with actual class data
+          className: `Class ${student.studentId.slice(-2)}`,
         }));
         setAbnormalStudents(studentsWithClass);
         setFilteredAbnormalStudents(studentsWithClass);
@@ -118,6 +146,10 @@ const AbnormalHealthCheck = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAbnormalStudents();
+  }, [campaignFilter]);
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -126,7 +158,7 @@ const AbnormalHealthCheck = () => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
     if (tabValue === 0) {
-      filterAbnormalStudents(query, classFilter);
+      filterAbnormalStudents(query, classFilter, campaignFilter);
     } else {
       filterAppointments(query, startDate, endDate, statusFilter);
     }
@@ -135,7 +167,13 @@ const AbnormalHealthCheck = () => {
   const handleClassChange = (e) => {
     const selectedClass = e.target.value;
     setClassFilter(selectedClass);
-    filterAbnormalStudents(searchQuery, selectedClass);
+    filterAbnormalStudents(searchQuery, selectedClass, campaignFilter);
+  };
+
+  const handleCampaignChange = (e) => {
+    const selectedCampaign = e.target.value;
+    setCampaignFilter(selectedCampaign);
+    filterAbnormalStudents(searchQuery, classFilter, selectedCampaign);
   };
 
   const handleStartDateChange = (e) => {
@@ -153,10 +191,10 @@ const AbnormalHealthCheck = () => {
   const handleStatusChange = (e) => {
     const status = e.target.value;
     setStatusFilter(status);
-    filterAppointments(searchQuery, startDate, endDate, status);
+    filterAppointments(searchQuery, startDate, end, status);
   };
 
-  const filterAbnormalStudents = (search, className) => {
+  const filterAbnormalStudents = (search, className, campaignId) => {
     let filtered = [...abnormalStudents];
     if (search) {
       filtered = filtered.filter((student) =>
@@ -165,6 +203,11 @@ const AbnormalHealthCheck = () => {
     }
     if (className) {
       filtered = filtered.filter((student) => student.className === className);
+    }
+    if (campaignId) {
+      filtered = filtered.filter(
+        (student) => student.campaignId === campaignId
+      );
     }
     setFilteredAbnormalStudents(filtered);
   };
@@ -396,7 +439,7 @@ const AbnormalHealthCheck = () => {
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-      Theo dõi sau khám
+        Theo dõi sau khám
       </Typography>
       <Alert
         severity="info"
@@ -407,21 +450,24 @@ const AbnormalHealthCheck = () => {
         thông tin chính xác trước khi lưu.
       </Alert>
 
-      <Paper elevation={2} sx={{ borderRadius: 3, overflow: "hidden", bgcolor: "#fafbfc" }}>
+      <Paper
+        elevation={2}
+        sx={{ borderRadius: 3, overflow: "hidden", bgcolor: "#fafbfc" }}
+      >
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
-          sx={{ 
-            borderBottom: 1, 
-            borderColor: "divider", 
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
             bgcolor: "white",
             "& .MuiTab-root": {
               fontWeight: 600,
               textTransform: "none",
               fontSize: "15px",
               minHeight: 64,
-              py: 2
-            }
+              py: 2,
+            },
           }}
         >
           <Tab
@@ -430,10 +476,10 @@ const AbnormalHealthCheck = () => {
                 label={abnormalStudents.length}
                 color="error"
                 size="small"
-                sx={{ 
-                  mr: 1, 
+                sx={{
+                  mr: 1,
                   fontWeight: 600,
-                  fontSize: "12px"
+                  fontSize: "12px",
                 }}
               />
             }
@@ -446,10 +492,10 @@ const AbnormalHealthCheck = () => {
                 label={appointments.length}
                 color="primary"
                 size="small"
-                sx={{ 
-                  mr: 1, 
+                sx={{
+                  mr: 1,
                   fontWeight: 600,
-                  fontSize: "12px"
+                  fontSize: "12px",
                 }}
               />
             }
@@ -461,23 +507,23 @@ const AbnormalHealthCheck = () => {
         {tabValue === 0 && (
           <Box sx={{ p: 3, bgcolor: "#fafbfc" }}>
             {/* Filter Section */}
-            <Paper 
-              elevation={1} 
-              sx={{ 
-                mb: 3, 
-                bgcolor: "white", 
+            <Paper
+              elevation={1}
+              sx={{
+                mb: 3,
+                bgcolor: "white",
                 borderRadius: 2,
-                border: "1px solid #e3e8ef"
+                border: "1px solid #e3e8ef",
               }}
             >
               <Box sx={{ p: 3 }}>
                 <Typography
                   variant="h6"
-                  sx={{ 
-                    mb: 3, 
+                  sx={{
+                    mb: 3,
                     color: "#1a202c",
                     fontWeight: 600,
-                    fontSize: "18px"
+                    fontSize: "18px",
                   }}
                 >
                   🔍 Bộ Lọc
@@ -501,44 +547,105 @@ const AbnormalHealthCheck = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 2,
-                          bgcolor: "#f8fafc"
-                        }
+                          bgcolor: "#f8fafc",
+                        },
                       }}
                     />
                   </Grid>
-                  
-                  
+                  <Grid
+                    item
+                    xs={12}
+                    md={3}
+                    sx={{ width: "auto", minWidth: 200 }}
+                  >
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Chiến dịch</InputLabel>
+                      <Select
+                        value={campaignFilter}
+                        onChange={handleCampaignChange}
+                        label="Chiến dịch"
+                        sx={{
+                          borderRadius: 2,
+                          bgcolor: "#f8fafc",
+                        }}
+                      >
+                        <MenuItem value="">Tất cả</MenuItem>
+                        {campaigns.map((campaign) => (
+                          <MenuItem key={campaign._id} value={campaign._id}>
+                            {campaign.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
                 </Grid>
               </Box>
             </Paper>
 
             {/* Table Section */}
-            <Paper 
-              elevation={1} 
-              sx={{ 
+            <Paper
+              elevation={1}
+              sx={{
                 borderRadius: 2,
                 border: "1px solid #e3e8ef",
-                overflow: "hidden"
+                overflow: "hidden",
               }}
             >
               <TableContainer>
                 <Table>
                   <TableHead sx={{ bgcolor: "#f8fafc" }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
                         STT
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
                         Thông Tin Học Sinh
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Mã Chiến Dịch
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
                         Ngày Sinh
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
                         Kiểm Tra Gần Nhất
                       </TableCell>
                       <TableCell
-                        sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
                         align="center"
                       >
                         Thao Tác
@@ -551,9 +658,9 @@ const AbnormalHealthCheck = () => {
                         <TableRow
                           key={student.studentId}
                           hover
-                          sx={{ 
+                          sx={{
                             "&:hover": { bgcolor: "#f8fafc" },
-                            borderBottom: "1px solid #f1f5f9"
+                            borderBottom: "1px solid #f1f5f9",
                           }}
                         >
                           <TableCell sx={{ color: "#6b7280", fontWeight: 500 }}>
@@ -568,13 +675,17 @@ const AbnormalHealthCheck = () => {
                                   width: 40,
                                   height: 40,
                                   fontSize: "16px",
-                                  fontWeight: 600
+                                  fontWeight: 600,
                                 }}
                               >
                                 {student.studentName.charAt(0).toUpperCase()}
                               </Avatar>
                               <Box>
-                                <Typography variant="body2" fontWeight="600" color="#1f2937">
+                                <Typography
+                                  variant="body2"
+                                  fontWeight="600"
+                                  color="#1f2937"
+                                >
                                   {student.studentName}
                                 </Typography>
                                 <Typography variant="caption" color="#6b7280">
@@ -584,15 +695,22 @@ const AbnormalHealthCheck = () => {
                             </Box>
                           </TableCell>
                           <TableCell>
+                            <Typography variant="body2" color="#6b7280">
+                              {student.campaignId}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
                             <Chip
-                              label={dayjs(student.studentDateOfBirth).format("DD/MM/YYYY")}
+                              label={dayjs(student.studentDateOfBirth).format(
+                                "DD/MM/YYYY"
+                              )}
                               color="default"
                               size="small"
                               variant="outlined"
-                              sx={{ 
+                              sx={{
                                 bgcolor: "#f3f4f6",
                                 borderRadius: 2,
-                                fontWeight: 500
+                                fontWeight: 500,
                               }}
                             />
                           </TableCell>
@@ -605,8 +723,14 @@ const AbnormalHealthCheck = () => {
                                   color: "#6b7280",
                                 }}
                               />
-                              <Typography variant="body2" color="#374151" fontWeight="500">
-                                {new Date(student.latestCheckupDate).toLocaleString("vi-VN", {
+                              <Typography
+                                variant="body2"
+                                color="#374151"
+                                fontWeight="500"
+                              >
+                                {new Date(
+                                  student.latestCheckupDate
+                                ).toLocaleString("vi-VN", {
                                   day: "2-digit",
                                   month: "2-digit",
                                   year: "numeric",
@@ -621,13 +745,15 @@ const AbnormalHealthCheck = () => {
                               variant="contained"
                               color="primary"
                               startIcon={<Visibility />}
-                              onClick={() => handleViewDetails(student.studentId)}
-                              sx={{ 
+                              onClick={() =>
+                                handleViewDetails(student.studentId)
+                              }
+                              sx={{
                                 textTransform: "none",
                                 borderRadius: 2,
                                 fontWeight: 600,
                                 px: 3,
-                                py: 1
+                                py: 1,
                               }}
                             >
                               Xem Chi Tiết
@@ -639,7 +765,11 @@ const AbnormalHealthCheck = () => {
                       <TableRow>
                         <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                           <Box sx={{ textAlign: "center" }}>
-                            <Typography color="textSecondary" variant="h6" sx={{ mb: 1 }}>
+                            <Typography
+                              color="textSecondary"
+                              variant="h6"
+                              sx={{ mb: 1 }}
+                            >
                               😊 Tuyệt vời!
                             </Typography>
                             <Typography color="textSecondary" variant="body1">
@@ -659,23 +789,23 @@ const AbnormalHealthCheck = () => {
         {tabValue === 1 && (
           <Box sx={{ p: 3, bgcolor: "#fafbfc" }}>
             {/* Filter Section */}
-            <Paper 
-              elevation={1} 
-              sx={{ 
-                mb: 3, 
-                bgcolor: "white", 
+            <Paper
+              elevation={1}
+              sx={{
+                mb: 3,
+                bgcolor: "white",
                 borderRadius: 2,
-                border: "1px solid #e3e8ef"
+                border: "1px solid #e3e8ef",
               }}
             >
               <Box sx={{ p: 3 }}>
                 <Typography
                   variant="h6"
-                  sx={{ 
-                    mb: 3, 
+                  sx={{
+                    mb: 3,
                     color: "#1a202c",
                     fontWeight: 600,
-                    fontSize: "18px"
+                    fontSize: "18px",
                   }}
                 >
                   📅 Bộ Lọc Lịch Hẹn
@@ -699,8 +829,8 @@ const AbnormalHealthCheck = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 2,
-                          bgcolor: "#f8fafc"
-                        }
+                          bgcolor: "#f8fafc",
+                        },
                       }}
                     />
                   </Grid>
@@ -724,8 +854,8 @@ const AbnormalHealthCheck = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 2,
-                          bgcolor: "#f8fafc"
-                        }
+                          bgcolor: "#f8fafc",
+                        },
                       }}
                     />
                   </Grid>
@@ -749,12 +879,12 @@ const AbnormalHealthCheck = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 2,
-                          bgcolor: "#f8fafc"
-                        }
+                          bgcolor: "#f8fafc",
+                        },
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} md={2} sx={{width: "20%"}}>
+                  <Grid item xs={12} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Trạng thái</InputLabel>
                       <Select
@@ -763,7 +893,7 @@ const AbnormalHealthCheck = () => {
                         label="Trạng thái"
                         sx={{
                           borderRadius: 2,
-                          bgcolor: "#f8fafc"
+                          bgcolor: "#f8fafc",
                         }}
                       >
                         <MenuItem value="">Tất cả</MenuItem>
@@ -773,32 +903,107 @@ const AbnormalHealthCheck = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
                 </Grid>
               </Box>
             </Paper>
 
             {/* Table Section */}
-            <Paper 
-              elevation={1} 
-              sx={{ 
+            <Paper
+              elevation={1}
+              sx={{
                 borderRadius: 2,
                 border: "1px solid #e3e8ef",
-                overflow: "hidden"
+                overflow: "hidden",
               }}
             >
               <TableContainer>
                 <Table>
                   <TableHead sx={{ bgcolor: "#f8fafc" }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>STT</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>Học Sinh</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>Thời Gian Hẹn</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>Phụ Huynh</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }}>Địa Điểm</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }} align="center">Trạng Thái</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }} align="center">Ưu Tiên</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#374151", fontSize: "14px" }} align="center">Thao Tác</TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        STT
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Học Sinh
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Mã Chiến Dịch
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Thời Gian Hẹn
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Phụ Huynh
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Địa Điểm
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                        align="center"
+                      >
+                        Trạng Thái
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                        align="center"
+                      >
+                        Ưu Tiên
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontSize: "14px",
+                        }}
+                        align="center"
+                      >
+                        Thao Tác
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -807,9 +1012,9 @@ const AbnormalHealthCheck = () => {
                         <TableRow
                           key={appointment._id}
                           hover
-                          sx={{ 
+                          sx={{
                             "&:hover": { bgcolor: "#f8fafc" },
-                            borderBottom: "1px solid #f1f5f9"
+                            borderBottom: "1px solid #f1f5f9",
                           }}
                         >
                           <TableCell sx={{ color: "#6b7280", fontWeight: 500 }}>
@@ -824,21 +1029,40 @@ const AbnormalHealthCheck = () => {
                                   width: 40,
                                   height: 40,
                                   fontSize: "16px",
-                                  fontWeight: 600
+                                  fontWeight: 600,
                                 }}
                               >
-                                {appointment.studentId.fullName.charAt(0).toUpperCase()}
+                                {appointment.studentId.fullName
+                                  .charAt(0)
+                                  .toUpperCase()}
                               </Avatar>
-                              <Typography variant="body2" fontWeight="600" color="#1f2937">
+                              <Typography
+                                variant="body2"
+                                fontWeight="600"
+                                color="#1f2937"
+                              >
                                 {appointment.studentId.fullName}
                               </Typography>
                             </Box>
                           </TableCell>
                           <TableCell>
+                            <Typography variant="body2" color="#6b7280">
+                              {appointment.campaignId}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <Schedule sx={{ mr: 1.5, fontSize: 18, color: "#6b7280" }} />
-                              <Typography variant="body2" color="#374151" fontWeight="500">
-                                {new Date(appointment.meetingTime).toLocaleString("vi-VN", {
+                              <Schedule
+                                sx={{ mr: 1.5, fontSize: 18, color: "#6b7280" }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="#374151"
+                                fontWeight="500"
+                              >
+                                {new Date(
+                                  appointment.meetingTime
+                                ).toLocaleString("vi-VN", {
                                   day: "2-digit",
                                   month: "2-digit",
                                   year: "numeric",
@@ -849,7 +1073,11 @@ const AbnormalHealthCheck = () => {
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" fontWeight="500" color="#374151">
+                            <Typography
+                              variant="body2"
+                              fontWeight="500"
+                              color="#374151"
+                            >
                               {appointment.parentId.username}
                             </Typography>
                           </TableCell>
@@ -864,9 +1092,9 @@ const AbnormalHealthCheck = () => {
                               color={getStatusColor(appointment.status)}
                               size="small"
                               variant="filled"
-                              sx={{ 
+                              sx={{
                                 fontWeight: 600,
-                                borderRadius: 2
+                                borderRadius: 2,
                               }}
                             />
                           </TableCell>
@@ -876,29 +1104,40 @@ const AbnormalHealthCheck = () => {
                                 label="⚡ Sắp Tới"
                                 color="warning"
                                 size="small"
-                                sx={{ 
+                                sx={{
                                   fontWeight: 600,
-                                  borderRadius: 2
+                                  borderRadius: 2,
                                 }}
                               />
                             )}
                           </TableCell>
                           <TableCell align="center">
-                            <Box sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap" }}>
-                              {isUpcomingAppointment(appointment.meetingTime) && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 1,
+                                justifyContent: "center",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              {isUpcomingAppointment(
+                                appointment.meetingTime
+                              ) && (
                                 <>
                                   <Button
                                     variant="contained"
                                     color="primary"
                                     startIcon={<Visibility />}
-                                    onClick={() => handleViewAppointment(appointment._id)}
-                                    sx={{ 
+                                    onClick={() =>
+                                      handleViewAppointment(appointment._id)
+                                    }
+                                    sx={{
                                       textTransform: "none",
                                       borderRadius: 2,
                                       fontWeight: 600,
                                       fontSize: "12px",
                                       px: 2,
-                                      py: 0.5
+                                      py: 0.5,
                                     }}
                                     size="small"
                                   >
@@ -909,14 +1148,16 @@ const AbnormalHealthCheck = () => {
                                       variant="outlined"
                                       color="error"
                                       startIcon={<Close />}
-                                      onClick={() => handleCancelAppointment(appointment._id)}
-                                      sx={{ 
+                                      onClick={() =>
+                                        handleCancelAppointment(appointment._id)
+                                      }
+                                      sx={{
                                         textTransform: "none",
                                         borderRadius: 2,
                                         fontWeight: 600,
                                         fontSize: "12px",
                                         px: 2,
-                                        py: 0.5
+                                        py: 0.5,
                                       }}
                                       size="small"
                                     >
@@ -925,20 +1166,25 @@ const AbnormalHealthCheck = () => {
                                   )}
                                 </>
                               )}
-                              {new Date(appointment.meetingTime) <= currentDate && (
+                              {new Date(appointment.meetingTime) <=
+                                currentDate && (
                                 <>
                                   {appointment.status === "SCHEDULED" && (
                                     <Button
                                       variant="contained"
                                       color="success"
-                                      onClick={() => handleCompleteAppointment(appointment._id)}
-                                      sx={{ 
+                                      onClick={() =>
+                                        handleCompleteAppointment(
+                                          appointment._id
+                                        )
+                                      }
+                                      sx={{
                                         textTransform: "none",
                                         borderRadius: 2,
                                         fontWeight: 600,
                                         fontSize: "12px",
                                         px: 2,
-                                        py: 0.5
+                                        py: 0.5,
                                       }}
                                       size="small"
                                     >
@@ -951,14 +1197,16 @@ const AbnormalHealthCheck = () => {
                                         variant="contained"
                                         color="primary"
                                         startIcon={<Visibility />}
-                                        onClick={() => handleViewAppointment(appointment._id)}
-                                        sx={{ 
+                                        onClick={() =>
+                                          handleViewAppointment(appointment._id)
+                                        }
+                                        sx={{
                                           textTransform: "none",
                                           borderRadius: 2,
                                           fontWeight: 600,
                                           fontSize: "12px",
                                           px: 2,
-                                          py: 0.5
+                                          py: 0.5,
                                         }}
                                         size="small"
                                       >
@@ -967,14 +1215,16 @@ const AbnormalHealthCheck = () => {
                                       <Button
                                         variant="outlined"
                                         color="secondary"
-                                        onClick={() => handleAddNote(appointment._id)}
-                                        sx={{ 
+                                        onClick={() =>
+                                          handleAddNote(appointment._id)
+                                        }
+                                        sx={{
                                           textTransform: "none",
                                           borderRadius: 2,
                                           fontWeight: 600,
                                           fontSize: "12px",
                                           px: 2,
-                                          py: 0.5
+                                          py: 0.5,
                                         }}
                                         size="small"
                                       >
@@ -990,9 +1240,13 @@ const AbnormalHealthCheck = () => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                        <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                           <Box sx={{ textAlign: "center" }}>
-                            <Typography color="textSecondary" variant="h6" sx={{ mb: 1 }}>
+                            <Typography
+                              color="textSecondary"
+                              variant="h6"
+                              sx={{ mb: 1 }}
+                            >
                               📅 Không có lịch hẹn
                             </Typography>
                             <Typography color="textSecondary" variant="body1">
@@ -1016,35 +1270,56 @@ const AbnormalHealthCheck = () => {
           maxWidth="md"
           fullWidth
           PaperProps={{
-            sx: { borderRadius: 3 }
+            sx: { borderRadius: 3 },
           }}
         >
           <DialogTitle
-            sx={{ 
-              bgcolor: "#f0f9ff", 
-              py: 3, 
+            sx={{
+              bgcolor: "#f0f9ff",
+              py: 3,
               borderBottom: "1px solid #e0e7ff",
-              borderRadius: "12px 12px 0 0"
+              borderRadius: "12px 12px 0 0",
             }}
           >
             <Typography variant="h5" fontWeight="700" sx={{ color: "#1e40af" }}>
               🏥 Chi Tiết Kiểm Tra Sức Khỏe Bất Thường
             </Typography>
           </DialogTitle>
-          <DialogContent dividers sx={{ maxHeight: "70vh", overflow: "auto", p: 3 }}>
+          <DialogContent
+            dividers
+            sx={{ maxHeight: "70vh", overflow: "auto", p: 3 }}
+          >
             {selectedStudent && selectedStudent.record && (
               <Box display="flex" flexDirection="column" gap={3}>
                 {/* Student Info Header */}
                 <Paper
                   elevation={1}
-                  sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 3, border: "1px solid #e2e8f0" }}
+                  sx={{
+                    p: 3,
+                    bgcolor: "#f8fafc",
+                    borderRadius: 3,
+                    border: "1px solid #e2e8f0",
+                  }}
                 >
                   <Box display="flex" alignItems="center" gap={3}>
-                    <Avatar sx={{ width: 70, height: 70, bgcolor: "#3b82f6", fontSize: "24px", fontWeight: 700 }}>
+                    <Avatar
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        bgcolor: "#3b82f6",
+                        fontSize: "24px",
+                        fontWeight: 700,
+                      }}
+                    >
                       {selectedStudent.studentName.charAt(0).toUpperCase()}
                     </Avatar>
                     <Box flex={1}>
-                      <Typography variant="h5" fontWeight="700" color="#1f2937" sx={{ mb: 1 }}>
+                      <Typography
+                        variant="h5"
+                        fontWeight="700"
+                        color="#1f2937"
+                        sx={{ mb: 1 }}
+                      >
                         {selectedStudent.studentName}
                       </Typography>
                       <Grid container spacing={2}>
@@ -1058,9 +1333,18 @@ const AbnormalHealthCheck = () => {
                             <strong>Lớp:</strong> {selectedStudent.className}
                           </Typography>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={6}>
                           <Typography variant="body2" color="#6b7280">
-                            <strong>Ngày sinh:</strong> {new Date(selectedStudent.studentDateOfBirth).toLocaleDateString("vi-VN", {
+                            <strong>Mã Chiến Dịch:</strong>{" "}
+                            {selectedStudent.campaignId}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="#6b7280">
+                            <strong>Ngày sinh:</strong>{" "}
+                            {new Date(
+                              selectedStudent.studentDateOfBirth
+                            ).toLocaleDateString("vi-VN", {
                               day: "2-digit",
                               month: "2-digit",
                               year: "numeric",
@@ -1075,7 +1359,9 @@ const AbnormalHealthCheck = () => {
                 {/* Checkup Info */}
                 <TextField
                   label="📅 Ngày kiểm tra gần nhất"
-                  value={new Date(selectedStudent.latestCheckupDate).toLocaleDateString("vi-VN", {
+                  value={new Date(
+                    selectedStudent.latestCheckupDate
+                  ).toLocaleDateString("vi-VN", {
                     day: "2-digit",
                     month: "2-digit",
                     year: "numeric",
@@ -1088,14 +1374,18 @@ const AbnormalHealthCheck = () => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 2,
-                      bgcolor: "#f1f5f9"
-                    }
+                      bgcolor: "#f1f5f9",
+                    },
                   }}
                 />
 
                 {/* Abnormal Results */}
                 <Box>
-                  <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: "#dc2626" }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="600"
+                    sx={{ mb: 2, color: "#dc2626" }}
+                  >
                     ⚠️ Kết Quả Bất Thường
                   </Typography>
                   {selectedStudent.record.resultsData
@@ -1112,13 +1402,19 @@ const AbnormalHealthCheck = () => {
                           border: "1px solid #fecaca",
                         }}
                       >
-                        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: "#dc2626" }}>
+                        <Typography
+                          variant="h6"
+                          fontWeight="600"
+                          sx={{ mb: 2, color: "#dc2626" }}
+                        >
                           {index + 1}. {result.itemName}
                         </Typography>
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={6}>
                             <TextField
-                              label={`${result.itemName} (${result.unit || ""})`}
+                              label={`${result.itemName} (${
+                                result.unit || ""
+                              })`}
                               value={result.value || "-"}
                               disabled
                               fullWidth
@@ -1126,8 +1422,8 @@ const AbnormalHealthCheck = () => {
                               sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 2,
-                                  bgcolor: "white"
-                                }
+                                  bgcolor: "white",
+                                },
                               }}
                             />
                           </Grid>
@@ -1141,15 +1437,17 @@ const AbnormalHealthCheck = () => {
                               sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 2,
-                                  bgcolor: "white"
-                                }
+                                  bgcolor: "white",
+                                },
                               }}
                             />
                           </Grid>
                         </Grid>
                       </Paper>
                     ))}
-                  {selectedStudent.record.resultsData.filter((result) => result.isAbnormal).length === 0 && (
+                  {selectedStudent.record.resultsData.filter(
+                    (result) => result.isAbnormal
+                  ).length === 0 && (
                     <Alert severity="success" sx={{ borderRadius: 2 }}>
                       ✅ Không có kết quả bất thường nào được ghi nhận
                     </Alert>
@@ -1166,7 +1464,10 @@ const AbnormalHealthCheck = () => {
                     border: "1px solid #bfdbfe",
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: "#1e40af", mb: 3, fontWeight: 600 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#1e40af", mb: 3, fontWeight: 600 }}
+                  >
                     📅 Lên Lịch Tái Khám
                   </Typography>
                   <Grid container spacing={2}>
@@ -1179,13 +1480,15 @@ const AbnormalHealthCheck = () => {
                         value={appointmentData.meetingTime}
                         onChange={handleAppointmentChange}
                         InputLabelProps={{ shrink: true }}
-                        inputProps={{ min: currentDate.toISOString().slice(0, 16) }}
+                        inputProps={{
+                          min: currentDate.toISOString().slice(0, 16),
+                        }}
                         variant="outlined"
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 2,
-                            bgcolor: "white"
-                          }
+                            bgcolor: "white",
+                          },
                         }}
                       />
                     </Grid>
@@ -1195,18 +1498,35 @@ const AbnormalHealthCheck = () => {
                         label="📍 Địa điểm"
                         name="location"
                         value={appointmentData.location}
-                        onChange={handleAppointmentChange}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 200) {
+                            handleAppointmentChange(e);
+                          }
+                        }}
                         variant="outlined"
                         placeholder="Nhập địa điểm..."
+                        inputProps={{ minLength: 4, maxLength: 200 }}
+                        error={
+                          appointmentData.location.length > 0 &&
+                          appointmentData.location.length < 4
+                        }
+                        helperText={
+                          appointmentData.location.length > 0 &&
+                          appointmentData.location.length < 4
+                            ? "Địa điểm phải có ít nhất 4 ký tự"
+                            : ""
+                        }
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 2,
-                            bgcolor: "white"
-                          }
+                            bgcolor: "white",
+                          },
                         }}
                       />
                     </Grid>
-                    <Grid item xs={12} sx={{width: "100%"}}>
+
+                    <Grid item xs={12} sx={{ width: "100%" }}>
                       <TextField
                         fullWidth
                         label="📝 Ghi chú"
@@ -1220,8 +1540,8 @@ const AbnormalHealthCheck = () => {
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 2,
-                            bgcolor: "white"
-                          }
+                            bgcolor: "white",
+                          },
                         }}
                       />
                     </Grid>
@@ -1236,10 +1556,10 @@ const AbnormalHealthCheck = () => {
               color="inherit"
               variant="outlined"
               size="large"
-              sx={{ 
+              sx={{
                 borderRadius: 2,
                 fontWeight: 600,
-                px: 4
+                px: 4,
               }}
             >
               Hủy
@@ -1249,12 +1569,14 @@ const AbnormalHealthCheck = () => {
               color="primary"
               variant="contained"
               size="large"
-              disabled={!appointmentData.meetingTime || !appointmentData.location}
-              sx={{ 
+              disabled={
+                !appointmentData.meetingTime || !appointmentData.location
+              }
+              sx={{
                 minWidth: "200px",
                 borderRadius: 2,
                 fontWeight: 600,
-                px: 4
+                px: 4,
               }}
             >
               📅 Lên Lịch Hẹn
@@ -1270,35 +1592,90 @@ const AbnormalHealthCheck = () => {
           fullWidth
           PaperProps={{ sx: { borderRadius: 3 } }}
         >
-          <DialogTitle sx={{ bgcolor: "#f0f9ff", py: 3, borderBottom: "1px solid #e0e7ff" }}>
+          <DialogTitle
+            sx={{
+              bgcolor: "#f0f9ff",
+              py: 3,
+              borderBottom: "1px solid #e0e7ff",
+            }}
+          >
             <Typography variant="h5" fontWeight="700" sx={{ color: "#1e40af" }}>
               📋 Chi Tiết Cuộc Hẹn
             </Typography>
           </DialogTitle>
-          <DialogContent dividers sx={{ maxHeight: "70vh", overflow: "auto", p: 3 }}>
+          <DialogContent
+            dividers
+            sx={{ maxHeight: "70vh", overflow: "auto", p: 3 }}
+          >
             {selectedAppointment && (
               <Box display="flex" flexDirection="column" gap={3}>
-                <Paper elevation={1} sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 3, border: "1px solid #e2e8f0" }}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 3,
+                    bgcolor: "#f8fafc",
+                    borderRadius: 3,
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
                   <Box display="flex" alignItems="center" gap={3}>
-                    <Avatar sx={{ width: 70, height: 70, bgcolor: "#3b82f6", fontSize: "24px", fontWeight: 700 }}>
-                      {selectedAppointment.studentId.fullName.charAt(0).toUpperCase()}
+                    <Avatar
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        bgcolor: "#3b82f6",
+                        fontSize: "24px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {selectedAppointment.studentId.fullName
+                        .charAt(0)
+                        .toUpperCase()}
                     </Avatar>
                     <Box>
-                      <Typography variant="h5" fontWeight="700" color="#1f2937" sx={{ mb: 1 }}>
+                      <Typography
+                        variant="h5"
+                        fontWeight="700"
+                        color="#1f2937"
+                        sx={{ mb: 1 }}
+                      >
                         {selectedAppointment.studentId.fullName}
                       </Typography>
-                      <Typography variant="body2" color="#6b7280" sx={{ mb: 0.5 }}>
-                        <strong>Mã HS:</strong> {selectedAppointment.studentId._id}
+                      <Typography
+                        variant="body2"
+                        color="#6b7280"
+                        sx={{ mb: 0.5 }}
+                      >
+                        <strong>Mã HS:</strong>{" "}
+                        {selectedAppointment.studentId._id}
                       </Typography>
-                      <Typography variant="body2" color="#6b7280" sx={{ mb: 0.5 }}>
-                        <strong>Ngày sinh:</strong> {new Date(selectedAppointment.studentId.dateOfBirth).toLocaleDateString("vi-VN", {
+                      {/* <Typography
+                        variant="body2"
+                        color="#6b7280"
+                        sx={{ mb: 0.5 }}
+                      >
+                        <strong>Mã Chiến Dịch:</strong>{" "}
+                        {selectedAppointment.campaignId}
+                      </Typography> */}
+                      <Typography
+                        variant="body2"
+                        color="#6b7280"
+                        sx={{ mb: 0.5 }}
+                      >
+                        <strong>Ngày sinh:</strong>{" "}
+                        {new Date(
+                          selectedAppointment.studentId.dateOfBirth
+                        ).toLocaleDateString("vi-VN", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
                         })}
                       </Typography>
                       <Typography variant="body2" color="#6b7280">
-                        <strong>Giới tính:</strong> {selectedAppointment.studentId.gender === "MALE" ? "Nam" : "Nữ"}
+                        <strong>Giới tính:</strong>{" "}
+                        {selectedAppointment.studentId.gender === "MALE"
+                          ? "Nam"
+                          : "Nữ"}
                       </Typography>
                     </Box>
                   </Box>
@@ -1308,7 +1685,9 @@ const AbnormalHealthCheck = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="⏰ Thời gian hẹn"
-                      value={new Date(selectedAppointment.meetingTime).toLocaleString("vi-VN", {
+                      value={new Date(
+                        selectedAppointment.meetingTime
+                      ).toLocaleString("vi-VN", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
@@ -1318,7 +1697,12 @@ const AbnormalHealthCheck = () => {
                       disabled
                       fullWidth
                       variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1328,10 +1712,15 @@ const AbnormalHealthCheck = () => {
                       disabled
                       fullWidth
                       variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
-                  <Grid item xs={12} sx={{width: "100%"}}>
+                  <Grid item xs={12}>
                     <TextField
                       label="📝 Ghi chú trước hẹn"
                       value={selectedAppointment.notes || "-"}
@@ -1340,10 +1729,15 @@ const AbnormalHealthCheck = () => {
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
-                  <Grid item xs={12} sx={{width: "100%"}}>
+                  <Grid item xs={12}>
                     <TextField
                       label="📋 Ghi chú sau hẹn"
                       value={selectedAppointment.afterMeetingNotes || "-"}
@@ -1352,7 +1746,12 @@ const AbnormalHealthCheck = () => {
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1362,7 +1761,12 @@ const AbnormalHealthCheck = () => {
                       disabled
                       fullWidth
                       variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1372,7 +1776,12 @@ const AbnormalHealthCheck = () => {
                       disabled
                       fullWidth
                       variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f1f5f9" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -1392,8 +1801,20 @@ const AbnormalHealthCheck = () => {
         </Dialog>
 
         {/* Dialog Hoàn Thành */}
-        <Dialog open={openCompleteDialog} onClose={handleCloseCompleteDialog} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-          <DialogTitle sx={{ bgcolor: "#f0fdf4", py: 3, borderBottom: "1px solid #dcfce7" }}>
+        <Dialog
+          open={openCompleteDialog}
+          onClose={handleCloseCompleteDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3 } }}
+        >
+          <DialogTitle
+            sx={{
+              bgcolor: "#f0fdf4",
+              py: 3,
+              borderBottom: "1px solid #dcfce7",
+            }}
+          >
             <Typography variant="h5" fontWeight="700" sx={{ color: "#15803d" }}>
               ✅ Hoàn Thành Cuộc Hẹn
             </Typography>
@@ -1404,12 +1825,19 @@ const AbnormalHealthCheck = () => {
               label="📝 Lý do hoàn thành"
               name="reason"
               value={completeData.reason}
-              onChange={(e) => setCompleteData((prev) => ({ ...prev, reason: e.target.value }))}
+              onChange={(e) =>
+                setCompleteData((prev) => ({ ...prev, reason: e.target.value }))
+              }
               multiline
               rows={4}
               variant="outlined"
               placeholder="Nhập lý do hoàn thành..."
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f9fafb" } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  bgcolor: "#f9fafb",
+                },
+              }}
             />
           </DialogContent>
           <DialogActions sx={{ p: 3, bgcolor: "#f8fafc", gap: 2 }}>
@@ -1428,7 +1856,12 @@ const AbnormalHealthCheck = () => {
               variant="contained"
               size="large"
               disabled={!completeData.reason}
-              sx={{ minWidth: "200px", borderRadius: 2, fontWeight: 600, px: 4 }}
+              sx={{
+                minWidth: "200px",
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 4,
+              }}
             >
               ✅ Xác Nhận
             </Button>
@@ -1436,8 +1869,20 @@ const AbnormalHealthCheck = () => {
         </Dialog>
 
         {/* Dialog Thêm Ghi Chú */}
-        <Dialog open={openNoteDialog} onClose={handleCloseNoteDialog} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-          <DialogTitle sx={{ bgcolor: "#fef3c7", py: 3, borderBottom: "1px solid #fde68a" }}>
+        <Dialog
+          open={openNoteDialog}
+          onClose={handleCloseNoteDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3 } }}
+        >
+          <DialogTitle
+            sx={{
+              bgcolor: "#fef3c7",
+              py: 3,
+              borderBottom: "1px solid #fde68a",
+            }}
+          >
             <Typography variant="h5" fontWeight="700" sx={{ color: "#b45309" }}>
               📝 Thêm Ghi Chú Sau Hẹn
             </Typography>
@@ -1448,14 +1893,39 @@ const AbnormalHealthCheck = () => {
               label="📋 Ghi chú sau hẹn"
               name="afterMeetingNotes"
               value={noteData.afterMeetingNotes}
-              onChange={(e) => setNoteData((prev) => ({ ...prev, afterMeetingNotes: e.target.value }))}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 200) {
+                  setNoteData((prev) => ({
+                    ...prev,
+                    afterMeetingNotes: value,
+                  }));
+                }
+              }}
               multiline
               rows={5}
               variant="outlined"
               placeholder="Nhập ghi chú sau hẹn..."
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f9fafb" } }}
+              inputProps={{ minLength: 19, maxLength: 200 }}
+              error={
+                noteData.afterMeetingNotes.length > 0 &&
+                noteData.afterMeetingNotes.length < 5
+              }
+              helperText={
+                noteData.afterMeetingNotes.length > 0 &&
+                noteData.afterMeetingNotes.length < 5
+                  ? "Ghi chú phải có ít nhất 5 ký tự"
+                  : ""
+              }
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  bgcolor: "#f9fafb",
+                },
+              }}
             />
           </DialogContent>
+
           <DialogActions sx={{ p: 3, bgcolor: "#f8fafc", gap: 2 }}>
             <Button
               onClick={handleCloseNoteDialog}
@@ -1472,7 +1942,12 @@ const AbnormalHealthCheck = () => {
               variant="contained"
               size="large"
               disabled={!noteData.afterMeetingNotes}
-              sx={{ minWidth: "200px", borderRadius: 2, fontWeight: 600, px: 4 }}
+              sx={{
+                minWidth: "200px",
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 4,
+              }}
             >
               📝 Xác Nhận
             </Button>
@@ -1480,8 +1955,20 @@ const AbnormalHealthCheck = () => {
         </Dialog>
 
         {/* Dialog Hủy Lịch Hẹn */}
-        <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-          <DialogTitle sx={{ bgcolor: "#fef2f2", py: 3, borderBottom: "1px solid #fecaca" }}>
+        <Dialog
+          open={openCancelDialog}
+          onClose={handleCloseCancelDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3 } }}
+        >
+          <DialogTitle
+            sx={{
+              bgcolor: "#fef2f2",
+              py: 3,
+              borderBottom: "1px solid #fecaca",
+            }}
+          >
             <Typography variant="h5" fontWeight="700" sx={{ color: "#dc2626" }}>
               ❌ Xác Nhận Hủy Lịch Hẹn
             </Typography>
@@ -1493,7 +1980,8 @@ const AbnormalHealthCheck = () => {
               </Typography>
             </Alert>
             <Typography variant="body1" color="#6b7280">
-              Hành động này không thể hoàn tác. Phụ huynh sẽ được thông báo về việc hủy lịch hẹn.
+              Hành động này không thể hoàn tác. Phụ huynh sẽ được thông báo về
+              việc hủy lịch hẹn.
             </Typography>
           </DialogContent>
           <DialogActions sx={{ p: 3, bgcolor: "#f8fafc", gap: 2 }}>
@@ -1511,7 +1999,12 @@ const AbnormalHealthCheck = () => {
               color="error"
               variant="contained"
               size="large"
-              sx={{ minWidth: "200px", borderRadius: 2, fontWeight: 600, px: 4 }}
+              sx={{
+                minWidth: "200px",
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 4,
+              }}
             >
               ❌ Xác Nhận Hủy
             </Button>
@@ -1519,14 +2012,26 @@ const AbnormalHealthCheck = () => {
         </Dialog>
 
         {/* Dialog Thông Báo */}
-        <Dialog open={openNotification} onClose={handleCloseNotification} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog
+          open={openNotification}
+          onClose={handleCloseNotification}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3 } }}
+        >
           <DialogTitle sx={{ bgcolor: "#f0fdf4", textAlign: "center", py: 3 }}>
             <Typography variant="h5" fontWeight="700" sx={{ color: "#15803d" }}>
               🎉 Thành Công
             </Typography>
           </DialogTitle>
           <DialogContent sx={{ p: 3 }}>
-            <Box display="flex" flexDirection="column" alignItems="center" gap={2} textAlign="center">
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+              textAlign="center"
+            >
               <CheckCircle size={48} style={{ color: "#22c55e" }} />
               <Typography variant="h6" fontWeight="600" color="#374151">
                 {notificationMessage}
