@@ -215,8 +215,10 @@ const AbnormalHealthCheck = () => {
   const filterAppointments = (search, start, end, status) => {
     let filtered = [...appointments];
     if (search) {
-      filtered = filtered.filter((appointment) =>
-        appointment.studentId.fullName.toLowerCase().includes(search)
+      filtered = filtered.filter(
+        (appointment) =>
+          appointment.studentId &&
+          appointment.studentId.fullName.toLowerCase().includes(search)
       );
     }
     if (start) {
@@ -1033,7 +1035,7 @@ const AbnormalHealthCheck = () => {
                                   fontWeight: 600,
                                 }}
                               >
-                                {appointment.studentId.fullName
+                                {appointment.studentId?.fullName
                                   .charAt(0)
                                   .toUpperCase()}
                               </Avatar>
@@ -1042,7 +1044,7 @@ const AbnormalHealthCheck = () => {
                                 fontWeight="600"
                                 color="#1f2937"
                               >
-                                {appointment.studentId.fullName}
+                                {appointment.studentId?.fullName}
                               </Typography>
                             </Box>
                           </TableCell>
@@ -1079,7 +1081,7 @@ const AbnormalHealthCheck = () => {
                               fontWeight="500"
                               color="#374151"
                             >
-                              {appointment.parentId.username}
+                              {appointment.parentId?.username}
                             </Typography>
                           </TableCell>
                           <TableCell>
