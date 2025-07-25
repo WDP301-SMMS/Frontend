@@ -17,8 +17,6 @@ const ChatSideBar = ({
   activeRoomId,
   onRoomSelect,
   currentUser,
-  selectedRoom,
-  setSelectedRoom,
   onNewChatClick, // Add this prop
 }) => {
 

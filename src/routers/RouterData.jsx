@@ -4,7 +4,6 @@ import {
   Contact,
   Profile,
   Blogs,
-  // BlogDetail,
   ParentHealthProfiles,
   ParentHealthProfileForm,
   ParentHealthProfileDetail,
@@ -15,9 +14,6 @@ import {
   VaccinHistoryManagement,
   Message,
   ManagerDashboard,
-  MedicineInventory,
-  NurseManagement,
-  StudentManagement,
   AdminDashboard,
   BlogManagement,
   UserManagement,
@@ -32,27 +28,22 @@ import {
 import NotFound from "../pages/basic-pages/NotFound";
 import DashboardHome from "~/pages/management/nurse/DashboardHome";
 import NurseDashboard from "~/pages/layout/Dashboard";
-import AdminLayout from "~/pages/management/admin/AdminLayout";
-import ManageMedications from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/ManageMedications";
 import ManageMedicalSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/ManageMedicalSupplies";
 import SendVaccinationConsent from "~/pages/management/nurse/InjectionManagement/SendVaccinationConsent";
 import PrepareVaccinationList from "~/pages/management/nurse/InjectionManagement/PrepareVaccinationList";
 
 import Settings from "../pages/setting/Profile";
 import Layout from "../pages/layout/Layout";
-import ManagementLayout from "../pages/management/Layout";
 import VaccinateRecord from "~/pages/management/nurse/InjectionManagement/VaccinateRecord";
 import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagement/PostVaccinationMonitoring";
 
 //ProtectedRoute
-import ProtectedRoute from "./ProtectedRoute";
 import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
 import { SidebarManager } from "~/pages/management/manager/SideBar";
 import CampaignsManagement from "~/pages/management/manager/CampaignsManagement";
 import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpManagement";
 import { Outlet } from "react-router";
 import NursesManagement from "~/pages/management/manager/NursesManagement";
-import MedicalSupplyCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/MedicalSupplyCRUD";
 import MedicineCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/MedicineCRUD";
 import SuppliesCRUD from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedicalSupplies/SuppliesCRUD";
 import ClassManagement from "~/pages/management/admin/ClassManagement";
@@ -64,6 +55,7 @@ import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheck
 import MedicationRequests from "~/pages/management/nurse/MedicationRequestsManagement/MedicationRequests";
 import MedicationSchedules from "~/pages/management/nurse/MedicationRequestsManagement/MedicationSchedules";
 import AppointmentHealthCheck from "~/pages/management/nurse/AppointmentManagement/AppointmentHealthCheck";
+import { HandleNavigateAuthRoutes, ProtectedRoute } from "./ProtectedRoute";
 
 const basicRoutes = [
   {
@@ -99,9 +91,23 @@ const basicRoutes = [
 ];
 
 const authenticatedRoutes = [
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
-  { path: "/forgot-password", element: <ForgotPassword /> },
+  {
+    element: <HandleNavigateAuthRoutes />,
+    children: [
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+    ],
+  },
   { path: "/complete-profile", element: <CompleteProfile /> },
 ];
 
@@ -244,7 +250,7 @@ const sharedManagementRoutes = [
   {
     path: "/management",
     element: (
-      <ProtectedRoute allowedRoles={["Nurse, Manager, Admin"]}>
+      <ProtectedRoute allowedRoles={["Nurse", "Manager", "Admin"]}>
         <NurseDashboard />
       </ProtectedRoute>
     ),
