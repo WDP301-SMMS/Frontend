@@ -4,6 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { ChangePasswordLayout } from "./components/ChangePasswordLayout";
+import { Avatar, Typography } from "@mui/material";
 
 // --- Component con ---
 export function FormField({ label, children }) {
@@ -159,11 +160,14 @@ export default function UserInfo() {
               {/* --- KẾT THÚC CẬP NHẬT --- */}
               <div className="p-8">
                 <div className="flex items-end -mt-44">
-                  <img
-                    src={`https://i.pravatar.cc/150?u=${userData._id}`}
-                    alt={userData.username}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                  />
+                  <Avatar
+                    src={userData?.avatar}
+                    sx={{ width: 126, height: 126 }}
+                  >
+                    <Typography sx={{ fontSize: 64, color: "#fff" }}>
+                      {userData?.username?.charAt(0).toUpperCase()}
+                    </Typography>
+                  </Avatar>
                   <div className="ml-6 mb-2">
                     <h2 className="text-2xl font-bold text-gray-800">
                       {userData.username}
@@ -292,7 +296,10 @@ export default function UserInfo() {
           </Form>
         )}
       </Formik>
-      <ChangePasswordLayout isOpen={isChangingPassword} onClose={() => setIsChangingPassword(false)} />
+      <ChangePasswordLayout
+        isOpen={isChangingPassword}
+        onClose={() => setIsChangingPassword(false)}
+      />
     </>
   );
 }
