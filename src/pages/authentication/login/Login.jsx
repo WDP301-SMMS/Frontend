@@ -16,7 +16,12 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, loading } = useAuth();
 
+  let handled = false;
+
   const handleLoginSuccess = async (accessToken, isNewUser, hasMissingFields) => {
+    if (handled) return;
+    handled = true;
+
     localStorage.setItem("hasGoogleLoggedIn", "true");
     await login(accessToken);
 
