@@ -116,7 +116,6 @@ export default function Chat() {
       try {
         const users = await userService.getAllUsers(role);
         const userData = users.data?.users;
-        console.log("Fetched users:", userData);
 
         if (userData && Array.isArray(userData)) {
           const filteredUsers = userData.filter((u) => u._id !== user?._id);
@@ -163,8 +162,6 @@ export default function Chat() {
   }, [user, loadRooms, getUsersToChatWith]);
 
   useEffect(() => {
-    console.log("Selected room changed:", selectedRoom);
-
     if (
       selectedRoom?.roomId &&
       selectedRoom?.senderId &&

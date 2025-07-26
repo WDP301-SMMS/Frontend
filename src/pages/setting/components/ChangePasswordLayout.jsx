@@ -40,8 +40,6 @@ export const ChangePasswordLayout = ({ isOpen, onClose }) => {
     },
   });
 
-  console.log(errors);
-
   const onSubmit = async (data) => {
     try {
       const response = await userService.changePassword(data);
