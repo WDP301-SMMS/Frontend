@@ -102,7 +102,7 @@ const Header = ({ onMenuClick }) => {
                                     {({ focus }) => (
                                         <button
                                             onClick={handleLogout}
-                                            className={`group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm duration-200 ${focus ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                                            className={`cursor-pointer group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm duration-200 ${focus ? "bg-gray-100 text-gray-900" : "text-gray-700"
                                                 }`}
                                         >
                                             <FontAwesomeIcon icon={faSignOutAlt} />

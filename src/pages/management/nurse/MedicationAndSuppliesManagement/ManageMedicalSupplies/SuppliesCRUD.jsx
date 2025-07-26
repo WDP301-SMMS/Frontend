@@ -48,7 +48,7 @@ import {
 import { CheckCircle, Pill } from "lucide-react";
 import inventoryService from "~/libs/api/services/inventory";
 
-const supplyTypes = ["Hộp", "Gói", "Cái", "Ống", "Bộ"];
+const supplyTypes = ["Cái", "Miếng", "Cuộn", "Ống", "Bộ", "Túi"];
 
 const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
   const [supplyRecords, setSupplyRecords] = useState([]);
@@ -381,8 +381,8 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
       quantity: record.totalQuantity.toString(),
       expirationDate: record.batches[0]?.expirationDate
         ? new Date(record.batches[0].expirationDate)
-            .toISOString()
-            .substring(0, 10)
+          .toISOString()
+          .substring(0, 10)
         : new Date().toISOString().substring(0, 10),
       status: record.status,
     });
@@ -535,19 +535,19 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                             record.status === "LOW_STOCK"
                               ? "Sắp hết"
                               : record.status === "OUT_OF_STOCK"
-                              ? "Hết hàng"
-                              : record.status === "DISCONTINUED"
-                              ? "Ngừng sử dụng"
-                              : "Còn hàng"
+                                ? "Hết hàng"
+                                : record.status === "DISCONTINUED"
+                                  ? "Ngừng sử dụng"
+                                  : "Còn hàng"
                           }
                           color={
                             record.status === "LOW_STOCK"
                               ? "warning"
                               : record.status === "OUT_OF_STOCK"
-                              ? "error"
-                              : record.status === "DISCONTINUED"
-                              ? "default"
-                              : "success"
+                                ? "error"
+                                : record.status === "DISCONTINUED"
+                                  ? "default"
+                                  : "success"
                           }
                           size="small"
                         />
@@ -1123,7 +1123,7 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                       <Chip
                         icon={
                           selectedRecord.status === "LOW_STOCK" ||
-                          selectedRecord.status === "OUT_OF_STOCK" ? (
+                            selectedRecord.status === "OUT_OF_STOCK" ? (
                             <Warning />
                           ) : (
                             <CheckCircle />
@@ -1133,28 +1133,28 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                           selectedRecord.status === "LOW_STOCK"
                             ? "Sắp hết hàng"
                             : selectedRecord.status === "OUT_OF_STOCK"
-                            ? "Hết hàng"
-                            : selectedRecord.status === "DISCONTINUED"
-                            ? "Ngừng sử dụng"
-                            : "Còn đủ hàng"
+                              ? "Hết hàng"
+                              : selectedRecord.status === "DISCONTINUED"
+                                ? "Ngừng sử dụng"
+                                : "Còn đủ hàng"
                         }
                         sx={{
                           bgcolor:
                             selectedRecord.status === "LOW_STOCK"
                               ? "#fef3c7"
                               : selectedRecord.status === "OUT_OF_STOCK"
-                              ? "#fee2e2"
-                              : selectedRecord.status === "DISCONTINUED"
-                              ? "#f3f4f6"
-                              : "#dcfce7",
+                                ? "#fee2e2"
+                                : selectedRecord.status === "DISCONTINUED"
+                                  ? "#f3f4f6"
+                                  : "#dcfce7",
                           color:
                             selectedRecord.status === "LOW_STOCK"
                               ? "#92400e"
                               : selectedRecord.status === "OUT_OF_STOCK"
-                              ? "#991b1b"
-                              : selectedRecord.status === "DISCONTINUED"
-                              ? "#374151"
-                              : "#166534",
+                                ? "#991b1b"
+                                : selectedRecord.status === "DISCONTINUED"
+                                  ? "#374151"
+                                  : "#166534",
                           fontWeight: 600,
                           fontSize: "1rem",
                           py: 2,
@@ -1166,10 +1166,10 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                               selectedRecord.status === "LOW_STOCK"
                                 ? "#92400e"
                                 : selectedRecord.status === "OUT_OF_STOCK"
-                                ? "#991b1b"
-                                : selectedRecord.status === "DISCONTINUED"
-                                ? "#374151"
-                                : "#166534",
+                                  ? "#991b1b"
+                                  : selectedRecord.status === "DISCONTINUED"
+                                    ? "#374151"
+                                    : "#166534",
                           },
                         }}
                       />
@@ -1330,7 +1330,7 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                               selectedRecord.batches[0]?.expirationDate
                             ) -
                               new Date()) /
-                              (1000 * 60 * 60 * 24)
+                            (1000 * 60 * 60 * 24)
                           )}{" "}
                           ngày còn lại
                         </Typography>
@@ -1482,7 +1482,7 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                         {selectedRecord.batches.map((batch, index) => {
                           const daysUntilExpiry = Math.floor(
                             (new Date(batch.expirationDate) - new Date()) /
-                              (1000 * 60 * 60 * 24)
+                            (1000 * 60 * 60 * 24)
                           );
                           const isNearExpiry = daysUntilExpiry <= 30;
 
@@ -1540,8 +1540,8 @@ const MedicalSuppliesCRUD = ({ setLastSavedRecord }) => {
                                     daysUntilExpiry > 30
                                       ? "success"
                                       : daysUntilExpiry > 0
-                                      ? "warning"
-                                      : "error"
+                                        ? "warning"
+                                        : "error"
                                   }
                                 />
                               </TableCell>

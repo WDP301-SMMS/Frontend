@@ -325,7 +325,7 @@ export const Sidebar = () => {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:shadow-md hover:transform hover:scale-[1.01] group border border-red-100 hover:border-red-200"
+            className="cursor-pointer w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:shadow-md hover:transform hover:scale-[1.01] group border border-red-100 hover:border-red-200"
           >
             <LogOut
               size={20}

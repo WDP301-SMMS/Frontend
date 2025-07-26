@@ -79,7 +79,9 @@ export const UserTabs = ({ room, isActive, onClick, unreadCount = 0 }) => {
             }}
           >
             {room?.lastMessage?.senderId === room?.currentUserId ? "Bạn: " : ""}
-            {truncateMessage(room?.lastMessage?.content)}
+            {room?.lastMessage?.type === "FILE"
+              ? "[Hình ảnh]"
+              : truncateMessage(room?.lastMessage?.content)}
           </Typography>
 
           {unreadCount > 0 && (

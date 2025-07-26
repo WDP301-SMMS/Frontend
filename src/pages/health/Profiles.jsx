@@ -95,7 +95,7 @@ const ParentHealthProfiles = () => {
       } else {
         setDialogError(
           response.message ||
-            "Không thể liên kết học sinh. Vui lòng kiểm tra lại mã."
+          "Không thể liên kết học sinh. Vui lòng kiểm tra lại mã."
         );
       }
     } catch (err) {
@@ -112,23 +112,23 @@ const ParentHealthProfiles = () => {
   const myChildrenProfiles =
     students.length > 0
       ? students.map((student) => ({
-          id: student._id,
-          studentInfo: {
-            studentId: student._id,
-            studentName: student.fullName,
-            class: student.classId ? student.classId.className : "N/A",
-            dateOfBirth: new Date(student.dateOfBirth).toLocaleDateString(
-              "vi-VN"
-            ),
-            gender:
-              student.gender === "MALE"
-                ? "Nam"
-                : student.gender === "FEMALE"
+        id: student._id,
+        studentInfo: {
+          studentId: student._id,
+          studentName: student.fullName,
+          class: student.classId ? student.classId.className : "N/A",
+          dateOfBirth: new Date(student.dateOfBirth).toLocaleDateString(
+            "vi-VN"
+          ),
+          gender:
+            student.gender === "MALE"
+              ? "Nam"
+              : student.gender === "FEMALE"
                 ? "Nữ"
                 : "Khác",
-          },
-          status: student.status,
-        }))
+        },
+        status: student.status,
+      }))
       : getCurrentParentProfiles();
 
   return (
@@ -148,7 +148,7 @@ const ParentHealthProfiles = () => {
           </div>
           <button
             onClick={handleOpenDialog}
-            className="px-4 py-2 bg-primary text-white rounded-md flex items-center hover:bg-primary-dark"
+            className="cursor-pointer px-4 py-2 bg-primary text-white rounded-md flex items-center hover:bg-primary-dark"
           >
             <Plus className="w-4 h-4 mr-2" /> Tạo hồ sơ mới
           </button>
@@ -158,11 +158,10 @@ const ParentHealthProfiles = () => {
           <nav className="flex space-x-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab("myChildren")}
-              className={`py-3 px-1 ${
-                activeTab === "myChildren"
+              className={`py-3 px-1 ${activeTab === "myChildren"
                   ? "border-b-2 border-primary text-primary"
                   : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              } font-medium text-sm`}
+                } font-medium text-sm`}
             >
               Tất cả hồ sơ ({myChildrenProfiles.length})
             </button>
@@ -197,7 +196,6 @@ const ParentHealthProfiles = () => {
                   <h3 className="font-semibold text-lg">
                     {profile.studentInfo.studentName}
                   </h3>
-                  <p className="text-sm text-gray-600">Mã số: {profile.id}</p>
                 </div>
                 <div className="p-4">
                   <div className="space-y-2">
@@ -248,7 +246,7 @@ const ParentHealthProfiles = () => {
                           state: { studentInfo: profile.studentInfo },
                         })
                       }
-                      className="text-blue-600 hover:text-blue-800 mr-4 flex items-center text-sm"
+                      className="cursor-pointer text-blue-600 hover:text-blue-800 mr-4 flex items-center text-sm"
                     >
                       <Eye className="w-4 h-4 mr-1" /> Xem chi tiết
                     </button>
@@ -258,7 +256,7 @@ const ParentHealthProfiles = () => {
                           state: { studentInfo: profile.studentInfo },
                         })
                       }
-                      className="text-indigo-600 hover:text-indigo-800 flex items-center text-sm"
+                      className="cursor-pointer text-indigo-600 hover:text-indigo-800 flex items-center text-sm"
                     >
                       <Edit className="w-4 h-4 mr-1" /> Chỉnh sửa
                     </button>
@@ -391,16 +389,15 @@ const ParentHealthProfiles = () => {
                   <div className="mt-4 flex justify-end gap-2">
                     <button
                       type="button"
-                      className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+                      className="cursor-pointer px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
                       onClick={() => setIsDialogOpen(false)}
                     >
                       Hủy
                     </button>
                     <button
                       type="button"
-                      className={`px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center ${
-                        isSubmitting ? "opacity-75 cursor-not-allowed" : ""
-                      }`}
+                      className={`cursor-pointer px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center ${isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                        }`}
                       onClick={handleClaimStudent}
                       disabled={isSubmitting}
                     >

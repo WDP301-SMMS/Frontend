@@ -21,6 +21,8 @@ export default function Chat() {
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [typingStatus, setTypingStatus] = useState({ isTyping: false, senderId: null });
+
   // Sort rooms by latest message time
   const sortRoomsByLatestMessage = (rooms) => {
     return [...rooms].sort((a, b) => {
@@ -173,22 +175,40 @@ export default function Chat() {
 
       socket.emit("joinRoom", senderId, receiverId);
 
+      // Lắng nghe tin nhắn
       const handleReceiveMessage = (message) => {
         if (message.roomId === roomId) {
           setMessages((prevMessages) => [...prevMessages, message]);
         }
-
         updateRoomLastMessage(message);
       };
 
-      socket.on("receiveMessage", handleReceiveMessage);
+      // <<< THÊM MỚI: Lắng nghe sự kiện typing
+      const handleTyping = ({ senderId }) => {
+        if (senderId !== user?._id) {
+          setTypingStatus({ isTyping: true, senderId });
+        }
+      };
 
+      const handleStopTyping = ({ senderId }) => {
+        if (senderId !== user?._id) {
+          setTypingStatus({ isTyping: false, senderId: null });
+        }
+      };
+
+      socket.on("receiveMessage", handleReceiveMessage);
+      socket.on("typing", handleTyping); // Thêm listener
+      socket.on("stopTyping", handleStopTyping); // Thêm listener
+
+      // Dọn dẹp khi component unmount hoặc phòng thay đổi
       return () => {
         socket.emit("leaveRoom", roomId);
         socket.off("receiveMessage", handleReceiveMessage);
+        socket.off("typing", handleTyping); // Dọn dẹp listener
+        socket.off("stopTyping", handleStopTyping); // Dọn dẹp listener
       };
     }
-  }, [selectedRoom, updateRoomLastMessage]);
+  }, [selectedRoom, updateRoomLastMessage, user?._id]);
 
   const handleRoomSelect = (room) => {
     setSelectedRoom(room);
@@ -368,6 +388,7 @@ export default function Chat() {
             setMessages={setMessages}
             selectedRoom={selectedRoom}
             onMessageSent={updateRoomLastMessage}
+            typingStatus={typingStatus}
           />
         </Box>
       </Paper>

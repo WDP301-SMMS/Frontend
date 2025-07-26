@@ -86,7 +86,7 @@ const ParentHealthProfileDetail = () => {
         console.error("Error fetching health profile:", error);
         setError(
           error.response?.data?.message ||
-            "Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau."
+          "Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau."
         );
       } finally {
         setLoading(false);
@@ -99,7 +99,7 @@ const ParentHealthProfileDetail = () => {
   useEffect(() => {
     // Fetch health history khi chọn năm học
     if (
-      activeTab === "history" &&
+      activeTab === "school-health-checks" || activeTab === "school-vaccinations" &&
       schoolYear &&
       profile?.studentInfo?.studentId
     ) {
@@ -152,7 +152,7 @@ const ParentHealthProfileDetail = () => {
         try {
           const resp = await getStudentHealthProfileHistory(
             location.state?.studentInfo?.studentId ||
-              profile?.studentInfo?.studentId,
+            profile?.studentInfo?.studentId,
             year
           );
           if (
@@ -192,8 +192,8 @@ const ParentHealthProfileDetail = () => {
           apiData.dateOfBirth ||
           (apiData.studentId?.dateOfBirth
             ? new Date(apiData.studentId.dateOfBirth).toLocaleDateString(
-                "vi-VN"
-              )
+              "vi-VN"
+            )
             : "Chưa có thông tin"),
         parentName: user?.username || "Chưa có thông tin",
         contactNumber: user?.phone || "Chưa có thông tin",
@@ -273,7 +273,7 @@ const ParentHealthProfileDetail = () => {
               Thông tin dị ứng
             </h2>
             {!profile.healthInfo.allergies ||
-            profile.healthInfo.allergies.length === 0 ? (
+              profile.healthInfo.allergies.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin dị ứng
               </div>
@@ -293,15 +293,15 @@ const ParentHealthProfileDetail = () => {
                       <p className="font-medium">Mức độ nghiêm trọng</p>
                       <p>
                         {allergy.severity === "mild" ||
-                        allergy.severity === "Mild"
+                          allergy.severity === "Mild"
                           ? "Nhẹ"
                           : allergy.severity === "medium" ||
                             allergy.severity === "Medium"
-                          ? "Trung bình"
-                          : allergy.severity === "severe" ||
-                            allergy.severity === "Severe"
-                          ? "Nghiêm trọng"
-                          : allergy.severity || "Không có thông tin"}
+                            ? "Trung bình"
+                            : allergy.severity === "severe" ||
+                              allergy.severity === "Severe"
+                              ? "Nghiêm trọng"
+                              : allergy.severity || "Không có thông tin"}
                       </p>
                     </div>
                     {allergy.notes && (
@@ -323,7 +323,7 @@ const ParentHealthProfileDetail = () => {
               Thông tin bệnh mãn tính
             </h2>
             {!profile.healthInfo.chronicConditions ||
-            profile.healthInfo.chronicConditions.length === 0 ? (
+              profile.healthInfo.chronicConditions.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin bệnh mãn tính
               </div>
@@ -340,8 +340,8 @@ const ParentHealthProfileDetail = () => {
                       <p>
                         {condition.diagnosedDate
                           ? new Date(
-                              condition.diagnosedDate
-                            ).toLocaleDateString("vi-VN")
+                            condition.diagnosedDate
+                          ).toLocaleDateString("vi-VN")
                           : "Không có thông tin"}
                       </p>
                     </div>
@@ -368,7 +368,7 @@ const ParentHealthProfileDetail = () => {
               Tiền sử điều trị
             </h2>
             {!profile.healthInfo.medicalHistory ||
-            profile.healthInfo.medicalHistory.length === 0 ? (
+              profile.healthInfo.medicalHistory.length === 0 ? (
               <div className="p-4 bg-gray-50 rounded-md text-gray-500">
                 Không có thông tin tiền sử điều trị
               </div>
@@ -389,8 +389,8 @@ const ParentHealthProfileDetail = () => {
                       <p>
                         {history.treatmentDate
                           ? new Date(history.treatmentDate).toLocaleDateString(
-                              "vi-VN"
-                            )
+                            "vi-VN"
+                          )
                           : "Không có thông tin"}
                       </p>
                     </div>
@@ -410,60 +410,11 @@ const ParentHealthProfileDetail = () => {
             )}
           </div>
         );
-      case "vaccination":
+      case "school-health-checks":
         return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
-              Lịch sử tiêm chủng
-            </h2>
-            {!profile.healthInfo.vaccines ||
-            profile.healthInfo.vaccines.length === 0 ? (
-              <div className="p-4 bg-gray-50 rounded-md text-gray-500">
-                Không có thông tin tiêm chủng
-              </div>
-            ) : (
-              profile.healthInfo.vaccines.map((vaccine, index) => (
-                <div key={index} className="p-4 border rounded-md">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-medium">Tên vắc-xin</p>
-                      <p>{vaccine.vaccineName || "Không có thông tin"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Mũi số</p>
-                      <p>{vaccine.doseNumber || "1"}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Ngày tiêm</p>
-                      <p>
-                        {vaccine.dateInjected
-                          ? new Date(vaccine.dateInjected).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "Không có thông tin"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Địa điểm tiêm</p>
-                      <p>{vaccine.locationInjected || "Không có thông tin"}</p>
-                    </div>
-                    {vaccine.note && (
-                      <div className="md:col-span-2">
-                        <p className="font-medium">Ghi chú</p>
-                        <p>{vaccine.note}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        );
-      case "history":
-        return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
-              Lịch sử khám & tiêm chủng
+          <div>
+            <h2 className="text-lg font-semibold border-b pb-2 mb-4">
+              Khám sức khỏe tại trường
             </h2>
             <div className="mb-4 flex items-center gap-2">
               <label className="font-medium">Năm học:</label>
@@ -484,112 +435,101 @@ const ParentHealthProfileDetail = () => {
               <div>Đang tải dữ liệu...</div>
             ) : historyError ? (
               <div className="text-red-600">{historyError}</div>
-            ) : historyData ? (
-              <>
-                {/* Khám sức khỏe */}
-                {historyData.healthChecks &&
-                  historyData.healthChecks.length > 0 && (
+            ) : historyData?.healthChecks?.length > 0 ? (
+              <div>
+                {historyData.healthChecks.map((check, idx) => (
+                  <div key={idx} className="mb-4 p-4 border rounded-md">
+                    <div className="mb-2 font-medium">{check.campaignName}</div>
+                    <div>Lớp: {check.className}</div>
                     <div>
-                      <h3 className="font-semibold text-blue-700 mb-2">
-                        Khám sức khỏe
-                      </h3>
-                      {historyData.healthChecks.map((check, idx) => (
-                        <div key={idx} className="mb-4 p-4 border rounded-md">
-                          <div className="mb-2 font-medium">
-                            {check.campaignName}
-                          </div>
-                          <div>Lớp: {check.className}</div>
-                          <div>
-                            Ngày khám:{" "}
-                            {new Date(check.checkupDate).toLocaleDateString(
-                              "vi-VN"
+                      Ngày khám:{" "}
+                      {new Date(check.checkupDate).toLocaleDateString("vi-VN")}
+                    </div>
+                    <div>Kết luận: {check.overallConclusion}</div>
+                    <div>Khuyến nghị: {check.recommendations}</div>
+                    <div>Y tá: {check.nurseName}</div>
+                    <div className="mt-2">
+                      <span className="font-medium">Chi tiết:</span>
+                      <ul className="list-disc ml-6">
+                        {check.details.map((item, i) => (
+                          <li key={i}>
+                            {item.itemName}: {item.value} {item.unit}{" "}
+                            {item.isAbnormal && (
+                              <span className="text-red-600">(Bất thường)</span>
                             )}
-                          </div>
-                          <div>Kết luận: {check.overallConclusion}</div>
-                          <div>Khuyến nghị: {check.recommendations}</div>
-                          <div>Y tá: {check.nurseName}</div>
-                          <div className="mt-2">
-                            <span className="font-medium">Chi tiết:</span>
-                            <ul className="list-disc ml-6">
-                              {check.details.map((item, i) => (
-                                <li key={i}>
-                                  {item.itemName}: {item.value} {item.unit}{" "}
-                                  {item.isAbnormal ? (
-                                    <span className="text-red-600">
-                                      (Bất thường)
-                                    </span>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      ))}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  )}
-                {/* Tiêm chủng */}
-                {historyData.vaccinations &&
-                  historyData.vaccinations.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-green-700 mb-2">
-                        Tiêm chủng
-                      </h3>
-                      {historyData.vaccinations.map((vac, idx) => (
-                        <div key={idx} className="mb-4 p-4 border rounded-md">
-                          <div className="mb-2 font-medium">
-                            {vac.campaignName}
-                          </div>
-                          <div>Tên vắc-xin: {vac.vaccineName}</div>
-                          <div>Số mũi: {vac.doseNumber}</div>
-                          <div>
-                            Ngày tiêm:{" "}
-                            {new Date(vac.administeredAt).toLocaleDateString(
-                              "vi-VN"
-                            )}
-                          </div>
-                          <div>Người tiêm: {vac.administeredBy}</div>
-                          <div>Đơn vị: {vac.organizationName}</div>
-                          <div className="mt-2">
-                            <span className="font-medium">
-                              Theo dõi sau tiêm:
-                            </span>
-                            <ul className="list-disc ml-6">
-                              {vac.observations.map((obs, i) => (
-                                <li key={i}>
-                                  {new Date(obs.observedAt).toLocaleString(
-                                    "vi-VN"
-                                  )}
-                                  : {obs.notes}{" "}
-                                  {obs.isAbnormal ? (
-                                    <span className="text-red-600">
-                                      (Bất thường)
-                                    </span>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                {/* Nếu không có dữ liệu */}
-                {(!historyData.healthChecks ||
-                  historyData.healthChecks.length === 0) &&
-                  (!historyData.vaccinations ||
-                    historyData.vaccinations.length === 0) && (
-                    <div className="text-gray-500">
-                      Không có dữ liệu lịch sử cho năm học này.
-                    </div>
-                  )}
-              </>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="text-gray-500">
-                Vui lòng chọn năm học để xem lịch sử.
+                Không có dữ liệu khám sức khỏe cho năm học này.
+              </div>
+            )}
+          </div>
+        );
+
+      case "school-vaccinations":
+        return (
+          <div>
+            <h2 className="text-lg font-semibold border-b pb-2 mb-4">
+              Tiêm chủng tại trường
+            </h2>
+            <div className="mb-4 flex items-center gap-2">
+              <label className="font-medium">Năm học:</label>
+              <select
+                value={schoolYear}
+                onChange={(e) => setSchoolYear(e.target.value)}
+                className="px-2 py-1 border rounded"
+              >
+                <option value="">Chọn năm học</option>
+                {schoolYearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {historyLoading ? (
+              <div>Đang tải dữ liệu...</div>
+            ) : historyError ? (
+              <div className="text-red-600">{historyError}</div>
+            ) : historyData?.vaccinations?.length > 0 ? (
+              <div>
+                {historyData.vaccinations.map((vac, idx) => (
+                  <div key={idx} className="mb-4 p-4 border rounded-md">
+                    <div className="mb-2 font-medium">{vac.campaignName}</div>
+                    <div>Tên vắc-xin: {vac.vaccineName}</div>
+                    <div>Số mũi: {vac.doseNumber}</div>
+                    <div>
+                      Ngày tiêm:{" "}
+                      {new Date(vac.administeredAt).toLocaleDateString("vi-VN")}
+                    </div>
+                    <div>Người tiêm: {vac.administeredBy}</div>
+                    <div>Đơn vị: {vac.organizationName}</div>
+                    <div className="mt-2">
+                      <span className="font-medium">Theo dõi sau tiêm:</span>
+                      <ul className="list-disc ml-6">
+                        {vac.observations.map((obs, i) => (
+                          <li key={i}>
+                            {new Date(obs.observedAt).toLocaleString("vi-VN")}:{" "}
+                            {obs.notes}{" "}
+                            {obs.isAbnormal && (
+                              <span className="text-red-600">(Bất thường)</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-gray-500">
+                Không có dữ liệu tiêm chủng cho năm học này.
               </div>
             )}
           </div>
@@ -608,7 +548,7 @@ const ParentHealthProfileDetail = () => {
           <div className="flex items-center">
             <button
               onClick={() => navigate("/health-profiles")}
-              className="mr-4 text-gray-600 hover:text-primary print:hidden"
+              className="cursor-pointer mr-4 text-gray-600 hover:text-primary print:hidden"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -617,9 +557,6 @@ const ParentHealthProfileDetail = () => {
                 <FileText className="mr-2 text-primary" size={24} />
                 Hồ sơ sức khỏe: {profile.studentInfo.studentName}
               </h1>
-              <p className="text-gray-600 mt-1">
-                Mã số: {profile.id} | Lớp: {profile.studentInfo.class}
-              </p>
             </div>
           </div>
           <div className="flex space-x-2 print:hidden">
@@ -628,11 +565,11 @@ const ParentHealthProfileDetail = () => {
               className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center"
               disabled={isGeneratingPdf}
             >
-              <Printer className="w-4 h-4 mr-2" /> In hồ sơ
+              <Printer className="cursor-pointer w-4 h-4 mr-2" /> In hồ sơ
             </button>
             <button
               onClick={handleExportPDF}
-              className="px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center"
+              className="cursor-pointer px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center"
               disabled={isGeneratingPdf}
             >
               {isGeneratingPdf ? (
@@ -647,8 +584,8 @@ const ParentHealthProfileDetail = () => {
               )}
             </button>
             <button
-              onClick={() => navigate(`/health-profile/${profile.id}/edit`)}
-              className="px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"
+              onClick={() => navigate(`/health-profile/${profileId}/edit`)}
+              className="cursor-pointer px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"
             >
               <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
             </button>
@@ -666,13 +603,6 @@ const ParentHealthProfileDetail = () => {
                 <div>
                   <p className="font-medium">Học sinh</p>
                   <p>{profile.studentInfo.studentName}</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <FileText className="w-5 h-5 text-gray-500 mr-2 mt-0.5" />
-                <div>
-                  <p className="font-medium">Mã số học sinh</p>
-                  <p>{profile.studentInfo.studentId}</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -712,21 +642,6 @@ const ParentHealthProfileDetail = () => {
                 </div>
               </div>
               <div className="flex items-start">
-                <User className="w-5 h-5 text-gray-500 mr-2 mt-0.5" />
-                <div>
-                  <p className="font-medium">Mối quan hệ</p>
-                  <p>
-                    {profile.studentInfo.relationship === "father"
-                      ? "Bố"
-                      : profile.studentInfo.relationship === "mother"
-                      ? "Mẹ"
-                      : profile.studentInfo.relationship === "guardian"
-                      ? "Người giám hộ"
-                      : profile.studentInfo.relationship}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start">
                 <Clock className="w-5 h-5 text-gray-500 mr-2 mt-0.5" />
                 <div>
                   <p className="font-medium">Cập nhật lần cuối</p>
@@ -741,56 +656,51 @@ const ParentHealthProfileDetail = () => {
           <nav className="-mb-px flex space-x-4 overflow-x-auto print:hidden">
             <button
               onClick={() => setActiveTab("allergies")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "allergies"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`cursor-pointer py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "allergies"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
             >
               <AlertCircle className="w-4 h-4 inline mr-1" /> Dị ứng
             </button>
             <button
               onClick={() => setActiveTab("chronic")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "chronic"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`cursor-pointer py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "chronic"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
             >
               <Heart className="w-4 h-4 inline mr-1" /> Bệnh mãn tính
             </button>
             <button
               onClick={() => setActiveTab("medical")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "medical"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`cursor-pointer py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "medical"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
             >
               <FileText className="w-4 h-4 inline mr-1" /> Tiền sử điều trị
             </button>
-            <button
-              onClick={() => setActiveTab("vaccination")}
-              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "vaccination"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <Syringe className="w-4 h-4 inline mr-1" /> Tiêm chủng
-            </button>
             {showHistoryTab && (
               <button
-                onClick={() => setActiveTab("history")}
-                className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "history"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                onClick={() => setActiveTab("school-health-checks")}
+                className={`cursor-pointer py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "school-health-checks"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
-                <FileText className="w-4 h-4 inline mr-1" /> Lịch sử sức khỏe
+                <FileText className="w-4 h-4 inline mr-1" /> Khám sức khỏe tại trường
               </button>
             )}
+            <button
+              onClick={() => setActiveTab("school-vaccinations")}
+              className={`cursor-pointer py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "school-vaccinations"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+            >
+              <Syringe className="w-4 h-4 inline mr-1" /> Tiêm chủng tại trường
+            </button>
           </nav>
         </div>
         {/* Nội dung tab */}

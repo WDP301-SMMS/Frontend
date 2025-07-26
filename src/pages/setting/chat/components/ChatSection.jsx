@@ -20,7 +20,8 @@ const ChatSection = ({
   selectedRoom,
   messages,
   setMessages,
-  onMessageSent, // Add this prop
+  onMessageSent,
+  typingStatus
 }) => {
   const { user } = useAuth();
 
@@ -198,7 +199,7 @@ const ChatSection = ({
       </Box>
     );
   }
-return (
+  return (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Error Alert */}
       {error && (
@@ -226,7 +227,8 @@ return (
         currentUser={user}
         room={selectedRoom}
         isLoading={isLoading}
-        onMessageSent={onMessageSent} // Pass the callback
+        onMessageSent={onMessageSent}
+        typingStatus={typingStatus}
       />
     </Box>
   );
