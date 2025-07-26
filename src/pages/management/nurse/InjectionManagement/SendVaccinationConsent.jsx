@@ -876,8 +876,7 @@ Trân trọng,
             disabled={
               loading ||
               !form.selectedCampaignId ||
-              !form.location ||
-              (!form.channels.email && !form.channels.app)
+              !form.location 
             }
           >
             Xem trước
@@ -889,8 +888,7 @@ Trân trọng,
             disabled={
               loading ||
               !form.selectedCampaignId ||
-              !form.location ||
-              (!form.channels.email && !form.channels.app)
+              !form.location 
             }
           >
             {loading ? <CircularProgress size={20} /> : "Gửi"}

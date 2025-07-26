@@ -1798,32 +1798,32 @@ const HealthCheckCampaignsManagement = () => {
       ) : (
         <StyledPaper elevation={8}>
           <Table>
-            <TableHead sx={{ backgroundColor: "primary.dark" }}>
+            <TableHead >
               <TableRow>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Mã Chiến dịch
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Tên Chiến dịch
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Năm học
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Ngày bắt đầu
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Ngày kết thúc
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Số lớp phân công
                 </TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Trạng thái
                 </TableCell>
                 <TableCell
                   align="right"
-                  sx={{ color: "white", fontWeight: "bold" }}
+                  sx={{ color: "black", fontWeight: "bold" }}
                 >
                   Hành động
                 </TableCell>

@@ -5,6 +5,7 @@ export const endpoints = {
     getAll: "/admin/users",
     updateStatus: "/admin/users/{userId}/status",
     getAllUsers: "/admin/users",
+    changePassword: '/user/me/change-password'
   },
   students: {
     getAll: "/admin/students",
@@ -107,6 +108,20 @@ export const endpoints = {
     getByParent: "/medication/requests/parent", // GET: Lấy yêu cầu theo phụ huynh
     updateInfo: "/medication/requests/{requestId}", // PATCH: cập nhật thời gian, file
     updateItems: "/medication/requests/{requestId}/items", // PATCH: cập nhật hoặc thêm thuốc
-  }
+  },
+  medicationSchedule: {
+    createMany: "/medication/schedules", // POST: Tạo nhiều lịch uống thuốc
+    updateStatus: "/medication/schedules/update/{scheduleId}", // PATCH: Cập nhật trạng thái lịch uống thuốc
+    getByRequestId: "/medication/schedules/request/{requestId}", // GET: Lấy lịch theo Request ID
+    getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
+  },
+  appointments: {
+    getStudentsWithAbnormalResults: "/appointments/students/abnormal-results/{campaignId}", // GET
+    getAppointments: "/appointments", // GET
+    createAppointment: "/appointments", // POST
+    updateAppointmentStatus: "/appointments/{appointmentId}/status", // PATCH
+    addAfterMeetingNotes: "/appointments/{appointmentId}/notes", // PATCH
+  },
+
 
 };

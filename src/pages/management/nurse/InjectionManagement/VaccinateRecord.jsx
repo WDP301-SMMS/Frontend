@@ -329,20 +329,20 @@ function VaccinateRecord() {
         prev.map((record) =>
           record.student_id === selectedStudent.student_id
             ? {
-                ...record,
-                vaccinationStatus: "Đã tiêm",
-                batch_number: batchNumber,
-                expiry_date: expiryDate,
-                administration_date: administrationDateTime,
-                adverse_reactions: immediateReactions,
-                third_party_provider: thirdPartyProvider,
-                manufacturer: manufacturer,
-                health_check_note: healthCheckNote,
-                observation_period: observationPeriod,
-                administered_by: administeredBy,
-                dosage: dosage,
-                injection_site: injectionSite,
-              }
+              ...record,
+              vaccinationStatus: "Đã tiêm",
+              batch_number: batchNumber,
+              expiry_date: expiryDate,
+              administration_date: administrationDateTime,
+              adverse_reactions: immediateReactions,
+              third_party_provider: thirdPartyProvider,
+              manufacturer: manufacturer,
+              health_check_note: healthCheckNote,
+              observation_period: observationPeriod,
+              administered_by: administeredBy,
+              dosage: dosage,
+              injection_site: injectionSite,
+            }
             : record
         )
       );
@@ -583,25 +583,35 @@ function VaccinateRecord() {
                       <TableCell
                         sx={{
                           color:
-                            record.allergies !== "Không có" ? "red" : "inherit",
+                            Array.isArray(record.allergies) && record.allergies.length > 0
+                              ? "red"
+                              : "inherit",
                         }}
                       >
-                        {record.allergies}
+                        {Array.isArray(record.allergies) && record.allergies.length > 0 ? (
+                          record.allergies.map((item, index) => (
+                            <div key={index}>
+                              <strong>{item.type}</strong>: {item.notes} ({item.reaction})
+                            </div>
+                          ))
+                        ) : (
+                          "Không có"
+                        )}
                       </TableCell>
                       <TableCell
                         sx={{
                           color:
                             record.chronicConditions?.length > 0 &&
-                            record.chronicConditions[0]?.conditionName !==
+                              record.chronicConditions[0]?.conditionName !==
                               "Chưa có thông tin"
                               ? "red"
                               : "inherit",
                         }}
                       >
-                        {record.chronicConditions?.length > 0
+                        {Array.isArray(record.chronicConditions) && record.chronicConditions?.length > 0
                           ? record.chronicConditions
-                              .map((condition) => condition.conditionName)
-                              .join(", ")
+                            .map((condition) => condition.conditionName)
+                            .join(", ")
                           : "Chưa có thông tin"}
                       </TableCell>
                       <TableCell>
@@ -728,13 +738,17 @@ function VaccinateRecord() {
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                   Tiền sử dị ứng
                 </Typography>
-                <Typography
-                  color={
-                    selectedStudent.allergies !== "Không có" ? "red" : "inherit"
-                  }
-                >
-                  {selectedStudent.allergies}
-                </Typography>
+                {Array.isArray(selectedStudent.allergies) && selectedStudent.allergies.length > 0 ? (
+                  <Box color="red">
+                    {selectedStudent.allergies.map((item, index) => (
+                      <Typography key={index} variant="body2">
+                        <strong>{item.type}</strong>: {item.notes} ({item.reaction})
+                      </Typography>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography color="inherit">Không có</Typography>
+                )}
               </Box>
 
               <Box>
@@ -744,22 +758,22 @@ function VaccinateRecord() {
                 <Typography
                   color={
                     selectedStudent.chronicConditions &&
-                    selectedStudent.chronicConditions !== "Chưa có thông tin"
+                      selectedStudent.chronicConditions !== "Chưa có thông tin"
                       ? "red"
                       : "inherit"
                   }
                 >
                   {selectedStudent.chronicConditions &&
-                  typeof selectedStudent.chronicConditions === "object"
+                    typeof selectedStudent.chronicConditions === "object"
                     ? Array.isArray(selectedStudent.chronicConditions)
                       ? selectedStudent.chronicConditions
-                          .map(
-                            (condition) =>
-                              condition.conditionName || "Không xác định"
-                          )
-                          .join(", ")
+                        .map(
+                          (condition) =>
+                            condition.conditionName || "Không xác định"
+                        )
+                        .join(", ")
                       : selectedStudent.chronicConditions.conditionName ||
-                        "Chưa có thông tin"
+                      "Chưa có thông tin"
                     : selectedStudent.chronicConditions || "Chưa có thông tin"}
                 </Typography>
               </Box>
@@ -803,14 +817,14 @@ function VaccinateRecord() {
                   value={
                     campaigns.find((c) => c._id === selectedCampaign)?.startDate
                       ? new Date(
-                          campaigns.find(
-                            (c) => c._id === selectedCampaign
-                          )?.startDate
-                        ).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        campaigns.find(
+                          (c) => c._id === selectedCampaign
+                        )?.startDate
+                      ).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : ""
                   }
                   disabled
@@ -821,14 +835,14 @@ function VaccinateRecord() {
                   value={
                     campaigns.find((c) => c._id === selectedCampaign)?.endDate
                       ? new Date(
-                          campaigns.find(
-                            (c) => c._id === selectedCampaign
-                          )?.endDate
-                        ).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        campaigns.find(
+                          (c) => c._id === selectedCampaign
+                        )?.endDate
+                      ).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : ""
                   }
                   disabled
@@ -840,14 +854,14 @@ function VaccinateRecord() {
                     campaigns.find((c) => c._id === selectedCampaign)
                       ?.actualStartDate
                       ? new Date(
-                          campaigns.find(
-                            (c) => c._id === selectedCampaign
-                          )?.actualStartDate
-                        ).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        campaigns.find(
+                          (c) => c._id === selectedCampaign
+                        )?.actualStartDate
+                      ).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : ""
                   }
                   disabled
@@ -958,13 +972,17 @@ function VaccinateRecord() {
                 <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                   Tiền sử dị ứng
                 </Typography>
-                <Typography
-                  color={
-                    selectedStudent.allergies !== "Không có" ? "red" : "inherit"
-                  }
-                >
-                  {selectedStudent.allergies}
-                </Typography>
+                {Array.isArray(selectedStudent.allergies) && selectedStudent.allergies.length > 0 ? (
+                  <Box color="red">
+                    {selectedStudent.allergies.map((item, index) => (
+                      <Typography key={index} variant="body2">
+                        <strong>{item.type}</strong>: {item.notes} ({item.reaction})
+                      </Typography>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography color="inherit">Không có</Typography>
+                )}
               </Box>
 
               <Box>
@@ -974,7 +992,7 @@ function VaccinateRecord() {
                 <Typography
                   color={
                     selectedStudent.chronicConditions?.length > 0 &&
-                    selectedStudent.chronicConditions[0]?.conditionName !==
+                      selectedStudent.chronicConditions[0]?.conditionName !==
                       "Chưa có thông tin"
                       ? "red"
                       : "inherit"
@@ -982,8 +1000,8 @@ function VaccinateRecord() {
                 >
                   {selectedStudent.chronicConditions?.length > 0
                     ? selectedStudent.chronicConditions
-                        .map((condition) => condition.conditionName)
-                        .join(", ")
+                      .map((condition) => condition.conditionName)
+                      .join(", ")
                     : "Chưa có thông tin"}
                 </Typography>
               </Box>
@@ -1014,15 +1032,15 @@ function VaccinateRecord() {
                   value={
                     immunizationHistory.administeredAt
                       ? new Date(
-                          immunizationHistory.administeredAt
-                        ).toLocaleString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          timeZone: "Asia/Ho_Chi_Minh",
-                        })
+                        immunizationHistory.administeredAt
+                      ).toLocaleString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: "Asia/Ho_Chi_Minh",
+                      })
                       : ""
                   }
                   disabled
@@ -1055,16 +1073,16 @@ function VaccinateRecord() {
                   value={
                     immunizationHistory.createdAt
                       ? new Date(immunizationHistory.createdAt).toLocaleString(
-                          "vi-VN",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: "Asia/Ho_Chi_Minh",
-                          }
-                        )
+                        "vi-VN",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "Asia/Ho_Chi_Minh",
+                        }
+                      )
                       : ""
                   }
                   disabled
@@ -1075,16 +1093,16 @@ function VaccinateRecord() {
                   value={
                     immunizationHistory.updatedAt
                       ? new Date(immunizationHistory.updatedAt).toLocaleString(
-                          "vi-VN",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: "Asia/Ho_Chi_Minh",
-                          }
-                        )
+                        "vi-VN",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "Asia/Ho_Chi_Minh",
+                        }
+                      )
                       : ""
                   }
                   disabled
