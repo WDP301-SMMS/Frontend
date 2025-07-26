@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -14,8 +14,6 @@ import {
 import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
-  EmojiEmotions as EmojiIcon,
-  MoreVert,
 } from "@mui/icons-material";
 import uploadService from "~/libs/api/services/uploadService";
 
@@ -37,7 +35,8 @@ const ChatDisplayer = ({
   currentUser,
   room,
   isLoading = false,
-  onMessageSent, // Add this prop to notify parent about sent messages
+  onMessageSent,
+  typingStatus,
 }) => {
   const [newMessage, setNewMessage] = useState("");
   const [receiver, setReceiver] = useState(room?.receiverId || null);
@@ -45,6 +44,26 @@ const ChatDisplayer = ({
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
+
+  const typingTimeoutRef = useRef(null);
+
+  // Tạo một hàm mới để xử lý việc nhập liệu
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setNewMessage(value);
+
+    if (!socket || !room) return;
+
+    socket.emit("typing", { roomId: room.roomId, senderId: currentUser._id });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", { roomId: room.roomId, senderId: currentUser._id });
+    }, 1000);
+  };
 
   // Update receiver and sender when room changes
   useEffect(() => {
@@ -116,6 +135,12 @@ const ChatDisplayer = ({
     console.log("Sending message data:", messageData);
 
     socket.emit("sendMessage", messageData);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    socket.emit("stopTyping", { roomId: room.roomId, senderId: currentUser._id });
+
     if (onMessageSent) {
       onMessageSent(messageData);
     }
@@ -177,7 +202,7 @@ const ChatDisplayer = ({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#f6f6f6",
+        bgcolor: "#f8f9fa",
       }}
     >
       {/* Chat Header */}
@@ -200,7 +225,7 @@ const ChatDisplayer = ({
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {room?.name || "Phòng Chat"}
+                {room?.name || "Chat Room"}
               </Typography>
             </Box>
           </Box>
@@ -246,29 +271,8 @@ const ChatDisplayer = ({
             </Box>
 
             {/* Messages for this date */}
-            {dayMessages.map((message, messageIndex) => {
+            {dayMessages.map((message) => {
               const isCurrentUser = message?.senderId._id === currentUser?._id;
-              console.log(
-                "Rendering message:",
-                message,
-                "isCurrentUser:",
-                isCurrentUser
-              );
-
-              // Check if previous message is from same sender
-              let prevMessage = null;
-              let isFirstMessageOfDay = messageIndex === 0;
-
-              if (messageIndex > 0) {
-                // Previous message in same day
-                prevMessage = dayMessages[messageIndex - 1];
-              }
-
-              const showUsername =
-                !isCurrentUser &&
-                (isFirstMessageOfDay || // Always show username for first message of the day
-                  !prevMessage ||
-                  prevMessage?.senderId._id !== message?.senderId._id);
 
               return (
                 <Box
@@ -288,7 +292,7 @@ const ChatDisplayer = ({
                       alignItems: isCurrentUser ? "flex-end" : "flex-start",
                     }}
                   >
-                    {showUsername && (
+                    {!isCurrentUser && (
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -346,9 +350,9 @@ const ChatDisplayer = ({
                           p: 1.5,
                           bgcolor: isCurrentUser ? "primary.main" : "white",
                           color: isCurrentUser ? "white" : "text.primary",
-                          borderRadius: isCurrentUser
-                            ? "16px 4px 16px 16px" // TL TR BR BL
-                            : "4px 16px 16px 16px",
+                          borderRadius: 2,
+                          borderTopLeftRadius: !isCurrentUser ? 1 : 2,
+                          borderTopRightRadius: isCurrentUser ? 1 : 2,
                           wordBreak: "break-word",
                         }}
                       >
@@ -364,6 +368,14 @@ const ChatDisplayer = ({
           </Box>
         ))}
         <div ref={messagesEndRef} />
+      </Box>
+
+      <Box sx={{ height: '24px', px: 2, display: 'flex', alignItems: 'center', bgcolor: 'white' }}>
+        {typingStatus && typingStatus.isTyping && (
+          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Đang soạn...
+          </Typography>
+        )}
       </Box>
 
       {/* Message Input */}
@@ -384,7 +396,7 @@ const ChatDisplayer = ({
             maxRows={3}
             placeholder="Nhập tin nhắn..."
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             variant="outlined"
             size="small"
@@ -408,15 +420,6 @@ const ChatDisplayer = ({
                         accept="image/*"
                         multiple={false}
                       />
-                    </IconButton>
-                  </Tooltip>
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Tooltip title="Emoji">
-                    <IconButton size="small">
-                      <EmojiIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </InputAdornment>
