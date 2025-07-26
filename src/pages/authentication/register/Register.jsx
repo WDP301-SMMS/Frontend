@@ -268,7 +268,7 @@ const Register = () => {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm font-medium shadow-sm transform hover:scale-105"
+              className="cursor-pointer inline-flex items-center px-4 py-2 border border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm font-medium shadow-sm transform hover:scale-105"
             >
               <FontAwesomeIcon icon={faHome} className="mr-2" />
               Quay lại Trang chủ

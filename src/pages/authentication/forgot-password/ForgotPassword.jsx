@@ -203,7 +203,7 @@ const ForgotPassword = () => {
           <div className="text-center">
             <button
               onClick={() => navigate("/login")}
-              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 hover:underline"
+              className="cursor-pointer inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 hover:underline"
             >
               <MoveLeft className="w-4 h-4" />
               Quay về trang đăng nhập

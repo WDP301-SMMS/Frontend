@@ -130,7 +130,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password")}
-                className="text-sm text-gray-500 hover:text-primary"
+                className="cursor-pointer text-sm text-gray-500 hover:text-primary"
               >
                 Quên mật khẩu?
               </button>
@@ -138,7 +138,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-md bg-primary text-white font-semibold hover:bg-primary/90 transition duration-300"
+              className="cursor-pointer w-full py-3 rounded-md bg-primary text-white font-semibold hover:bg-primary/90 transition duration-300"
               disabled={loading}
             >
               {loading ? (
@@ -151,7 +151,7 @@ const Login = () => {
             <button
               type="button"
               onClick={handleGoogle}
-              className="w-full py-3 border border-primary text-primary rounded-md flex items-center justify-center gap-3 hover:bg-blue-50 transition duration-300"
+              className="cursor-pointer w-full py-3 border border-primary text-primary rounded-md flex items-center justify-center gap-3 hover:bg-blue-50 transition duration-300"
             >
               <img src={Google} alt="Google" className="w-5 h-5" />
               <span>Đăng nhập bằng Google</span>
@@ -162,7 +162,7 @@ const Login = () => {
             Bạn chưa có tài khoản?{" "}
             <button
               onClick={() => navigate("/register")}
-              className="text-primary hover:underline"
+              className="cursor-pointer text-primary hover:underline"
             >
               Đăng ký
             </button>
@@ -171,7 +171,7 @@ const Login = () => {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm font-medium shadow-sm transform hover:scale-105"
+              className="cursor-pointer inline-flex items-center px-4 py-2 border border-primary text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm font-medium shadow-sm transform hover:scale-105"
             >
               <FontAwesomeIcon icon={faHome} className="mr-2" />
               Quay lại Trang chủ

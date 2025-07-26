@@ -75,6 +75,7 @@ const CheckupItemUnit = {
   MG_DL: 'MG/DL',
   MM_HG: 'MM/HG',
   LITER: 'LITER',
+  DIOP: 'DIOP',
 };
 
 // Styled Paper cho phần form và detail
@@ -98,9 +99,9 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
   const [checkupItems, setCheckupItems] = useState(
     initialData?.checkupItems && initialData.checkupItems.length > 0
       ? initialData.checkupItems.map((item, index) => ({
-          ...item,
-          itemId: item.itemId.toString() || (index + 1).toString()
-        }))
+        ...item,
+        itemId: item.itemId.toString() || (index + 1).toString()
+      }))
       : [{ itemId: '1', itemName: '', unit: '', dataType: '', guideline: '' }]
   );
   const [isDefault, setIsDefault] = useState(initialData?.isDefault || false);
@@ -112,9 +113,9 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
       setCheckupItems(
         initialData.checkupItems && initialData.checkupItems.length > 0
           ? initialData.checkupItems.map((item, index) => ({
-              ...item,
-              itemId: item.itemId.toString() || (index + 1).toString()
-            }))
+            ...item,
+            itemId: item.itemId.toString() || (index + 1).toString()
+          }))
           : [{ itemId: '1', itemName: '', unit: '', dataType: '', guideline: '' }]
       );
       setIsDefault(initialData.isDefault || false);
@@ -431,7 +432,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       select
                       value={item.unit || ''}
                       onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } ,width: '150px'}}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, width: '150px' }}
                     >
                       <MenuItem value=""><em>Không có đơn vị</em></MenuItem>
                       {Object.values(CheckupItemUnit).map((unit) => (
@@ -444,6 +445,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                           {unit === CheckupItemUnit.MG_DL && 'MG/DL - Miligram/Decilit'}
                           {unit === CheckupItemUnit.MM_HG && 'MM/HG - Milimet thủy ngân'}
                           {unit === CheckupItemUnit.LITER && 'Lít - Lít'}
+                          {unit === CheckupItemUnit.DIOP && 'DIOP - Độ'}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -458,7 +460,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       value={item.dataType || ''}
                       onChange={(e) => handleItemChange(index, 'dataType', e.target.value)}
                       required
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } ,width: '150px'}}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, width: '150px' }}
                     >
                       <MenuItem value=""><em>Chọn kiểu dữ liệu</em></MenuItem>
                       {Object.values(CheckupItemDataType).map((type) => (
@@ -604,22 +606,23 @@ const HealthCheckTemplateDetail = ({ template, onClose }) => {
                     {item.unit
                       ? item.unit === CheckupItemUnit.KG ? 'KG - Kilogram'
                         : item.unit === CheckupItemUnit.CM ? 'CM - Centimet'
-                        : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
-                        : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
-                        : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
-                        : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
-                        : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
-                        : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
-                        : 'N/A'
+                          : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
+                            : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
+                              : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
+                                : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
+                                  : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
+                                    : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
+                                      : item.unit === CheckupItemUnit.DIOP ? 'DIOP - ĐỘ'
+                                        : 'N/A'
                       : 'N/A'}
                   </TableCell>
                   <TableCell>
                     {item.dataType
                       ? item.dataType === CheckupItemDataType.NUMBER ? 'Số'
                         : item.dataType === CheckupItemDataType.TEXT ? 'Văn bản'
-                        : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
-                        : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
-                        : 'N/A'
+                          : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
+                            : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
+                              : 'N/A'
                       : 'N/A'}
                   </TableCell>
                   <TableCell>{item.guideline || 'Không có hướng dẫn'}</TableCell>
@@ -966,14 +969,14 @@ const MedicalCheckupManagement = () => {
         onClose={() => setShowFormModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ 
-          sx: { 
+        PaperProps={{
+          sx: {
             borderRadius: 2,
             overflow: "hidden",
             boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
             maxHeight: "90vh",
             transition: "all 0.3s ease-in-out"
-          } 
+          }
         }}
         BackdropProps={{
           sx: {
@@ -983,9 +986,9 @@ const MedicalCheckupManagement = () => {
         }}
       >
         <DialogTitle
-          sx={{ 
+          sx={{
             background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-            color: "white", 
+            color: "white",
             py: 3,
             px: 3,
             position: "relative",
@@ -1013,19 +1016,19 @@ const MedicalCheckupManagement = () => {
               <AddIcon sx={{ fontSize: 20, color: "white" }} />
             )}
           </Box>
-          
+
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
               {editingTemplate ? "Chỉnh sửa Mẫu Khám" : "Thêm Mới Mẫu Khám"}
             </Typography>
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
-              {editingTemplate 
-                ? "Cập nhật thông tin mẫu khám sức khỏe" 
+              {editingTemplate
+                ? "Cập nhật thông tin mẫu khám sức khỏe"
                 : "Tạo mẫu khám sức khỏe mới cho hệ thống"
               }
             </Typography>
           </Box>
-          
+
           <IconButton
             aria-label="Đóng"
             onClick={() => setShowFormModal(false)}
@@ -1034,7 +1037,7 @@ const MedicalCheckupManagement = () => {
               backgroundColor: "rgba(255,255,255,0.1)",
               width: 40,
               height: 40,
-              "&:hover": { 
+              "&:hover": {
                 backgroundColor: "rgba(255,255,255,0.2)",
                 transform: "scale(1.05)"
               },
@@ -1045,9 +1048,9 @@ const MedicalCheckupManagement = () => {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent 
+        <DialogContent
           dividers={false}
-          sx={{ 
+          sx={{
             backgroundColor: "#f8fafc",
             p: 0,
             position: "relative",
@@ -1069,7 +1072,7 @@ const MedicalCheckupManagement = () => {
               }
             }}
           />
-          
+
           <Box sx={{ p: 3 }}>
             <Box
               sx={{
@@ -1096,17 +1099,17 @@ const MedicalCheckupManagement = () => {
         onClose={() => setShowDetailModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ 
-          sx: { 
-            borderRadius: 3, 
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
             overflow: 'hidden',
             maxHeight: '90vh'
-          } 
+          }
         }}
       >
-        <DialogTitle sx={{ 
+        <DialogTitle sx={{
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-          color: 'white', 
+          color: 'white',
           pb: 2,
           position: 'relative'
         }}>
@@ -1124,7 +1127,7 @@ const MedicalCheckupManagement = () => {
               right: 8,
               top: 8,
               color: 'white',
-              '&:hover': { 
+              '&:hover': {
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 transform: 'scale(1.1)'
               },
@@ -1134,10 +1137,10 @@ const MedicalCheckupManagement = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
-        <DialogContent 
-          dividers 
-          sx={{ 
+
+        <DialogContent
+          dividers
+          sx={{
             backgroundColor: 'background.paper',
             p: 3,
             maxHeight: 'calc(90vh - 140px)',
@@ -1146,16 +1149,16 @@ const MedicalCheckupManagement = () => {
         >
           {/* Mã mẫu khám nổi bật */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Chip 
+            <Chip
               icon={<TagIcon />}
               label="Mã Mẫu Khám"
-              sx={{ 
+              sx={{
                 backgroundColor: 'primary.light',
                 color: 'primary.contrastText',
                 mb: 1
               }}
             />
-            <Typography variant="h4" sx={{ 
+            <Typography variant="h4" sx={{
               color: 'primary.main',
               fontWeight: 'bold',
               letterSpacing: 1
@@ -1183,7 +1186,7 @@ const MedicalCheckupManagement = () => {
                   <FingerprintIcon sx={{ fontSize: 20, color: 'grey.600' }} />
                   <Typography variant="subtitle2" color="grey.700">Mã Mẫu Khám</Typography>
                 </Box>
-                <Typography variant="body2" sx={{ 
+                <Typography variant="body2" sx={{
                   fontFamily: 'monospace',
                   wordBreak: 'break-all',
                   fontWeight: 600
@@ -1201,18 +1204,18 @@ const MedicalCheckupManagement = () => {
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Các Mục Kiểm Tra
               </Typography>
-              <Chip 
+              <Chip
                 label={`${viewingTemplate?.checkupItems?.length || 0} mục`}
                 size="small"
                 sx={{ backgroundColor: 'primary.light', color: 'primary.contrastText' }}
               />
             </Box>
-            
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {(viewingTemplate?.checkupItems || []).map((item, index) => (
-                <Paper 
+                <Paper
                   key={item.itemId}
-                  sx={{ 
+                  sx={{
                     p: 3,
                     border: '1px solid',
                     borderColor: 'grey.200',
@@ -1225,10 +1228,10 @@ const MedicalCheckupManagement = () => {
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Chip 
+                      <Chip
                         label={`#${item.itemId}`}
                         size="small"
-                        sx={{ 
+                        sx={{
                           backgroundColor: 'secondary.light',
                           color: 'secondary.contrastText',
                           fontWeight: 'bold'
@@ -1239,55 +1242,56 @@ const MedicalCheckupManagement = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  
+
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="grey.600">
-                        Đơn vị: <Chip 
+                        Đơn vị: <Chip
                           label={
                             item.unit
                               ? item.unit === CheckupItemUnit.KG ? 'KG - Kilogram'
                                 : item.unit === CheckupItemUnit.CM ? 'CM - Centimet'
-                                : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
-                                : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
-                                : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
-                                : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
-                                : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
-                                : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
-                                : 'Không có đơn vị'
+                                  : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
+                                    : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
+                                      : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
+                                        : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
+                                          : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
+                                            : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
+                                              : item.unit === CheckupItemUnit.DIOP ? 'DIOP - Độ'
+                                                : 'Không có đơn vị'
                               : 'Không có đơn vị'
-                          } 
-                          size="small" 
-                          sx={{ ml: 1 }} 
+                          }
+                          size="small"
+                          sx={{ ml: 1 }}
                         />
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="grey.600">
-                        Kiểu dữ liệu: <Chip 
+                        Kiểu dữ liệu: <Chip
                           label={
                             item.dataType
                               ? item.dataType === CheckupItemDataType.NUMBER ? 'Số'
                                 : item.dataType === CheckupItemDataType.TEXT ? 'Văn bản'
-                                : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
-                                : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
-                                : 'Không xác định'
+                                  : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
+                                    : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
+                                      : 'Không xác định'
                               : 'Không xác định'
-                          } 
-                          size="small" 
+                          }
+                          size="small"
                           color={item.dataType === CheckupItemDataType.TEXT ? 'info' : 'success'}
                           sx={{ ml: 1 }}
                         />
                       </Typography>
                     </Grid>
                   </Grid>
-                  
+
                   <Box>
                     <Typography variant="body2" color="grey.600" sx={{ mb: 1 }}>
                       Hướng dẫn:
                     </Typography>
-                    <Paper sx={{ 
-                      p: 2, 
+                    <Paper sx={{
+                      p: 2,
                       backgroundColor: 'grey.50',
                       borderLeft: '4px solid',
                       borderLeftColor: 'primary.main'
@@ -1302,17 +1306,17 @@ const MedicalCheckupManagement = () => {
             </Box>
           </Box>
         </DialogContent>
-        
-        <DialogActions sx={{ 
-          p: 3, 
+
+        <DialogActions sx={{
+          p: 3,
           backgroundColor: 'grey.50',
           borderTop: '1px solid',
           borderTopColor: 'grey.200'
         }}>
-          <Button 
+          <Button
             onClick={() => setShowDetailModal(false)}
             variant="contained"
-            sx={{ 
+            sx={{
               px: 4,
               py: 1.5,
               fontWeight: 600,
