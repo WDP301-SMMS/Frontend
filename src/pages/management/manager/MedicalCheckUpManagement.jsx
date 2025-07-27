@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Swal from 'sweetalert2';
-import healthCheckTemplateService from '~/libs/api/services/healthCheckTemplateService';
+import React, { useState, useEffect, useCallback } from "react";
+import Swal from "sweetalert2";
+import healthCheckTemplateService from "~/libs/api/services/healthCheckTemplateService";
 
 // MUI Imports
 import {
@@ -33,8 +33,8 @@ import {
   Switch,
   Chip,
   Select,
-  DialogActions
-} from '@mui/material';
+  DialogActions,
+} from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -53,29 +53,36 @@ import {
   FormatListBulleted as FormatListBulletedIcon,
   Description,
   SecurityOutlined,
-  Assignment
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import { ChevronLeftIcon, ChevronRightIcon, FingerprintIcon, PersonStandingIcon, Plus, Search } from 'lucide-react';
+  Assignment,
+} from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FingerprintIcon,
+  PersonStandingIcon,
+  Plus,
+  Search,
+} from "lucide-react";
 
 // Enum definitions
 const CheckupItemDataType = {
-  NUMBER: 'NUMBER',
-  TEXT: 'TEXT',
-  BOOLEAN: 'BOOLEAN',
-  SELECT: 'SELECT',
+  NUMBER: "NUMBER",
+  TEXT: "TEXT",
+  BOOLEAN: "BOOLEAN",
+  SELECT: "SELECT",
 };
 
 const CheckupItemUnit = {
-  KG: 'KG',
-  CM: 'CM',
-  MM: 'MM',
-  PERCENT: 'PERCENT',
-  BPM: 'BPM',
-  MG_DL: 'MG/DL',
-  MM_HG: 'MM/HG',
-  LITER: 'LITER',
-  DIOP: 'DIOP',
+  KG: "KG",
+  CM: "CM",
+  MM: "MM",
+  PERCENT: "PERCENT",
+  BPM: "BPM",
+  MG_DL: "MG/DL",
+  MM_HG: "MM/HG",
+  LITER: "LITER",
+  DIOP: "DIOP",
 };
 
 // Styled Paper cho phần form và detail
@@ -93,36 +100,45 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 }));
 
 // Component cho Form
-const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing }) => {
-  const [name, setName] = useState(initialData?.name || '');
-  const [description, setDescription] = useState(initialData?.description || '');
+const HealthCheckTemplateForm = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isEditing,
+}) => {
+  const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
   const [checkupItems, setCheckupItems] = useState(
     initialData?.checkupItems && initialData.checkupItems.length > 0
       ? initialData.checkupItems.map((item, index) => ({
-        ...item,
-        itemId: item.itemId.toString() || (index + 1).toString()
-      }))
+          ...item,
+          itemId: item.itemId.toString() || (index + 1).toString()
+        }))
       : [{ itemId: '1', itemName: '', unit: '', dataType: '', guideline: '' }]
   );
   const [isDefault, setIsDefault] = useState(initialData?.isDefault || false);
 
   useEffect(() => {
     if (initialData) {
-      setName(initialData.name || '');
-      setDescription(initialData.description || '');
+      setName(initialData.name || "");
+      setDescription(initialData.description || "");
       setCheckupItems(
         initialData.checkupItems && initialData.checkupItems.length > 0
           ? initialData.checkupItems.map((item, index) => ({
-            ...item,
-            itemId: item.itemId.toString() || (index + 1).toString()
-          }))
+              ...item,
+              itemId: item.itemId.toString() || (index + 1).toString()
+            }))
           : [{ itemId: '1', itemName: '', unit: '', dataType: '', guideline: '' }]
       );
       setIsDefault(initialData.isDefault || false);
     } else {
-      setName('');
-      setDescription('');
-      setCheckupItems([{ itemId: '1', itemName: '', unit: '', dataType: '', guideline: '' }]);
+      setName("");
+      setDescription("");
+      setCheckupItems([
+        { itemId: "1", itemName: "", unit: "", dataType: "", guideline: "" },
+      ]);
       setIsDefault(false);
     }
   }, [initialData]);
@@ -135,7 +151,16 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
 
   const handleAddItem = () => {
     const newItemId = (checkupItems.length + 1).toString();
-    setCheckupItems([...checkupItems, { itemId: newItemId, itemName: '', unit: '', dataType: '', guideline: '' }]);
+    setCheckupItems([
+      ...checkupItems,
+      {
+        itemId: newItemId,
+        itemName: "",
+        unit: "",
+        dataType: "",
+        guideline: "",
+      },
+    ]);
   };
 
   const handleRemoveItem = (index) => {
@@ -143,7 +168,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
     // Cập nhật lại itemId theo số thứ tự
     const updatedItems = newItems.map((item, i) => ({
       ...item,
-      itemId: (i + 1).toString()
+      itemId: (i + 1).toString(),
     }));
     setCheckupItems(updatedItems);
   };
@@ -159,33 +184,49 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
         itemName: item.itemName,
         unit: item.unit || null,
         dataType: item.dataType,
-        guideline: item.guideline || null
+        guideline: item.guideline || null,
       })),
-      isDefault
+      isDefault,
     };
     onSubmit(formattedData);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ p: 0, maxHeight: '70vh', overflow: 'auto' }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ p: 0, maxHeight: "70vh", overflow: "auto" }}
+    >
       {/* Header Section */}
-      <Box sx={{
-        backgroundColor: 'white',
-        borderRadius: 2,
-        p: 3,
-        mb: 3,
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-      }}>
-        <Typography variant="h6" sx={{
-          color: 'primary.main',
-          fontWeight: 600,
-          mb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          <Box sx={{ width: 6, height: 24, backgroundColor: 'primary.main', borderRadius: 1 }} />
+      <Box
+        sx={{
+          backgroundColor: "white",
+          borderRadius: 2,
+          p: 3,
+          mb: 3,
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            color: "primary.main",
+            fontWeight: 600,
+            mb: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Box
+            sx={{
+              width: 6,
+              height: 24,
+              backgroundColor: "primary.main",
+              borderRadius: 1,
+            }}
+          />
           Thông Tin Cơ Bản
         </Typography>
 
@@ -200,19 +241,19 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
               required
               placeholder="Nhập tên mẫu khám sức khỏe..."
               sx={{
-                '& .MuiOutlinedInput-root': {
+                "& .MuiOutlinedInput-root": {
                   borderRadius: 2,
-                  '&:hover fieldset': {
-                    borderColor: 'primary.main',
+                  "&:hover fieldset": {
+                    borderColor: "primary.main",
                   },
-                  '&.Mui-focused fieldset': {
+                  "&.Mui-focused fieldset": {
                     borderWidth: 2,
-                  }
-                }
+                  },
+                },
               }}
               InputProps={{
                 startAdornment: (
-                  <Box sx={{ mr: 1, color: 'text.secondary' }}>
+                  <Box sx={{ mr: 1, color: "text.secondary" }}>
                     <FolderIcon fontSize="small" />
                   </Box>
                 ),
@@ -229,12 +270,12 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                   name="isDefault"
                   color="primary"
                   sx={{
-                    '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: 'primary.main',
+                    "& .MuiSwitch-switchBase.Mui-checked": {
+                      color: "primary.main",
                     },
-                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: 'primary.main',
-                    }
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      backgroundColor: "primary.main",
+                    },
                   }}
                 />
               }
@@ -243,19 +284,22 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     Mẫu Mặc Định
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
                     Sử dụng làm mẫu chính
                   </Typography>
                 </Box>
               }
               sx={{
-                backgroundColor: isDefault ? 'primary.50' : 'grey.50',
+                backgroundColor: isDefault ? "primary.50" : "grey.50",
                 borderRadius: 2,
                 p: 2,
-                border: `1px solid ${isDefault ? 'primary.200' : 'grey.200'}`,
-                width: '100%',
+                border: `1px solid ${isDefault ? "primary.200" : "grey.200"}`,
+                width: "100%",
                 margin: 0,
-                transition: 'all 0.2s ease'
+                transition: "all 0.2s ease",
               }}
             />
           </Grid>
@@ -272,13 +316,20 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
           placeholder="Mô tả chi tiết về mẫu khám này..."
           sx={{
             mt: 3,
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-            }
+            },
           }}
           InputProps={{
             startAdornment: (
-              <Box sx={{ mr: 1, color: 'text.secondary', alignSelf: 'flex-start', mt: 1 }}>
+              <Box
+                sx={{
+                  mr: 1,
+                  color: "text.secondary",
+                  alignSelf: "flex-start",
+                  mt: 1,
+                }}
+              >
                 <EditNoteIcon fontSize="small" />
               </Box>
             ),
@@ -287,24 +338,48 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
       </Box>
 
       {/* Checkup Items Section */}
-      <Box sx={{
-        backgroundColor: 'white',
-        borderRadius: 2,
-        p: 3,
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant="h6" sx={{
-            color: 'primary.main',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}>
-            <Box sx={{ width: 6, height: 24, backgroundColor: 'primary.main', borderRadius: 1 }} />
+      <Box
+        sx={{
+          backgroundColor: "white",
+          borderRadius: 2,
+          p: 3,
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 3,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: "primary.main",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 24,
+                backgroundColor: "primary.main",
+                borderRadius: 1,
+              }}
+            />
             Các Mục Kiểm Tra
-            <Chip label={checkupItems.length} size="small" color="primary" sx={{ ml: 1 }} />
+            <Chip
+              label={checkupItems.length}
+              size="small"
+              color="primary"
+              sx={{ ml: 1 }}
+            />
           </Typography>
 
           <Button
@@ -314,14 +389,14 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
             onClick={handleAddItem}
             sx={{
               borderRadius: 2,
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(25,118,210,0.3)',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(25,118,210,0.4)',
-                transform: 'translateY(-1px)'
+              boxShadow: "0 2px 8px rgba(25,118,210,0.3)",
+              "&:hover": {
+                boxShadow: "0 4px 12px rgba(25,118,210,0.4)",
+                transform: "translateY(-1px)",
               },
-              transition: 'all 0.2s ease'
+              transition: "all 0.2s ease",
             }}
           >
             Thêm Mục Kiểm Tra
@@ -329,52 +404,72 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
         </Box>
 
         {checkupItems.length === 0 ? (
-          <Box sx={{
-            textAlign: 'center',
-            py: 6,
-            backgroundColor: 'grey.50',
-            borderRadius: 2,
-            border: '2px dashed #d1d5db'
-          }}>
-            <AssignmentOutlinedIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" sx={{ color: 'text.secondary', mb: 1 }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              backgroundColor: "grey.50",
+              borderRadius: 2,
+              border: "2px dashed #d1d5db",
+            }}
+          >
+            <AssignmentOutlinedIcon
+              sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+            />
+            <Typography variant="h6" sx={{ color: "text.secondary", mb: 1 }}>
               Chưa có mục kiểm tra nào
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               Thêm các mục kiểm tra để tạo mẫu khám hoàn chỉnh
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {checkupItems.map((item, index) => (
-              <Paper key={index} elevation={0} sx={{
-                p: 3,
-                position: 'relative',
-                border: '1px solid #e5e7eb',
-                borderRadius: 2,
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  borderColor: 'primary.main'
-                }
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      backgroundColor: 'primary.main',
-                      color: 'white',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '14px',
-                      fontWeight: 600
-                    }}>
+              <Paper
+                key={index}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  position: "relative",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 2,
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                    borderColor: "primary.main",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        backgroundColor: "primary.main",
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "14px",
+                        fontWeight: 600,
+                      }}
+                    >
                       {index + 1}
                     </Box>
-                    <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "text.secondary" }}
+                    >
                       Mục kiểm tra #{index + 1}
                     </Typography>
                   </Box>
@@ -384,13 +479,13 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       size="small"
                       onClick={() => handleRemoveItem(index)}
                       sx={{
-                        color: 'error.main',
-                        backgroundColor: 'error.50',
-                        '&:hover': {
-                          backgroundColor: 'error.100',
-                          transform: 'scale(1.1)'
+                        color: "error.main",
+                        backgroundColor: "error.50",
+                        "&:hover": {
+                          backgroundColor: "error.100",
+                          transform: "scale(1.1)",
                         },
-                        transition: 'all 0.2s ease'
+                        transition: "all 0.2s ease",
                       }}
                     >
                       <DeleteOutlineIcon fontSize="small" />
@@ -399,7 +494,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                 </Box>
 
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                     <TextField
                       label="ID"
                       variant="outlined"
@@ -409,7 +504,7 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       disabled
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Tên Mục"
@@ -417,10 +512,12 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       fullWidth
                       size="small"
                       value={item.itemName}
-                      onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "itemName", e.target.value)
+                      }
                       required
                       placeholder="Nhập tên mục kiểm tra..."
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -432,20 +529,24 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       select
                       value={item.unit || ''}
                       onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, width: '150px' }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } ,width: '150px'}}
                     >
-                      <MenuItem value=""><em>Không có đơn vị</em></MenuItem>
+                      <MenuItem value="">
+                        <em>Không có đơn vị</em>
+                      </MenuItem>
                       {Object.values(CheckupItemUnit).map((unit) => (
                         <MenuItem key={unit} value={unit}>
-                          {unit === CheckupItemUnit.KG && 'KG - Kilogram'}
-                          {unit === CheckupItemUnit.CM && 'CM - Centimet'}
-                          {unit === CheckupItemUnit.MM && 'MM - Milimet'}
-                          {unit === CheckupItemUnit.PERCENT && '% - Phần trăm'}
-                          {unit === CheckupItemUnit.BPM && 'BPM - Nhịp/phút'}
-                          {unit === CheckupItemUnit.MG_DL && 'MG/DL - Miligram/Decilit'}
-                          {unit === CheckupItemUnit.MM_HG && 'MM/HG - Milimet thủy ngân'}
-                          {unit === CheckupItemUnit.LITER && 'Lít - Lít'}
-                          {unit === CheckupItemUnit.DIOP && 'DIOP - Độ'}
+                          {unit === CheckupItemUnit.KG && "KG - Kilogram"}
+                          {unit === CheckupItemUnit.CM && "CM - Centimet"}
+                          {unit === CheckupItemUnit.MM && "MM - Milimet"}
+                          {unit === CheckupItemUnit.PERCENT && "% - Phần trăm"}
+                          {unit === CheckupItemUnit.BPM && "BPM - Nhịp/phút"}
+                          {unit === CheckupItemUnit.MG_DL &&
+                            "MG/DL - Miligram/Decilit"}
+                          {unit === CheckupItemUnit.MM_HG &&
+                            "MM/HG - Milimet thủy ngân"}
+                          {unit === CheckupItemUnit.LITER && "Lít"}
+                          {unit === CheckupItemUnit.DIOP && "Diop - Độ cận thị"}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -457,34 +558,57 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
                       fullWidth
                       size="small"
                       select
-                      value={item.dataType || ''}
-                      onChange={(e) => handleItemChange(index, 'dataType', e.target.value)}
+                      value={item.dataType || ""}
+                      onChange={(e) =>
+                        handleItemChange(index, "dataType", e.target.value)
+                      }
                       required
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, width: '150px' }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } ,width: '150px'}}
                     >
-                      <MenuItem value=""><em>Chọn kiểu dữ liệu</em></MenuItem>
+                      <MenuItem value="">
+                        <em>Chọn kiểu dữ liệu</em>
+                      </MenuItem>
                       {Object.values(CheckupItemDataType).map((type) => (
                         <MenuItem key={type} value={type}>
-                          {type === CheckupItemDataType.NUMBER && <><TagIcon fontSize="small" /> Số</>}
-                          {type === CheckupItemDataType.TEXT && <><TextSnippetIcon fontSize="small" /> Văn bản</>}
-                          {type === CheckupItemDataType.BOOLEAN && <><ToggleOffIcon fontSize="small" /> Boolean</>}
-                          {type === CheckupItemDataType.SELECT && <><FormatListBulletedIcon fontSize="small" /> Lựa chọn</>}
+                          {type === CheckupItemDataType.NUMBER && (
+                            <>
+                              <TagIcon fontSize="small" /> Số
+                            </>
+                          )}
+                          {type === CheckupItemDataType.TEXT && (
+                            <>
+                              <TextSnippetIcon fontSize="small" /> Văn bản
+                            </>
+                          )}
+                          {/* {type === CheckupItemDataType.BOOLEAN && (
+                            <>
+                              <ToggleOffIcon fontSize="small" /> Boolean
+                            </>
+                          )}
+                          {type === CheckupItemDataType.SELECT && (
+                            <>
+                              <FormatListBulletedIcon fontSize="small" /> Lựa
+                              chọn
+                            </>
+                          )} */}
                         </MenuItem>
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sx={{width: "100%"}}>
                     <TextField
                       label="Hướng dẫn"
                       variant="outlined"
                       fullWidth
                       size="small"
                       value={item.guideline}
-                      onChange={(e) => handleItemChange(index, 'guideline', e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "guideline", e.target.value)
+                      }
                       placeholder="Nhập hướng dẫn thực hiện..."
                       multiline
                       rows={2}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                     />
                   </Grid>
                 </Grid>
@@ -495,20 +619,22 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
       </Box>
 
       {/* Action Buttons */}
-      <Box sx={{
-        backgroundColor: 'white',
-        borderRadius: 2,
-        p: 3,
-        mt: 3,
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: 2,
-        position: 'sticky',
-        bottom: 0,
-        zIndex: 1
-      }}>
+      <Box
+        sx={{
+          backgroundColor: "white",
+          borderRadius: 2,
+          p: 3,
+          mt: 3,
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 2,
+          position: "sticky",
+          bottom: 0,
+          zIndex: 1,
+        }}
+      >
         <Button
           variant="outlined"
           color="inherit"
@@ -517,14 +643,14 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
           sx={{
             minWidth: 120,
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
-            borderColor: '#d1d5db',
-            color: 'text.secondary',
-            '&:hover': {
-              borderColor: '#9ca3af',
-              backgroundColor: '#f9fafb'
-            }
+            borderColor: "#d1d5db",
+            color: "text.secondary",
+            "&:hover": {
+              borderColor: "#9ca3af",
+              backgroundColor: "#f9fafb",
+            },
           }}
         >
           Hủy bỏ
@@ -538,21 +664,21 @@ const HealthCheckTemplateForm = ({ initialData, onSubmit, onCancel, isEditing })
           sx={{
             minWidth: 120,
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
-            boxShadow: '0 2px 8px rgba(25,118,210,0.3)',
-            '&:hover': {
-              boxShadow: '0 4px 12px rgba(25,118,210,0.4)',
-              transform: 'translateY(-1px)'
+            boxShadow: "0 2px 8px rgba(25,118,210,0.3)",
+            "&:hover": {
+              boxShadow: "0 4px 12px rgba(25,118,210,0.4)",
+              transform: "translateY(-1px)",
             },
-            '&:disabled': {
-              backgroundColor: 'grey.300',
-              color: 'grey.500'
+            "&:disabled": {
+              backgroundColor: "grey.300",
+              color: "grey.500",
             },
-            transition: 'all 0.2s ease'
+            transition: "all 0.2s ease",
           }}
         >
-          {isEditing ? 'Cập nhật Mẫu' : 'Tạo Mẫu'}
+          {isEditing ? "Cập nhật Mẫu" : "Tạo Mẫu"}
         </Button>
       </Box>
     </Box>
@@ -564,80 +690,137 @@ const HealthCheckTemplateDetail = ({ template, onClose }) => {
   if (!template) return null;
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" component="h2" gutterBottom align="center" sx={{ mb: 3, fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography
+        variant="h5"
+        component="h2"
+        gutterBottom
+        align="center"
+        sx={{ mb: 3, fontWeight: "bold", color: "primary.main" }}
+      >
         Chi tiết Mẫu Khám: {template.name}
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={4}>
-          <Typography variant="subtitle1" color="text.secondary">Mô tả:</Typography>
-          <Typography variant="body1">{template.description || 'Không có mô tả'}</Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Mô tả:
+          </Typography>
+          <Typography variant="body1">
+            {template.description || "Không có mô tả"}
+          </Typography>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Typography variant="subtitle1" color="text.secondary">Mẫu Mặc Định:</Typography>
-          <Typography variant="body1">{template.isDefault ? 'Có' : 'Không'}</Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Mẫu Mặc Định:
+          </Typography>
+          <Typography variant="body1">
+            {template.isDefault ? "Có" : "Không"}
+          </Typography>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Typography variant="subtitle1" color="text.secondary">Mã Mẫu Khám:</Typography>
-          <Typography variant="body1">{template._id || 'Không xác định'}</Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Mã Mẫu Khám:
+          </Typography>
+          <Typography variant="body1">
+            {template._id || "Không xác định"}
+          </Typography>
         </Grid>
       </Grid>
 
-      <Typography variant="h6" sx={{ mt: 3, mb: 2, color: 'text.secondary' }}>Các Mục Kiểm Tra:</Typography>
+      <Typography variant="h6" sx={{ mt: 3, mb: 2, color: "text.secondary" }}>
+        Các Mục Kiểm Tra:
+      </Typography>
       {template.checkupItems && template.checkupItems.length > 0 ? (
         <StyledTableContainer component={Paper} elevation={1}>
           <Table size="medium">
-            <TableHead sx={{ backgroundColor: 'primary.light' }}>
+            <TableHead sx={{ backgroundColor: "primary.light" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.contrastText' }}>Mã Mục</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.contrastText' }}>Tên Mục</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.contrastText' }}>Đơn vị</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.contrastText' }}>Kiểu Dữ Liệu</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.contrastText' }}>Hướng dẫn</TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                >
+                  Mã Mục
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                >
+                  Tên Mục
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                >
+                  Đơn vị
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                >
+                  Kiểu Dữ Liệu
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                >
+                  Hướng dẫn
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {template.checkupItems.map((item, index) => (
-                <TableRow key={index} sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
+                <TableRow
+                  key={index}
+                  sx={{
+                    "&:nth-of-type(odd)": { backgroundColor: "action.hover" },
+                  }}
+                >
                   <TableCell>{item.itemId}</TableCell>
                   <TableCell>{item.itemName}</TableCell>
                   <TableCell>
                     {item.unit
                       ? item.unit === CheckupItemUnit.KG ? 'KG - Kilogram'
                         : item.unit === CheckupItemUnit.CM ? 'CM - Centimet'
-                          : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
-                            : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
-                              : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
-                                : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
-                                  : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
-                                    : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
-                                      : item.unit === CheckupItemUnit.DIOP ? 'DIOP - ĐỘ'
-                                        : 'N/A'
+                        : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
+                        : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
+                        : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
+                        : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
+                        : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
+                        : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
+                        : 'N/A'
                       : 'N/A'}
                   </TableCell>
                   <TableCell>
                     {item.dataType
                       ? item.dataType === CheckupItemDataType.NUMBER ? 'Số'
                         : item.dataType === CheckupItemDataType.TEXT ? 'Văn bản'
-                          : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
-                            : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
-                              : 'N/A'
+                        : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
+                        : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
+                        : 'N/A'
                       : 'N/A'}
                   </TableCell>
-                  <TableCell>{item.guideline || 'Không có hướng dẫn'}</TableCell>
+                  <TableCell>
+                    {item.guideline || "Không có hướng dẫn"}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </StyledTableContainer>
       ) : (
-        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', mt: 3 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontStyle: "italic", textAlign: "center", mt: 3 }}
+        >
           Không có mục kiểm tra nào được định nghĩa.
         </Typography>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-        <Button variant="contained" color="secondary" onClick={onClose} size="large">Đóng</Button>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={onClose}
+          size="large"
+        >
+          Đóng
+        </Button>
       </Box>
     </Box>
   );
@@ -650,7 +833,7 @@ const MedicalCheckupManagement = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [totalTemplates, setTotalTemplates] = useState(0);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -659,8 +842,8 @@ const MedicalCheckupManagement = () => {
 
   // State cho Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   // Helper function to show Snackbar
   const showSnackbar = (message, severity) => {
@@ -670,7 +853,7 @@ const MedicalCheckupManagement = () => {
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setSnackbarOpen(false);
@@ -680,13 +863,21 @@ const MedicalCheckupManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await healthCheckTemplateService.getListHealthCheckTemplates({ page: page + 1, limit, search });
+      const response =
+        await healthCheckTemplateService.getListHealthCheckTemplates({
+          page: page + 1,
+          limit,
+          search,
+        });
       setTemplates(response.data || []);
       setTotalTemplates(response.data.length > 0 ? response.data.length : 0);
     } catch (err) {
-      setError('Không thể tải danh sách mẫu khám. Vui lòng thử lại.');
+      setError("Không thể tải danh sách mẫu khám. Vui lòng thử lại.");
       console.error(err);
-      showSnackbar('Không thể tải danh sách mẫu khám. Vui lòng thử lại.', 'error');
+      showSnackbar(
+        "Không thể tải danh sách mẫu khám. Vui lòng thử lại.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -708,41 +899,49 @@ const MedicalCheckupManagement = () => {
 
   const handleEditClick = async (templateId) => {
     try {
-      const response = await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
+      const response =
+        await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
       setEditingTemplate(response.data);
       setShowFormModal(true);
     } catch (err) {
-      console.error('Không thể tải chi tiết mẫu khám để chỉnh sửa:', err);
-      showSnackbar('Không thể tải chi tiết mẫu khám để chỉnh sửa.', 'error');
+      console.error("Không thể tải chi tiết mẫu khám để chỉnh sửa:", err);
+      showSnackbar("Không thể tải chi tiết mẫu khám để chỉnh sửa.", "error");
     }
   };
 
   const handleViewDetailClick = async (templateId) => {
     try {
-      const response = await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
+      const response =
+        await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
       setViewingTemplate(response.data);
       setShowDetailModal(true);
     } catch (err) {
-      console.error('Không thể tải chi tiết mẫu khám:', err);
-      showSnackbar('Không thể tải chi tiết mẫu khám.', 'error');
+      console.error("Không thể tải chi tiết mẫu khám:", err);
+      showSnackbar("Không thể tải chi tiết mẫu khám.", "error");
     }
   };
 
   const handleFormSubmit = async (formData) => {
     try {
       if (editingTemplate) {
-        await healthCheckTemplateService.updateHealthCheckTemplate(editingTemplate._id, formData);
-        showSnackbar('Cập nhật mẫu khám thành công.', 'success');
+        await healthCheckTemplateService.updateHealthCheckTemplate(
+          editingTemplate._id,
+          formData
+        );
+        showSnackbar("Cập nhật mẫu khám thành công.", "success");
       } else {
         await healthCheckTemplateService.createHealthCheckTemplate(formData);
-        showSnackbar('Thêm mẫu khám mới thành công.', 'success');
+        showSnackbar("Thêm mẫu khám mới thành công.", "success");
       }
       setShowFormModal(false);
       setEditingTemplate(null);
       fetchTemplates();
     } catch (err) {
-      console.error('Lưu mẫu khám thất bại:', err);
-      showSnackbar('Lưu mẫu khám thất bại. Vui lòng kiểm tra dữ liệu.', 'error');
+      console.error("Lưu mẫu khám thất bại:", err);
+      showSnackbar(
+        "Lưu mẫu khám thất bại. Vui lòng kiểm tra dữ liệu.",
+        "error"
+      );
     }
   };
 
@@ -750,21 +949,26 @@ const MedicalCheckupManagement = () => {
     Swal.fire({
       title: `Bạn có chắc chắn muốn xóa mẫu khám "${templateName}" không?`,
       text: "Bạn sẽ không thể hoàn tác hành động này!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Có, xóa nó!',
-      cancelButtonText: 'Hủy'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Có, xóa nó!",
+      cancelButtonText: "Hủy",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await healthCheckTemplateService.deleteHealthCheckTemplate(templateId);
-          showSnackbar('Mẫu khám đã được xóa.', 'success');
+          await healthCheckTemplateService.deleteHealthCheckTemplate(
+            templateId
+          );
+          showSnackbar("Mẫu khám đã được xóa.", "success");
           fetchTemplates();
         } catch (err) {
-          console.error('Xóa mẫu khám thất bại:', err);
-          showSnackbar('Xóa mẫu khám thất bại. Mẫu khám có thể đang được sử dụng.', 'error');
+          console.error("Xóa mẫu khám thất bại:", err);
+          showSnackbar(
+            "Xóa mẫu khám thất bại. Mẫu khám có thể đang được sử dụng.",
+            "error"
+          );
         }
       }
     });
@@ -782,35 +986,44 @@ const MedicalCheckupManagement = () => {
   const handleDefaultSwitchChange = async (templateId, currentStatus) => {
     const newStatus = !currentStatus;
     Swal.fire({
-      title: `Bạn có chắc chắn muốn ${newStatus ? 'đặt' : 'bỏ'} mẫu khám này làm mặc định không?`,
+      title: `Bạn có chắc chắn muốn ${
+        newStatus ? "đặt" : "bỏ"
+      } mẫu khám này làm mặc định không?`,
       text: "Hành động này sẽ thay đổi trạng thái mặc định của mẫu khám!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Có, thực hiện!',
-      cancelButtonText: 'Hủy'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Có, thực hiện!",
+      cancelButtonText: "Hủy",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await healthCheckTemplateService.setDefaultHealthCheckTemplate(templateId);
-          showSnackbar(`Cập nhật trạng thái mặc định thành công.`, 'success');
+          await healthCheckTemplateService.setDefaultHealthCheckTemplate(
+            templateId
+          );
+          showSnackbar(`Cập nhật trạng thái mặc định thành công.`, "success");
           fetchTemplates();
         } catch (err) {
-          console.error('Cập nhật trạng thái mặc định thất bại:', err);
-          showSnackbar('Cập nhật trạng thái mặc định thất bại. Vui lòng thử lại.', 'error');
+          console.error("Cập nhật trạng thái mặc định thất bại:", err);
+          showSnackbar(
+            "Cập nhật trạng thái mặc định thất bại. Vui lòng thử lại.",
+            "error"
+          );
         }
       }
     });
   };
 
   return (
-    <Box sx={{
-      padding: 3,
-      backgroundColor: "#f5f5f5",
-      minHeight: "100vh",
-      width: "100%",
-    }}>
+    <Box
+      sx={{
+        padding: 3,
+        backgroundColor: "#f5f5f5",
+        minHeight: "100vh",
+        width: "100%",
+      }}
+    >
       <div className="mx-auto">
         <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl border border-blue-100 mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50"></div>
@@ -865,51 +1078,107 @@ const MedicalCheckupManagement = () => {
       </div>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', flexDirection: 'column', gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "300px",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <CircularProgress size={50} />
-          <Typography variant="h6" color="text.secondary">Đang tải danh sách mẫu khám...</Typography>
+          <Typography variant="h6" color="text.secondary">
+            Đang tải danh sách mẫu khám...
+          </Typography>
         </Box>
       ) : error ? (
-        <Typography color="error" align="center" variant="h6" sx={{ mt: 5 }}>{error}</Typography>
+        <Typography color="error" align="center" variant="h6" sx={{ mt: 5 }}>
+          {error}
+        </Typography>
       ) : (
         <StyledPaper elevation={8}>
           <Table>
-            <TableHead >
+            <TableHead>
               <TableRow>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Mã Mẫu</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Tên Mẫu</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Mô tả</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Mặc Định</TableCell>
-                <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Hành Động</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
+                  Mã Mẫu
+                </TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
+                  Tên Mẫu
+                </TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
+                  Mô tả
+                </TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold" }}>
+                  Mặc Định
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ color: "white", fontWeight: "bold" }}
+                >
+                  Hành Động
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {templates.length > 0 ? (
                 templates.map((template) => (
                   <TableRow key={template._id}>
-                    <TableCell sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <TableCell
+                      sx={{
+                        maxWidth: 150,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {template._id}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'medium' }}>{template.name}</TableCell>
-                    <TableCell sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <TableCell sx={{ fontWeight: "medium" }}>
+                      {template.name}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        maxWidth: 300,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {template.description}
                     </TableCell>
                     <TableCell>
                       <Switch
                         checked={template.isDefault}
-                        onChange={() => handleDefaultSwitchChange(template._id, template.isDefault)}
+                        onChange={() =>
+                          handleDefaultSwitchChange(
+                            template._id,
+                            template.isDefault
+                          )
+                        }
                         color="primary"
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 24 } }}
+                        sx={{ "& .MuiSvgIcon-root": { fontSize: 24 } }}
                       />
                     </TableCell>
                     <TableCell align="right">
-                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="flex-end"
+                      >
                         <Tooltip title="Xem chi tiết">
                           <IconButton
                             color="info"
                             onClick={() => handleViewDetailClick(template._id)}
                             aria-label="Xem chi tiết"
-                            sx={{ '&:hover': { color: 'white', backgroundColor: 'info.main' } }}
+                            sx={{
+                              "&:hover": {
+                                color: "white",
+                                backgroundColor: "info.main",
+                              },
+                            }}
                           >
                             <VisibilityIcon />
                           </IconButton>
@@ -919,7 +1188,12 @@ const MedicalCheckupManagement = () => {
                             color="primary"
                             onClick={() => handleEditClick(template._id)}
                             aria-label="Sửa"
-                            sx={{ '&:hover': { color: 'white', backgroundColor: 'primary.main' } }}
+                            sx={{
+                              "&:hover": {
+                                color: "white",
+                                backgroundColor: "primary.main",
+                              },
+                            }}
                           >
                             <EditIcon />
                           </IconButton>
@@ -927,9 +1201,16 @@ const MedicalCheckupManagement = () => {
                         <Tooltip title="Xóa">
                           <IconButton
                             color="error"
-                            onClick={() => handleDeleteClick(template._id, template.name)}
+                            onClick={() =>
+                              handleDeleteClick(template._id, template.name)
+                            }
                             aria-label="Xóa"
-                            sx={{ '&:hover': { color: 'white', backgroundColor: 'error.main' } }}
+                            sx={{
+                              "&:hover": {
+                                color: "white",
+                                backgroundColor: "error.main",
+                              },
+                            }}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -940,7 +1221,11 @@ const MedicalCheckupManagement = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 3, fontStyle: 'italic', color: 'text.secondary' }}>
+                  <TableCell
+                    colSpan={5}
+                    align="center"
+                    sx={{ py: 3, fontStyle: "italic", color: "text.secondary" }}
+                  >
                     Không có mẫu khám nào để hiển thị.
                   </TableCell>
                 </TableRow>
@@ -959,7 +1244,7 @@ const MedicalCheckupManagement = () => {
             labelDisplayedRows={({ from, to, count }) =>
               `Hiển thị ${from}-${to} của ${count !== -1 ? count : `hơn ${to}`}`
             }
-            sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 1 }}
+            sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1 }}
           />
         </StyledPaper>
       )}
@@ -976,13 +1261,13 @@ const MedicalCheckupManagement = () => {
             boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
             maxHeight: "90vh",
             transition: "all 0.3s ease-in-out"
-          }
+          } 
         }}
         BackdropProps={{
           sx: {
             backgroundColor: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(4px)"
-          }
+            backdropFilter: "blur(4px)",
+          },
         }}
       >
         <DialogTitle
@@ -995,7 +1280,7 @@ const MedicalCheckupManagement = () => {
             display: "flex",
             alignItems: "center",
             gap: 2,
-            borderBottom: "1px solid rgba(255,255,255,0.1)"
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
           }}
         >
           <Box
@@ -1007,7 +1292,7 @@ const MedicalCheckupManagement = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backdropFilter: "blur(10px)"
+              backdropFilter: "blur(10px)",
             }}
           >
             {editingTemplate ? (
@@ -1022,8 +1307,8 @@ const MedicalCheckupManagement = () => {
               {editingTemplate ? "Chỉnh sửa Mẫu Khám" : "Thêm Mới Mẫu Khám"}
             </Typography>
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
-              {editingTemplate
-                ? "Cập nhật thông tin mẫu khám sức khỏe"
+              {editingTemplate 
+                ? "Cập nhật thông tin mẫu khám sức khỏe" 
                 : "Tạo mẫu khám sức khỏe mới cho hệ thống"
               }
             </Typography>
@@ -1039,9 +1324,9 @@ const MedicalCheckupManagement = () => {
               height: 40,
               "&:hover": {
                 backgroundColor: "rgba(255,255,255,0.2)",
-                transform: "scale(1.05)"
+                transform: "scale(1.05)",
               },
-              transition: "all 0.2s ease"
+              transition: "all 0.2s ease",
             }}
           >
             <CloseIcon sx={{ fontSize: 20 }} />
@@ -1054,7 +1339,7 @@ const MedicalCheckupManagement = () => {
             backgroundColor: "#f8fafc",
             p: 0,
             position: "relative",
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
           <Box
@@ -1068,8 +1353,8 @@ const MedicalCheckupManagement = () => {
                 height: "100%",
                 width: editingTemplate ? "100%" : "50%",
                 background: "linear-gradient(90deg, #2196f3 0%, #1976d2 100%)",
-                transition: "width 0.5s ease"
-              }
+                transition: "width 0.5s ease",
+              },
             }}
           />
 
@@ -1080,7 +1365,7 @@ const MedicalCheckupManagement = () => {
                 borderRadius: 2,
                 overflow: "hidden",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                border: "1px solid #e5e7eb"
+                border: "1px solid #e5e7eb",
               }}
             >
               <HealthCheckTemplateForm
@@ -1099,17 +1384,17 @@ const MedicalCheckupManagement = () => {
         onClose={() => setShowDetailModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
+        PaperProps={{ 
+          sx: { 
+            borderRadius: 3, 
             overflow: 'hidden',
             maxHeight: '90vh'
-          }
+          } 
         }}
       >
-        <DialogTitle sx={{
+        <DialogTitle sx={{ 
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-          color: 'white',
+          color: 'white', 
           pb: 2,
           position: 'relative'
         }}>
@@ -1123,42 +1408,42 @@ const MedicalCheckupManagement = () => {
             aria-label="đóng"
             onClick={() => setShowDetailModal(false)}
             sx={{
-              position: 'absolute',
+              position: "absolute",
               right: 8,
               top: 8,
               color: 'white',
-              '&:hover': {
+              '&:hover': { 
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 transform: 'scale(1.1)'
               },
-              transition: 'all 0.2s'
+              transition: "all 0.2s",
             }}
           >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
-        <DialogContent
-          dividers
-          sx={{
+        
+        <DialogContent 
+          dividers 
+          sx={{ 
             backgroundColor: 'background.paper',
             p: 3,
-            maxHeight: 'calc(90vh - 140px)',
-            overflowY: 'auto'
+            maxHeight: "calc(90vh - 140px)",
+            overflowY: "auto",
           }}
         >
           {/* Mã mẫu khám nổi bật */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Chip
+            <Chip 
               icon={<TagIcon />}
               label="Mã Mẫu Khám"
-              sx={{
+              sx={{ 
                 backgroundColor: 'primary.light',
                 color: 'primary.contrastText',
                 mb: 1
               }}
             />
-            <Typography variant="h4" sx={{
+            <Typography variant="h4" sx={{ 
               color: 'primary.main',
               fontWeight: 'bold',
               letterSpacing: 1
@@ -1170,23 +1455,47 @@ const MedicalCheckupManagement = () => {
           {/* Thông tin cơ bản */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, backgroundColor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <PersonStandingIcon sx={{ fontSize: 20, color: 'grey.600' }} />
-                  <Typography variant="subtitle2" color="grey.700">Mô tả</Typography>
+              <Paper
+                sx={{
+                  p: 2,
+                  backgroundColor: "grey.50",
+                  border: "1px solid",
+                  borderColor: "grey.200",
+                }}
+              >
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                >
+                  <PersonStandingIcon
+                    sx={{ fontSize: 20, color: "grey.600" }}
+                  />
+                  <Typography variant="subtitle2" color="grey.700">
+                    Mô tả
+                  </Typography>
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {viewingTemplate?.description || 'Không có mô tả'}
+                  {viewingTemplate?.description || "Không có mô tả"}
                 </Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, backgroundColor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <FingerprintIcon sx={{ fontSize: 20, color: 'grey.600' }} />
-                  <Typography variant="subtitle2" color="grey.700">Mã Mẫu Khám</Typography>
+              <Paper
+                sx={{
+                  p: 2,
+                  backgroundColor: "grey.50",
+                  border: "1px solid",
+                  borderColor: "grey.200",
+                }}
+              >
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                >
+                  <FingerprintIcon sx={{ fontSize: 20, color: "grey.600" }} />
+                  <Typography variant="subtitle2" color="grey.700">
+                    Mã Mẫu Khám
+                  </Typography>
                 </Box>
-                <Typography variant="body2" sx={{
+                <Typography variant="body2" sx={{ 
                   fontFamily: 'monospace',
                   wordBreak: 'break-all',
                   fontWeight: 600
@@ -1199,46 +1508,49 @@ const MedicalCheckupManagement = () => {
 
           {/* Danh sách mục kiểm tra */}
           <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-              <Assignment sx={{ fontSize: 24, color: 'primary.main' }} />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+              <Assignment sx={{ fontSize: 24, color: "primary.main" }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Các Mục Kiểm Tra
               </Typography>
               <Chip
                 label={`${viewingTemplate?.checkupItems?.length || 0} mục`}
                 size="small"
-                sx={{ backgroundColor: 'primary.light', color: 'primary.contrastText' }}
+                sx={{
+                  backgroundColor: "primary.light",
+                  color: "primary.contrastText",
+                }}
               />
             </Box>
-
+            
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {(viewingTemplate?.checkupItems || []).map((item, index) => (
                 <Paper
                   key={item.itemId}
                   sx={{
                     p: 3,
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                    '&:hover': {
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                    "&:hover": {
                       boxShadow: 2,
-                      borderColor: 'primary.light'
+                      borderColor: "primary.light",
                     },
-                    transition: 'all 0.2s'
+                    transition: "all 0.2s",
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Chip
+                      <Chip 
                         label={`#${item.itemId}`}
                         size="small"
-                        sx={{
+                        sx={{ 
                           backgroundColor: 'secondary.light',
                           color: 'secondary.contrastText',
                           fontWeight: 'bold'
                         }}
                       />
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {item.itemName || 'Không xác định'}
+                        {item.itemName || "Không xác định"}
                       </Typography>
                     </Box>
                   </Box>
@@ -1246,39 +1558,38 @@ const MedicalCheckupManagement = () => {
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="grey.600">
-                        Đơn vị: <Chip
+                        Đơn vị: <Chip 
                           label={
                             item.unit
                               ? item.unit === CheckupItemUnit.KG ? 'KG - Kilogram'
                                 : item.unit === CheckupItemUnit.CM ? 'CM - Centimet'
-                                  : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
-                                    : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
-                                      : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
-                                        : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
-                                          : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
-                                            : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
-                                              : item.unit === CheckupItemUnit.DIOP ? 'DIOP - Độ'
-                                                : 'Không có đơn vị'
+                                : item.unit === CheckupItemUnit.MM ? 'MM - Milimet'
+                                : item.unit === CheckupItemUnit.PERCENT ? '% - Phần trăm'
+                                : item.unit === CheckupItemUnit.BPM ? 'BPM - Nhịp/phút'
+                                : item.unit === CheckupItemUnit.MG_DL ? 'MG/DL - Miligram/Decilit'
+                                : item.unit === CheckupItemUnit.MM_HG ? 'MM/HG - Milimet thủy ngân'
+                                : item.unit === CheckupItemUnit.LITER ? 'Lít - Lít'
+                                : 'Không có đơn vị'
                               : 'Không có đơn vị'
-                          }
-                          size="small"
-                          sx={{ ml: 1 }}
+                          } 
+                          size="small" 
+                          sx={{ ml: 1 }} 
                         />
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="grey.600">
-                        Kiểu dữ liệu: <Chip
+                        Kiểu dữ liệu: <Chip 
                           label={
                             item.dataType
                               ? item.dataType === CheckupItemDataType.NUMBER ? 'Số'
                                 : item.dataType === CheckupItemDataType.TEXT ? 'Văn bản'
-                                  : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
-                                    : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
-                                      : 'Không xác định'
+                                : item.dataType === CheckupItemDataType.BOOLEAN ? 'Boolean'
+                                : item.dataType === CheckupItemDataType.SELECT ? 'Lựa chọn'
+                                : 'Không xác định'
                               : 'Không xác định'
-                          }
-                          size="small"
+                          } 
+                          size="small" 
                           color={item.dataType === CheckupItemDataType.TEXT ? 'info' : 'success'}
                           sx={{ ml: 1 }}
                         />
@@ -1290,14 +1601,14 @@ const MedicalCheckupManagement = () => {
                     <Typography variant="body2" color="grey.600" sx={{ mb: 1 }}>
                       Hướng dẫn:
                     </Typography>
-                    <Paper sx={{
-                      p: 2,
+                    <Paper sx={{ 
+                      p: 2, 
                       backgroundColor: 'grey.50',
                       borderLeft: '4px solid',
                       borderLeftColor: 'primary.main'
                     }}>
                       <Typography variant="body2">
-                        {item.guideline || 'Không có hướng dẫn'}
+                        {item.guideline || "Không có hướng dẫn"}
                       </Typography>
                     </Paper>
                   </Box>
@@ -1306,14 +1617,14 @@ const MedicalCheckupManagement = () => {
             </Box>
           </Box>
         </DialogContent>
-
-        <DialogActions sx={{
-          p: 3,
+        
+        <DialogActions sx={{ 
+          p: 3, 
           backgroundColor: 'grey.50',
           borderTop: '1px solid',
           borderTopColor: 'grey.200'
         }}>
-          <Button
+          <Button 
             onClick={() => setShowDetailModal(false)}
             variant="contained"
             sx={{
@@ -1321,7 +1632,7 @@ const MedicalCheckupManagement = () => {
               py: 1.5,
               fontWeight: 600,
               borderRadius: 2,
-              textTransform: 'none'
+              textTransform: "none",
             }}
           >
             Đóng
@@ -1333,13 +1644,13 @@ const MedicalCheckupManagement = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>

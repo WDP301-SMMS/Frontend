@@ -198,7 +198,6 @@ const MedicationRequests = () => {
         return;
       }
     }
-    console.log("Form data before validation:", form.prescriptionFile);
     if (!form.prescriptionFile) {
       setErrorMessage(
         "File đơn thuốc phải là hình ảnh (jpg, jpeg, png) hoặc PDF."
@@ -216,14 +215,12 @@ const MedicationRequests = () => {
       if (form.prescriptionFile) {
         formData.append("prescriptionFile", form.prescriptionFile);
       }
-      console.log("Form data before sending:", form);
       // Phân loại items thành hai danh sách: cập nhật (có _id) và thêm mới (không có _id)
       const itemsToUpdate = form.items.filter((item) => item._id);
       const itemsToAdd = form.items
         .filter((item) => !item._id)
         .map(({ _id, ...rest }) => rest);
-      console.log("Items to update:", itemsToUpdate);
-      console.log("Items to add:", itemsToAdd);
+      
 
       if (editMode && form._id) {
         // Cập nhật thông tin yêu cầu (parentId, studentId, dates, prescriptionFile)
@@ -372,7 +369,6 @@ const MedicationRequests = () => {
           onChange={handleSearch}
           sx={{ width: { xs: "100%", sm: 300 } }}
           variant="outlined"
-          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -387,7 +383,6 @@ const MedicationRequests = () => {
             value={filterStatus}
             onChange={(e) => handleFilterStatus(e.target.value)}
             label="Trạng thái"
-            size="small"
           >
             <MenuItem value="">Tất cả</MenuItem>
             <MenuItem value="Pending">Chờ xử lý</MenuItem>

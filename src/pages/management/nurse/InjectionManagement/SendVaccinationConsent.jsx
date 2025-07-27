@@ -146,8 +146,7 @@ function SendVaccinationConsent() {
         } else {
           setNurseID(data._id);
         }
-        console.log(data._id);
-        console.log(nurseID);
+       
       } else {
         setError(result.message || "Không thể tải thông tin Nurse");
       }
@@ -418,16 +417,14 @@ Trân trọng,
 
       // Convert scheduledDate to ISO format for API
       const isoScheduledDate = new Date(form.scheduledDate).toISOString();
-      console.log(form.location);
-      console.log(selectedCampaign.destination);
-
+    
       // Check for updates compared to selected campaign
       if (selectedCampaign) {
         // Update actualStartDate if scheduledDate changed
         if (
           isoScheduledDate !== new Date(selectedCampaign.actualStartDate).toISOString()
         ) {
-          console.log("a");
+       
           await campaignService.updateCampaign(form.selectedCampaignId, {
             createdBy: nurseID,
             actualStartDate: isoScheduledDate,
@@ -436,7 +433,7 @@ Trân trọng,
         }
         // Update destination if location changed
         if (form.location !== selectedCampaign.destination) {
-          console.log("b");
+      
           await campaignService.updateCampaign(form.selectedCampaignId, {
             createdBy: nurseID,
             destination: form.location,
@@ -493,7 +490,7 @@ Trân trọng,
       onConfirm: async (reason) => {
         try {
           setLoading(true);
-          console.log(nurseID);
+        
           await campaignService.updateCampaignStatus(
             notification.campaignId,
             `${nurseID}`,

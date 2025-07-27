@@ -43,7 +43,6 @@ export const ChangePasswordLayout = ({ isOpen, onClose }) => {
   const onSubmit = async (data) => {
     try {
       const response = await userService.changePassword(data);
-      console.log(response);
       if (response.success === true) {
         toast.success("Change password successfully");
         onClose(); // Close modal after successful password change
