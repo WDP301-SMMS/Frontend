@@ -497,6 +497,7 @@ const MedicationRequests = () => {
                       onClick={() => handleViewOrEditRequest(request, "edit")}
                       color="primary"
                       sx={{ "&:hover": { bgcolor: "#eff6ff" } }}
+                      disabled={request.status !== "Pending" }
                     >
                       <Edit2 size={16} />
                     </IconButton>
