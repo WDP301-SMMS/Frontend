@@ -15,7 +15,24 @@ class HealthCheckConsentService {
   // 2. Lấy consent theo campaignId
   async getConsentsByCampaignId(campaignId) {
     try {
-      const url = endpoints.healthCheck.getConsentsByCampaignId.replace("{campaignId}", campaignId);
+      const url = endpoints.healthCheck.getConsentsByCampaignId.replace(
+        "{campaignId}",
+        campaignId
+      );
+      const res = await api.get(url);
+      return res.data;
+    } catch (error) {
+      throw error?.response?.data || error;
+    }
+  }
+
+  // 2.1. Lấy consent theo campaignId vaf nurseId
+  async getConsentsByNurseId(campaignId) {
+    try {
+      const url = endpoints.healthCheck.getConsentsByNurseId.replace(
+        "{campaignId}",
+        campaignId
+      );
       const res = await api.get(url);
       return res.data;
     } catch (error) {
@@ -38,7 +55,10 @@ class HealthCheckConsentService {
   // 4. Cập nhật trạng thái consent (APPROVED / DECLINED)
   async updateConsentStatus(consentId, statusData) {
     try {
-      const url = endpoints.healthCheck.updateConsentStatus.replace("{consentId}", consentId);
+      const url = endpoints.healthCheck.updateConsentStatus.replace(
+        "{consentId}",
+        consentId
+      );
       const res = await api.patch(url, statusData);
       return res.data;
     } catch (error) {

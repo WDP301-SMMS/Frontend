@@ -152,7 +152,7 @@ const PerformCheckup = () => {
     }
     try {
       setLoading(true);
-      const response = await healthCheckConsentService.getConsentsByCampaignId(
+      const response = await healthCheckConsentService.getConsentsByNurseId(
         campaignId
       );
       if (response.success) {
@@ -705,40 +705,6 @@ const PerformCheckup = () => {
     });
   };
 
-  const handleCompleteCampaign = async () => {
-    try {
-      setLoading(true);
-      const response = await healthCheckCampaignService.updateCampaignStatus(
-        selectedCampaign,
-        { status: "COMPLETED" }
-      );
-      if (response.success) {
-        setAlert({
-          open: true,
-          message: "Chiến dịch đã hoàn thành!",
-          type: "success",
-        });
-        setSelectedCampaign("");
-        setStudents([]);
-        setTemplate(null);
-        setCheckupData({});
-      } else {
-        throw new Error(
-          response.message || "Không thể hoàn thành chiến dịch."
-        );
-      }
-    } catch (error) {
-      console.error("Failed to complete campaign:", error);
-      setAlert({
-        open: true,
-        message: "Không thể hoàn thành chiến dịch. Vui lòng thử lại.",
-        type: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filteredStudents = students
     .filter((student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -1017,16 +983,6 @@ const PerformCheckup = () => {
                   }}
                 >
                   Xuất Excel
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<CheckCircle size={20} />}
-                  onClick={handleCompleteCampaign}
-                  disabled={loading || !selectedCampaign}
-                  sx={{ textTransform: "none" }}
-                >
-                  Hoàn thành chiến dịch
                 </Button>
               </Box>
             </>

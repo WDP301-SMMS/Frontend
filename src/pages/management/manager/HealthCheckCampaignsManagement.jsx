@@ -29,6 +29,10 @@ import {
   Alert,
   Chip,
   InputAdornment,
+  Dialog as MuiDialog,
+  DialogTitle as MuiDialogTitle,
+  DialogContent as MuiDialogContent,
+  DialogActions as MuiDialogActions,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -43,6 +47,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { Search } from "lucide-react";
 import healthCheckCampaignService from "~/libs/api/services/healthCheckCampainService";
+import healthCheckConsentService from "~/libs/api/services/healthCheckConsentService";
 import healthCheckTemplateService from "~/libs/api/services/healthCheckTemplateService";
 import classService from "~/libs/api/services/classService";
 import userStudentServiceInstance from "~/libs/api/services/userStudentService";
@@ -757,7 +762,7 @@ const AssignmentForm = ({ campaignId, onSubmit, onCancel, showSnackbar }) => {
 };
 
 // Component để hiển thị chi tiết chiến dịch
-const CampaignDetail = ({ campaign, onClose, showSnackbar }) => {
+const CampaignDetail = ({ campaign, onClose, showSnackbar, onAnnounce, onComplete }) => {
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
   if (!campaign) return null;
@@ -1247,10 +1252,14 @@ const CampaignDetail = ({ campaign, onClose, showSnackbar }) => {
         <Box sx={{ p: 3 }}>
           {campaignData.assignments?.length > 0 ? (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {campaignData.assignments.map((staff, index) => (
+              {[...new Map(
+                campaignData.assignments
+                  .filter(a => a.nurseId && a.nurseId.username)
+                  .map(a => [a.nurseId._id, a.nurseId])
+              ).values()].map((nurse) => (
                 <Chip
-                  key={index}
-                  label={staff.nurseId.username}
+                  key={nurse._id}
+                  label={nurse.username}
                   variant="outlined"
                   sx={{
                     fontWeight: "medium",
@@ -1414,6 +1423,52 @@ const CampaignDetail = ({ campaign, onClose, showSnackbar }) => {
         >
           Đóng
         </Button>
+        {Array.isArray(campaignData.assignments) && campaignData.assignments.length > 0 && campaignData.status === "DRAFT" && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => onAnnounce(campaignData)}
+            size="large"
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: "bold",
+              textTransform: "none",
+              ml: 2,
+              boxShadow: 2,
+              "&:hover": {
+                boxShadow: 4,
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            Gửi thông báo
+          </Button>
+        )}
+        {campaignData.status === "IN_PROGRESS" && (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => onComplete(campaignData)}
+            size="large"
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: "bold",
+              textTransform: "none",
+              ml: 2,
+              boxShadow: 2,
+              "&:hover": {
+                boxShadow: 4,
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            Hoàn thành chiến dịch
+          </Button>
+        )}
       </Box>
 
       <Dialog
@@ -1468,6 +1523,12 @@ const HealthCheckCampaignsManagement = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [openAnnounceDialog, setOpenAnnounceDialog] = useState(false);
+  const [announceForm, setAnnounceForm] = useState({
+    campaignId: "",
+    scheduledDate: "",
+    location: "",
+  });
 
   const statusOptions = [
     { value: "", label: "Tất cả" },
@@ -1672,6 +1733,71 @@ const HealthCheckCampaignsManagement = () => {
         );
       }
     }
+  };
+
+  const handleAnnounceCampaign = (campaign) => {
+    setAnnounceForm({
+      campaignId: campaign._id,
+      scheduledDate: campaign.startDate ? new Date(campaign.startDate).toISOString().substring(0, 10) : "",
+      location: campaign.location || "",
+    });
+    setOpenAnnounceDialog(true);
+  };
+
+  const handleSubmitAnnounce = async () => {
+    if (!announceForm.scheduledDate || !announceForm.location) {
+      showSnackbar("Vui lòng nhập đầy đủ thông tin.", "error");
+      return;
+    }
+    try {
+      setLoading(true);
+      await healthCheckConsentService.addStudentsToConsent(announceForm.campaignId);
+      await healthCheckCampaignService.updateCampaignStatus(announceForm.campaignId, {
+        status: "ANNOUNCED",
+        // createdBy: userId, nếu cần
+      });
+      showSnackbar("Gửi thông báo thành công!", "success");
+      setOpenAnnounceDialog(false);
+      fetchCampaigns();
+    } catch (error) {
+      showSnackbar(error?.message || "Có lỗi xảy ra khi gửi thông báo.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteCampaign = async (campaign) => {
+    setShowDetailModal(false);
+    setTimeout(async () => {
+      const confirm = await Swal.fire({
+        title: "Hoàn thành chiến dịch?",
+        text: `Bạn có chắc chắn muốn hoàn thành chiến dịch '${campaign.name}'?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Hoàn thành",
+        cancelButtonText: "Hủy",
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+      });
+      if (!confirm.isConfirmed) return;
+      try {
+        setLoading(true);
+        const response = await healthCheckCampaignService.updateCampaignStatus(
+          campaign._id,
+          { status: "COMPLETED" }
+        );
+        if (response.success) {
+          showSnackbar("Chiến dịch đã hoàn thành!", "success");
+          fetchCampaigns();
+        } else {
+          throw new Error(response.message || "Không thể hoàn thành chiến dịch.");
+        }
+      } catch (error) {
+        showSnackbar(error?.message || "Không thể hoàn thành chiến dịch.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -1918,6 +2044,22 @@ const HealthCheckCampaignsManagement = () => {
                             </IconButton>
                           </span>
                         </Tooltip>
+                        {campaign.status === "DRAFT" && campaign.assignments && campaign.assignments.length > 0 && (
+                          <Tooltip title="Gửi thông báo">
+                            <IconButton
+                              color="success"
+                              onClick={() => handleAnnounceCampaign(campaign)}
+                              sx={{
+                                "&:hover": {
+                                  color: "white",
+                                  backgroundColor: "success.main",
+                                },
+                              }}
+                            >
+                              <Campaign />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {/* <Tooltip title="Thay đổi trạng thái">
                           <span>
                             <IconButton
@@ -2020,9 +2162,45 @@ const HealthCheckCampaignsManagement = () => {
             campaign={viewingCampaign}
             onClose={() => setShowDetailModal(false)}
             showSnackbar={showSnackbar}
+            onAnnounce={handleAnnounceCampaign}
+            onComplete={handleCompleteCampaign}
           />
         </DialogContent>
       </Dialog>
+
+      <MuiDialog open={openAnnounceDialog} onClose={() => setOpenAnnounceDialog(false)} maxWidth="xs" fullWidth>
+        <MuiDialogTitle>Gửi thông báo chiến dịch</MuiDialogTitle>
+        <MuiDialogContent>
+          <TextField
+            label="Ngày khám"
+            type="date"
+            fullWidth
+            value={announceForm.scheduledDate}
+            onChange={e => setAnnounceForm(f => ({ ...f, scheduledDate: e.target.value }))}
+            InputLabelProps={{ shrink: true }}
+            margin="normal"
+            inputProps={{ min: new Date().toISOString().split("T")[0] }}
+          />
+          <TextField
+            label="Địa điểm"
+            fullWidth
+            value={announceForm.location}
+            onChange={e => setAnnounceForm(f => ({ ...f, location: e.target.value }))}
+            margin="normal"
+          />
+        </MuiDialogContent>
+        <MuiDialogActions>
+          <Button onClick={() => setOpenAnnounceDialog(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitAnnounce}
+            color="primary"
+            disabled={loading}
+          >
+            Gửi thông báo
+          </Button>
+        </MuiDialogActions>
+      </MuiDialog>
 
       <Snackbar
         open={snackbarOpen}
