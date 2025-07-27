@@ -411,7 +411,7 @@ export const mockData = {
     },
     {
       id: "nurse-management",
-      label: "Quản lý y tá",
+      label: "Quản lý người dùng",
       icon: "User",
       route: "/management/admin/users",
     },
