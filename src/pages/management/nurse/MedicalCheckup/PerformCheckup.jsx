@@ -1208,6 +1208,7 @@ const PerformCheckup = () => {
                                 ? "number"
                                 : "text"
                             }
+                            inputProps={{ min: 1 }} // Prevent negative numbers
                             helperText={
                               item.dataType === CheckupItemDataType.NUMBER &&
                               !checkupData[item.itemId]?.value &&
