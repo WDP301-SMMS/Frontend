@@ -153,7 +153,7 @@ const MedicationSchedules = () => {
         );
       }
     } catch (error) {
-      setErrorMessage("Lỗi khi cập nhật trạng thái.");
+      setErrorMessage(error.message || "Lỗi khi cập nhật trạng thái lịch uống thuốc.");
       setShowErrorDialog(true);
     }
   };
@@ -379,7 +379,6 @@ const MedicationSchedules = () => {
           onChange={handleSearch}
           sx={{ width: { xs: "100%", sm: 300 } }}
           variant="outlined"
-          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -595,7 +594,6 @@ const MedicationSchedules = () => {
 
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   {daySchedules.map((schedule) => {
-                    console.log("Schedule:", date);
                     // date ở đây đã là string dạng "2025-07-22"
                     const scheduleKey = `${date}_${schedule.sessionSlots}`;
                     const isCompleted = scheduleStatus[scheduleKey] || false;

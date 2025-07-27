@@ -11,6 +11,14 @@ import {
 } from "../../../libs/api/adminService";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusCircle, CheckCircle, AlertCircle, X } from "lucide-react";
+import {
+  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper,
+  TablePagination, Tooltip, IconButton, Chip
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 // Custom Dialog Component
 const CustomDialog = ({
@@ -115,7 +123,7 @@ const PartnerList = ({
   onEdit,
   onToggleStatus,
 }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md">
+  <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, mt: 2 }}>
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-xl font-semibold">Danh sách đối tác</h2>
       <button
@@ -130,107 +138,75 @@ const PartnerList = ({
       <p>Không tìm thấy đối tác nào.</p>
     ) : (
       <>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="py-2 px-4 text-left">Tên đối tác</th>
-                <th className="py-2 px-4 text-left">Email</th>
-                <th className="py-2 px-4 text-left">Điện thoại</th>
-                <th className="py-2 px-4 text-left">Loại</th>
-                <th className="py-2 px-4 text-left">Trạng thái</th>
-                <th className="py-2 px-4 text-left">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {" "}
-              {partners.map((partner) => (
-                <tr key={partner._id} className="border-b">
-                  <td className="py-2 px-4">{partner.name}</td>
-                  <td className="py-2 px-4">{partner.email}</td>
-                  <td className="py-2 px-4">{partner.phone}</td>
-                  <td className="py-2 px-4">{partner.type}</td>
-                  <td className="py-2 px-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${
-                        partner.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {partner.isActive ? "Hoạt động" : "Tạm ngưng"}
-                    </span>
-                  </td>
-                  <td className="py-2 px-4 space-x-2">
-                    {" "}
-                    <button
-                      onClick={() => {
-                        console.log("Viewing partner detail:", partner._id);
-                        onViewDetail(partner._id);
-                      }}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      Xem
-                    </button>
-                    <button
-                      onClick={() => onEdit(partner)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() =>
-                        onToggleStatus(partner._id, partner.isActive)
-                      }
-                      className={
-                        partner.isActive
-                          ? "text-red-600 hover:text-red-800"
-                          : "text-green-600 hover:text-green-800"
-                      }
-                    >
-                      {partner.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-                    </button>
-                  </td>
-                </tr>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>STT</TableCell>
+                <TableCell>Tên đối tác</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Điện thoại</TableCell>
+                <TableCell>Loại</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell align="center">Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {partners.map((partner, idx) => (
+                <TableRow key={partner._id} hover>
+                  <TableCell>{(pagination.currentPage - 1) * 10 + idx + 1}</TableCell>
+                  <TableCell>{partner.name}</TableCell>
+                  <TableCell>{partner.email}</TableCell>
+                  <TableCell>{partner.phone}</TableCell>
+                  <TableCell>{partner.type}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={partner.isActive ? "Hoạt động" : "Tạm ngưng"}
+                      color={partner.isActive ? "success" : "error"}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Xem chi tiết">
+                      <IconButton color="primary" onClick={() => onViewDetail(partner._id)}>
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Sửa">
+                      <IconButton color="info" onClick={() => onEdit(partner)}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={partner.isActive ? "Vô hiệu hóa" : "Kích hoạt"}>
+                      <IconButton
+                        color={partner.isActive ? "error" : "success"}
+                        onClick={() => onToggleStatus(partner._id, partner.isActive)}
+                      >
+                        {partner.isActive ? <BlockIcon /> : <CheckCircleIcon />}
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex justify-between items-center mt-6">
-          <div>
-            Hiển thị {partners.length} / {pagination.totalPartners} đối tác
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handlePageChange(pagination.currentPage - 1)}
-              disabled={pagination.currentPage === 1}
-              className={`px-3 py-1 rounded ${
-                pagination.currentPage === 1
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Trước
-            </button>
-            <span className="px-3 py-1">
-              Trang {pagination.currentPage} / {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(pagination.currentPage + 1)}
-              disabled={pagination.currentPage === pagination.totalPages}
-              className={`px-3 py-1 rounded ${
-                pagination.currentPage === pagination.totalPages
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[10]}
+          component="div"
+          count={pagination.totalPartners}
+          rowsPerPage={10}
+          page={pagination.currentPage - 1}
+          onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
+          labelRowsPerPage="Số hàng mỗi trang:"
+          labelDisplayedRows={({ from, to, count }) =>
+            `Hiển thị ${from}-${to} của ${count !== -1 ? count : `hơn ${to}`}`
+          }
+          sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1 }}
+        />
       </>
     )}
-  </div>
+  </Paper>
 );
 
 // Partner Detail Component
@@ -813,7 +789,6 @@ const PartnerManagement = () => {
         page: pagination.currentPage,
         limit: 10,
       });
-      console.log("Partners list response:", data);
       setPartners(data.partners || []);
       setPagination({
         currentPage: data.currentPage || 1,
@@ -833,7 +808,6 @@ const PartnerManagement = () => {
     try {
       setLoading(true);
       const data = await getPartnerById(partnerId);
-      console.log("Partner detail response:", data);
       setSelectedPartner(data);
       setError("");
     } catch (err) {
@@ -973,7 +947,6 @@ const PartnerManagement = () => {
           pagination={pagination}
           handlePageChange={handlePageChange}
           onViewDetail={(id) => {
-            console.log("Fetching partner detail for ID:", id);
             fetchPartnerDetail(id);
           }}
           onEdit={(partner) => {

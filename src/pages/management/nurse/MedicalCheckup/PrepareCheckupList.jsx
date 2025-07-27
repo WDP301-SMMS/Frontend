@@ -58,7 +58,6 @@ const AlertDialog = ({ open, onClose, message, type }) => {
 
 // Student Details Dialog Component
 const StudentDetailsDialog = ({ open, onClose, student }) => {
-  console.log("Student Details:", student);
   if (!student) return null;
 
   return (

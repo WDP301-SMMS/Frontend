@@ -5,7 +5,7 @@ export const endpoints = {
     getAll: "/admin/users",
     updateStatus: "/admin/users/{userId}/status",
     getAllUsers: "/admin/users",
-    changePassword: '/user/me/change-password'
+    changePassword: "/user/me/change-password",
   },
   students: {
     getAll: "/admin/students",
@@ -59,6 +59,7 @@ export const endpoints = {
 
     getAllConsents: "/health-check/consents",
     getConsentsByCampaignId: "/health-check/consents/campaign/{campaignId}",
+    getConsentsByNurseId: "/health-check/consents/nurse/{campaignId}",
     addStudentsToConsent: "/health-check/consents/campaign/add-students",
     updateConsentStatus: "/health-check/consents/{consentId}/status",
 
@@ -116,12 +117,11 @@ export const endpoints = {
     getByStudentId: "/medication/schedules/student/{studentId}", // GET: Lấy lịch theo Student ID
   },
   appointments: {
-    getStudentsWithAbnormalResults: "/appointments/students/abnormal-results/{campaignId}", // GET
+    getStudentsWithAbnormalResults:
+      "/appointments/students/abnormal-results/{campaignId}", // GET
     getAppointments: "/appointments", // GET
     createAppointment: "/appointments", // POST
     updateAppointmentStatus: "/appointments/{appointmentId}/status", // PATCH
     addAfterMeetingNotes: "/appointments/{appointmentId}/notes", // PATCH
   },
-
-
 };

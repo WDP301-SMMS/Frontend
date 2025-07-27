@@ -34,7 +34,6 @@ class CampaignService {
         destination,
         createdBy,
       };
-      console.log(body)
 
       // Kiểm tra các trường bắt buộc (tùy chọn, có thể bỏ nếu API xử lý)
       if (!name || !startDate || !endDate) {
@@ -140,9 +139,6 @@ class CampaignService {
     }
     try {
       const url = endpoints.campaign.cancelCampaign.replace('{campaignId}', campaignId);
-
-      console.log(url)
-      console.log(data)
 
       const response = await api.patch(url, data);
       return response.data;

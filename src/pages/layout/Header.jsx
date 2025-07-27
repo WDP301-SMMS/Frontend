@@ -151,9 +151,8 @@ export const Header = () => {
                   <User className="w-5 h-5 mr-2" />
                   {user?.username}
                   <svg
-                    className={`w-4 h-4 ml-2 transition-transform ${
-                      isProfileMenuOpen ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 ml-2 transition-transform ${isProfileMenuOpen ? "rotate-180" : ""
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -209,7 +208,7 @@ export const Header = () => {
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                        className="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                       >
                         <LogOut className="w-4 h-4 inline mr-2" />
                         Đăng xuất
@@ -313,7 +312,7 @@ export const Header = () => {
                 />
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 rounded-lg text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                  className="cursor-pointer block w-full text-left px-4 py-2 rounded-lg text-base text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                 >
                   <LogOut className="w-4 h-4 inline mr-2" />
                   Đăng xuất
@@ -335,11 +334,10 @@ export const Header = () => {
 const NavLink = ({ to, label, icon, active }) => (
   <Link
     to={to}
-    className={`inline-flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors ${
-      active
+    className={`inline-flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors ${active
         ? "text-blue-600 border-b-2 border-blue-600"
         : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-    }`}
+      }`}
   >
     {icon && <span className="mr-2">{icon}</span>}
     {label}
@@ -349,11 +347,10 @@ const NavLink = ({ to, label, icon, active }) => (
 const MobileNavLink = ({ to, label, icon, indent = false, active }) => (
   <Link
     to={to}
-    className={`block px-4 py-2 rounded-lg text-base font-medium transition-colors ${
-      active
+    className={`block px-4 py-2 rounded-lg text-base font-medium transition-colors ${active
         ? "bg-blue-600 text-white"
         : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-    } ${indent ? "pl-8" : ""}`}
+      } ${indent ? "pl-8" : ""}`}
   >
     {icon && <span className="inline-block mr-2">{icon}</span>}
     {label}

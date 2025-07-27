@@ -27,6 +27,7 @@ import {
   Container,
   CircularProgress,
   IconButton,
+  Chip,
 } from "@mui/material";
 import {
   Search,
@@ -49,6 +50,11 @@ import {
 } from "@mui/icons-material";
 import incidentsService from "~/libs/api/services/incidentsService";
 import inventoryService from "~/libs/api/services/inventory";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+// Extend plugin
+dayjs.extend(utc);
 
 const DispenseMedicationAndSupplies = () => {
   const [incidents, setIncidents] = useState([]);
@@ -82,6 +88,22 @@ const DispenseMedicationAndSupplies = () => {
       ].sort(),
     [incidents]
   );
+
+  // Hàm chuyển đổi severity sang tiếng Việt
+  const getSeverityLabel = (severity) => {
+    switch (severity) {
+      case "Mild":
+        return "Nhẹ";
+      case "Moderate":
+        return "Trung bình";
+      case "Severe":
+        return "Nghiêm trọng";
+      case "Critical":
+        return "Cực kỳ nghiêm trọng";
+      default:
+        return severity;
+    }
+  };
 
   // Filtered incidents
   const filteredIncidents = useMemo(() => {
@@ -128,6 +150,7 @@ const DispenseMedicationAndSupplies = () => {
             itemId: item._id,
             name: item.itemName,
             totalQuantity: item.totalQuantity,
+            unit: item.unit,
           }))
         );
         const supplyResponse = await inventoryService.getInventoryItems({
@@ -139,6 +162,7 @@ const DispenseMedicationAndSupplies = () => {
             itemId: item._id,
             name: item.itemName,
             totalQuantity: item.totalQuantity,
+            unit: item.unit,
           }))
         );
       } catch (error) {
@@ -256,9 +280,8 @@ const DispenseMedicationAndSupplies = () => {
       if (!item.itemId) {
         setErrors((prev) => ({
           ...prev,
-          [`${
-            index < dispenseForm.medications.length ? "medication" : "supply"
-          }-${index % dispenseForm.medications.length}`]:
+          [`${index < dispenseForm.medications.length ? "medication" : "supply"
+            }-${index % dispenseForm.medications.length}`]:
             "Vui lòng chọn một item",
         }));
         return true;
@@ -269,11 +292,9 @@ const DispenseMedicationAndSupplies = () => {
       ) {
         setErrors((prev) => ({
           ...prev,
-          [`${
-            index < dispenseForm.medications.length ? "medication" : "supply"
-          }-${
-            index % dispenseForm.medications.length
-          }`]: `Số lượng phải từ 1 đến ${item.maxQuantity || 1}`,
+          [`${index < dispenseForm.medications.length ? "medication" : "supply"
+            }-${index % dispenseForm.medications.length
+            }`]: `Số lượng phải từ 1 đến ${item.maxQuantity || 1}`,
         }));
         return true;
       }
@@ -294,7 +315,6 @@ const DispenseMedicationAndSupplies = () => {
         selectedIncident._id,
         dispensedItems
       );
-      console.log("Dispense response:", response);
       if (response.message !== "dispenseSuccess") {
         setErrors((prev) => ({
           ...prev,
@@ -391,7 +411,7 @@ const DispenseMedicationAndSupplies = () => {
             ),
           }}
         />
-        <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
+        {/* <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
           <InputLabel>Lớp</InputLabel>
           <Select
             value={selectedClass}
@@ -404,7 +424,7 @@ const DispenseMedicationAndSupplies = () => {
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
       </Box>
 
       {loading ? (
@@ -442,10 +462,9 @@ const DispenseMedicationAndSupplies = () => {
                     }}
                     onClick={() => handleIncidentSelect(incident)}
                   >
-                    <TableCell>
-                      {incident.studentId?.fullName} ({incident.studentId?._id})
-                    </TableCell>
+                    <TableCell>{incident.studentId?.fullName}</TableCell>
                     <TableCell>{incident.incidentType}</TableCell>
+
                     <TableCell>
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -458,13 +477,25 @@ const DispenseMedicationAndSupplies = () => {
                             bgcolor: getSeverityColor(incident.severity),
                           }}
                         />
-                        {incident.severity}
+                        {getSeverityLabel(incident.severity)}
                       </Box>
                     </TableCell>
                     <TableCell>
-                      {new Date(incident.incidentTime).toLocaleString("vi-VN")}
+                      {dayjs
+                        .utc(incident.incidentTime)
+                        .format("HH:mm DD-MM-YYYY")}
                     </TableCell>
-                    <TableCell>{incident.status}</TableCell>
+                    <TableCell>
+                      {incident && typeof incident.isDispensed === "boolean" ? (
+                        incident.isDispensed ? (
+                          <Chip color="success" label="ĐÃ CẤP PHÁT" />
+                        ) : (
+                          <Chip color="error" label="CHƯA CẤP PHÁT" />
+                        )
+                      ) : (
+                        <Chip color="default" label="KHÔNG XÁC ĐỊNH" />
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="outlined"
@@ -558,9 +589,6 @@ const DispenseMedicationAndSupplies = () => {
                   color="#1e293b"
                 >
                   {selectedIncident?.studentId?.fullName}
-                </Typography>
-                <Typography variant="body2" color="#64748b">
-                  ID: {selectedIncident?.studentId?._id}
                 </Typography>
               </Box>
             </Box>
@@ -818,8 +846,7 @@ const DispenseMedicationAndSupplies = () => {
                       <Person3Sharp
                         sx={{ fontSize: 16, mr: 1, color: "#64748b" }}
                       />
-                      {selectedIncident?.studentId?.fullName} (
-                      {selectedIncident?.studentId?._id})
+                      {selectedIncident?.studentId?.fullName}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -845,9 +872,12 @@ const DispenseMedicationAndSupplies = () => {
                       <AccessTime
                         sx={{ fontSize: 16, mr: 1, color: "#64748b" }}
                       />
-                      {new Date(selectedIncident?.incidentTime).toLocaleString(
+                      {dayjs
+                        .utc(selectedIncident?.incidentTime)
+                        .format("HH:mm DD-MM-YYYY")}
+                      {/* {new Date(selectedIncident?.incidentTime).toLocaleString(
                         "vi-VN"
-                      )}
+                      )} */}
                     </Typography>
                   </Box>
                   {selectedIncident?.description && (
@@ -896,13 +926,13 @@ const DispenseMedicationAndSupplies = () => {
                   <Autocomplete
                     options={medicineOptions}
                     getOptionLabel={(option) =>
-                      `${option.name} (Tồn: ${option.totalQuantity})`
+                      `${option.name} (Tồn: ${option.totalQuantity} ${option.unit})`
                     }
                     value={
                       med.itemId
                         ? medicineOptions.find(
-                            (item) => item.itemId === med.itemId
-                          )
+                          (item) => item.itemId === med.itemId
+                        )
                         : null
                     }
                     onChange={(event, newValue) =>
@@ -1023,13 +1053,13 @@ const DispenseMedicationAndSupplies = () => {
                   <Autocomplete
                     options={supplyOptions}
                     getOptionLabel={(option) =>
-                      `${option.name} (Tồn: ${option.totalQuantity})`
+                      `${option.name} (Tồn: ${option.totalQuantity} ${option.unit})`
                     }
                     value={
                       supply.itemId
                         ? supplyOptions.find(
-                            (item) => item.itemId === supply.itemId
-                          )
+                          (item) => item.itemId === supply.itemId
+                        )
                         : null
                     }
                     onChange={(event, newValue) =>
@@ -1137,84 +1167,84 @@ const DispenseMedicationAndSupplies = () => {
               </Typography>
 
               {selectedIncident &&
-              (dispenseForm.medications.some((m) => m.itemId) ||
-                dispenseForm.supplies.some((s) => s.itemId)) ? (
+                (dispenseForm.medications.some((m) => m.itemId) ||
+                  dispenseForm.supplies.some((s) => s.itemId)) ? (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Selected Medications */}
                   {dispenseForm.medications.filter((m) => m.itemId).length >
                     0 && (
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        color="#374151"
-                        fontWeight="600"
-                        sx={{ mb: 1 }}
-                      >
-                        Thuốc đã chọn:
-                      </Typography>
-                      {dispenseForm.medications
-                        .filter((m) => m.itemId)
-                        .map((med, index) => {
-                          const selectedMed = medicineOptions.find(
-                            (item) => item.itemId === med.itemId
-                          );
-                          return (
-                            <Card
-                              key={index}
-                              sx={{
-                                mb: 1.5,
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 1.5,
-                              }}
-                            >
-                              <CardContent
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          color="#374151"
+                          fontWeight="600"
+                          sx={{ mb: 1 }}
+                        >
+                          Thuốc đã chọn:
+                        </Typography>
+                        {dispenseForm.medications
+                          .filter((m) => m.itemId)
+                          .map((med, index) => {
+                            const selectedMed = medicineOptions.find(
+                              (item) => item.itemId === med.itemId
+                            );
+                            return (
+                              <Card
+                                key={index}
                                 sx={{
-                                  p: 2,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
+                                  mb: 1.5,
+                                  border: "1px solid #e2e8f0",
+                                  borderRadius: 1.5,
                                 }}
                               >
-                                <Box
+                                <CardContent
                                   sx={{
-                                    p: 1,
-                                    bgcolor: "#dbeafe",
-                                    borderRadius: 1,
+                                    p: 2,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
                                   }}
                                 >
-                                  <Package
-                                    size={16}
-                                    sx={{ color: "#3b82f6" }}
-                                  />
-                                </Box>
-                                <Box sx={{ flex: 1 }}>
-                                  <Typography
-                                    variant="body2"
-                                    fontWeight="600"
-                                    color="#1e293b"
+                                  <Box
+                                    sx={{
+                                      p: 1,
+                                      bgcolor: "#dbeafe",
+                                      borderRadius: 1,
+                                    }}
                                   >
-                                    {selectedMed?.name || "Unknown"}
-                                  </Typography>
-                                  <Typography variant="caption" color="#64748b">
-                                    Số lượng: {med.quantityToWithdraw} / Tồn:{" "}
-                                    {selectedMed?.totalQuantity}
-                                  </Typography>
-                                  {med.usageInstructions && (
+                                    <Package
+                                      size={16}
+                                      sx={{ color: "#3b82f6" }}
+                                    />
+                                  </Box>
+                                  <Box sx={{ flex: 1 }}>
                                     <Typography
-                                      variant="caption"
-                                      color="#64748b"
-                                      sx={{ display: "block", mt: 0.5 }}
+                                      variant="body2"
+                                      fontWeight="600"
+                                      color="#1e293b"
                                     >
-                                      Hướng dẫn: {med.usageInstructions}
+                                      {selectedMed?.name || "Unknown"}
                                     </Typography>
-                                  )}
-                                </Box>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                    </Box>
-                  )}
+                                    <Typography variant="caption" color="#64748b">
+                                      Số lượng: {med.quantityToWithdraw} / Tồn:{" "}
+                                      {selectedMed?.totalQuantity}
+                                    </Typography>
+                                    {med.usageInstructions && (
+                                      <Typography
+                                        variant="caption"
+                                        color="#64748b"
+                                        sx={{ display: "block", mt: 0.5 }}
+                                      >
+                                        Hướng dẫn: {med.usageInstructions}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                      </Box>
+                    )}
 
                   {/* Selected Supplies */}
                   {dispenseForm.supplies.filter((s) => s.itemId).length > 0 && (

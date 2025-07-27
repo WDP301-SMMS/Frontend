@@ -65,7 +65,7 @@ export const Header = () => {
                   <hr className="my-1" />
                   <button
                     onClick={() => navigate("/login")}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    className="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                   >
                     Đăng Xuất
                   </button>

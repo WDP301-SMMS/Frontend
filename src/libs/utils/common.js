@@ -149,7 +149,11 @@ export const mockData = {
           label: "Compliance Reports",
           icon: "Shield",
         },
-        { id: "health-analytics", label: "Health Analytics", icon: "TrendingUp" },
+        {
+          id: "health-analytics",
+          label: "Health Analytics",
+          icon: "TrendingUp",
+        },
       ],
     },
     {
@@ -271,18 +275,12 @@ export const mockData = {
       label: "Kiểm tra y tế định kỳ",
       icon: "Activity",
       subItems: [
-        {
-          id: "send-checkup-notice",
-          label: "Gửi thông báo khám sức khỏe",
-          icon: "Bell",
-          route: "/management/nurse/send-checkup-notice",
-        },
-        {
-          id: "prepare-checkup-list",
-          label: "Chuẩn bị danh sách khám",
-          icon: "List",
-          route: "/management/nurse/prepare-checkup-list",
-        },
+        // {
+        //   id: "send-checkup-notice",
+        //   label: "Gửi thông báo khám sức khỏe",
+        //   icon: "Bell",
+        //   route: "/management/nurse/send-checkup-notice",
+        // },
         {
           id: "perform-checkup",
           label: "Thực hiện khám & Ghi nhận",
@@ -374,6 +372,12 @@ export const mockData = {
           icon: "Heart",
           route: "/management/manager/manage-health-check-campaigns",
         },
+        {
+          id: "prepare-checkup-list",
+          label: "Chuẩn bị danh sách khám",
+          icon: "List",
+          route: "/management/manager/prepare-checkup-list",
+        },
       ],
     },
     // {
@@ -411,7 +415,7 @@ export const mockData = {
     },
     {
       id: "nurse-management",
-      label: "Quản lý y tá",
+      label: "Quản lý người dùng",
       icon: "User",
       route: "/management/admin/users",
     },

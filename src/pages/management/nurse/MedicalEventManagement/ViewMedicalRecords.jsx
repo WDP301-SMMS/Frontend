@@ -31,6 +31,11 @@ import {
 } from "@mui/material";
 import { Warning } from "@mui/icons-material";
 import incidentsService from "~/libs/api/services/incidentsService";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+// Extend plugin
+dayjs.extend(utc);
 
 function ViewMedicalRecords() {
   const [historicalRecords, setHistoricalRecords] = useState([]);
@@ -78,7 +83,6 @@ function ViewMedicalRecords() {
   );
 
   const handleEditClick = (record) => {
-    console.log("Editing record:", record);
     setEditRecord(record);
     setEditForm({
       note: record.note || "",
@@ -131,7 +135,6 @@ function ViewMedicalRecords() {
       actionsTaken: editForm.actionsTaken,
       incidentTime: editForm.incidentTime,
     };
-    console.log("Update Data:", updateData);
     try {
       const res = await incidentsService.updateIncident(
         editRecord._id,
@@ -275,7 +278,7 @@ function ViewMedicalRecords() {
       </Alert>
 
       {/* Search Bar */}
-      <Box display="flex" gap={2} mb={3} flexWrap="wrap" height={"fit-content"}>
+      <Box display="flex" gap={2} mb={3} flexWrap="wrap">
         <TextField
           type="text"
           label="Tìm kiếm theo loại sự kiện"
@@ -283,7 +286,7 @@ function ViewMedicalRecords() {
           onChange={(e) => setSearchEventType(e.target.value)}
           sx={{ width: { xs: "100%", sm: 300 } }}
           variant="outlined"
-          size="small"
+          // size="small"
         />
         <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
           <InputLabel>Lớp</InputLabel>
@@ -291,7 +294,7 @@ function ViewMedicalRecords() {
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
             label="Lớp"
-            size="small"
+            // size="small"
           >
             <MenuItem value="">Tất cả</MenuItem>
             {classes.map((cls) => (
@@ -356,114 +359,94 @@ function ViewMedicalRecords() {
                   </Box>
 
                   {/* Content Grid */}
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                      gap: 2,
-                      mb: 2,
-                    }}
-                  >
-                    {/* Left Column */}
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                    >
-                      {/* Event Type */}
-                      <Box
+                  <Box>
+                    {/* Severity at the top */}
+                    <Box sx={{ mb: 2 }}>
+                      <Chip
+                        label={getSeverityLabel(record.severity)}
+                        size="medium"
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          p: 2,
-                          bgcolor: "#fef2f2",
-                          borderRadius: 1,
-                          border: "1px solid #fecaca",
+                          bgcolor: getSeverityColor(record.severity),
+                          color: "white",
+                          fontWeight: "600",
+                          fontSize: "0.875rem",
+                          px: 2,
+                          py: 1,
                         }}
-                      >
-                        <AlertTriangle size={20} color="#ef4444" />
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Loại sự kiện
-                          </Typography>
-                          <Typography variant="body1" fontWeight="600">
-                            {record.incidentType}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Time */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          p: 2,
-                          bgcolor: "#eff6ff",
-                          borderRadius: 1,
-                          border: "1px solid #bfdbfe",
-                        }}
-                      >
-                        <Clock size={20} color="#3b82f6" />
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Thời gian
-                          </Typography>
-                          <Typography variant="body1" fontWeight="600">
-                            {new Date(record.incidentTime).toLocaleString(
-                              "vi-VN"
-                            )}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Status & Severity */}
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <Chip
-                          label={getSeverityLabel(record.severity)}
-                          size="small"
-                          sx={{
-                            bgcolor: getSeverityColor(record.severity),
-                            color: "white",
-                            fontWeight: "500",
-                          }}
-                        />
-                      </Box>
-
-                      {/* Note */}
-                      {record.note && (
-                        <Box
-                          sx={{
-                            p: 2,
-                            bgcolor: "#f0f9ff",
-                            borderRadius: 1,
-                            border: "1px solid #bae6fd",
-                            minHeight: 60,
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontWeight="500"
-                            mb={1}
-                          >
-                            Ghi chú
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.primary"
-                            sx={{ lineHeight: 1.5 }}
-                          >
-                            {record.note}
-                          </Typography>
-                        </Box>
-                      )}
+                      />
                     </Box>
 
-                    {/* Right Column */}
                     <Box
                       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                     >
-                      {/* Description */}
+                      {/* Row 1: Event Type and Time (2 columns) */}
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                          gap: 2,
+                        }}
+                      >
+                        {/* Event Type */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            p: 2,
+                            bgcolor: "#fef2f2",
+                            borderRadius: 1,
+                            border: "1px solid #fecaca",
+                            minHeight: 80,
+                          }}
+                        >
+                          <AlertTriangle size={20} color="#ef4444" />
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              fontWeight="500"
+                            >
+                              Loại sự kiện
+                            </Typography>
+                            <Typography variant="body1" fontWeight="600">
+                              {record.incidentType}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        {/* Time */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            p: 2,
+                            bgcolor: "#f0fdf4",
+                            borderRadius: 1,
+                            border: "1px solid #bbf7d0",
+                            minHeight: 80,
+                          }}
+                        >
+                          <Clock size={20} color="#22c55e" />
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              fontWeight="500"
+                            >
+                              Thời gian
+                            </Typography>
+                            <Typography variant="body1" fontWeight="600">
+                              {dayjs
+                                .utc(record.incidentTime)
+                                .format("HH:mm DD-MM-YYYY")}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      {/* Row 2: Description (full width) */}
                       <Box
                         sx={{
                           p: 2,
@@ -499,7 +482,7 @@ function ViewMedicalRecords() {
                         </Typography>
                       </Box>
 
-                      {/* Actions */}
+                      {/* Row 3: Actions (full width) */}
                       <Box
                         sx={{
                           p: 2,
@@ -534,6 +517,35 @@ function ViewMedicalRecords() {
                           {record.actionsTaken}
                         </Typography>
                       </Box>
+
+                      {/* Note (if exists) */}
+                      {record.note && (
+                        <Box
+                          sx={{
+                            p: 2,
+                            bgcolor: "#f0f9ff",
+                            borderRadius: 1,
+                            border: "1px solid #bae6fd",
+                            minHeight: 60,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight="500"
+                            mb={1}
+                          >
+                            Ghi chú
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            sx={{ lineHeight: 1.5 }}
+                          >
+                            {record.note}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   </Box>
                 </Box>
@@ -615,7 +627,7 @@ function ViewMedicalRecords() {
             <Box component="form" onSubmit={handleSaveEdit} sx={{ mt: 1 }}>
               <Grid container spacing={3}>
                 {/* Row 1: Student Info (Read-only) */}
-                <Grid item xs={12} sx={{ width: "50%" }}>
+                <Grid item xs={12} sx={{ width: "100%" }}>
                   <Box
                     sx={{
                       p: 2,
@@ -638,7 +650,7 @@ function ViewMedicalRecords() {
                 </Grid>
 
                 {/* Row 2: Incident Type, Severity, Status */}
-                <Grid item xs={12} md={4} sx={{ width: "20%" }}>
+                <Grid item xs={12} md={4} sx={{ width: "23.5%" }}>
                   <FormControl fullWidth>
                     <InputLabel>Loại sự kiện</InputLabel>
                     <Select
@@ -662,7 +674,7 @@ function ViewMedicalRecords() {
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} md={4} sx={{ width: "20%" }}>
+                <Grid item xs={12} md={4} sx={{ width: "23.5%" }}>
                   <FormControl fullWidth>
                     <InputLabel>Mức độ nghiêm trọng</InputLabel>
                     <Select
@@ -680,7 +692,7 @@ function ViewMedicalRecords() {
                 </Grid>
 
                 {/* Row 3: Date and Time */}
-                <Grid item xs={12} md={6} sx={{ width: "24%" }}>
+                <Grid item xs={12} md={6} sx={{ width: "23.5%" }}>
                   <TextField
                     fullWidth
                     type="date"
@@ -693,7 +705,7 @@ function ViewMedicalRecords() {
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6} sx={{ width: "20%" }}>
+                <Grid item xs={12} md={6} sx={{ width: "23.2%" }}>
                   <TextField
                     fullWidth
                     type="time"

@@ -62,6 +62,7 @@ const MedicationRequests = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [parents, setParents] = useState([]);
   const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -75,6 +76,26 @@ const MedicationRequests = () => {
     fetchParents();
     fetchStudents();
   }, [page]);
+
+  // Cập nhật filteredStudents khi đổi phụ huynh hoặc danh sách students thay đổi
+  useEffect(() => {
+    if (form.parentId) {
+      setFilteredStudents(
+        students.filter(
+          (student) => student.parent && student.parent._id === form.parentId
+        )
+      );
+    } else {
+      setFilteredStudents([]);
+    }
+  }, [form.parentId, students]);
+
+  // Khi đổi phụ huynh, reset trường học sinh và cập nhật filteredStudents
+  const handleParentChange = (parentId) => {
+    handleInputChange("parentId", parentId);
+    setForm((prev) => ({ ...prev, studentId: "" }));
+    // filteredStudents sẽ được cập nhật bởi useEffect phía trên
+  };
 
   const fetchRequests = async () => {
     try {
@@ -198,7 +219,6 @@ const MedicationRequests = () => {
         return;
       }
     }
-    console.log("Form data before validation:", form.prescriptionFile);
     if (!form.prescriptionFile) {
       setErrorMessage(
         "File đơn thuốc phải là hình ảnh (jpg, jpeg, png) hoặc PDF."
@@ -216,14 +236,12 @@ const MedicationRequests = () => {
       if (form.prescriptionFile) {
         formData.append("prescriptionFile", form.prescriptionFile);
       }
-      console.log("Form data before sending:", form);
       // Phân loại items thành hai danh sách: cập nhật (có _id) và thêm mới (không có _id)
       const itemsToUpdate = form.items.filter((item) => item._id);
       const itemsToAdd = form.items
         .filter((item) => !item._id)
         .map(({ _id, ...rest }) => rest);
-      console.log("Items to update:", itemsToUpdate);
-      console.log("Items to add:", itemsToAdd);
+      
 
       if (editMode && form._id) {
         // Cập nhật thông tin yêu cầu (parentId, studentId, dates, prescriptionFile)
@@ -372,7 +390,6 @@ const MedicationRequests = () => {
           onChange={handleSearch}
           sx={{ width: { xs: "100%", sm: 300 } }}
           variant="outlined"
-          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -387,7 +404,6 @@ const MedicationRequests = () => {
             value={filterStatus}
             onChange={(e) => handleFilterStatus(e.target.value)}
             label="Trạng thái"
-            size="small"
           >
             <MenuItem value="">Tất cả</MenuItem>
             <MenuItem value="Pending">Chờ xử lý</MenuItem>
@@ -502,6 +518,7 @@ const MedicationRequests = () => {
                       onClick={() => handleViewOrEditRequest(request, "edit")}
                       color="primary"
                       sx={{ "&:hover": { bgcolor: "#eff6ff" } }}
+                      disabled={request.status !== "Pending" }
                     >
                       <Edit2 size={16} />
                     </IconButton>
@@ -572,12 +589,9 @@ const MedicationRequests = () => {
                   disabled={viewMode}
                   options={parents}
                   getOptionLabel={(option) => option.username || ""}
-                  value={
-                    parents.find((parent) => parent._id === form.parentId) ||
-                    null
-                  }
+                  value={parents.find((parent) => parent._id === form.parentId) || null}
                   onChange={(event, newValue) => {
-                    handleInputChange("parentId", newValue?._id || "");
+                    handleParentChange(newValue?._id || "");
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -628,17 +642,13 @@ const MedicationRequests = () => {
               </Grid>
               <Grid item xs={12} md={6} sx={{ width: "50%" }}>
                 <Autocomplete
-                  disabled={viewMode}
-                  options={students}
+                  disabled={viewMode || !form.parentId}
+                  options={filteredStudents}
                   getOptionLabel={(option) =>
-                    `${option.fullName} - ${
-                      option.class?.className || "Không có lớp"
-                    }` || ""
+                    `${option.fullName} - ${option.class?.className || "Không có lớp"}`
                   }
                   value={
-                    students.find(
-                      (student) => student._id === form.studentId
-                    ) || null
+                    filteredStudents.find((student) => student._id === form.studentId) || null
                   }
                   onChange={(event, newValue) => {
                     handleInputChange("studentId", newValue?._id || "");
@@ -671,6 +681,9 @@ const MedicationRequests = () => {
                     handleInputChange("startDate", e.target.value)
                   }
                   disabled={viewMode}
+                  inputProps={{
+                    min: new Date().toISOString().split("T")[0],
+                  }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -682,6 +695,11 @@ const MedicationRequests = () => {
                   value={form.endDate}
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
                   disabled={viewMode}
+                  inputProps={{
+                    min: form.startDate
+                      ? form.startDate
+                      : new Date().toISOString().split("T")[0],
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>

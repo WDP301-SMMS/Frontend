@@ -48,7 +48,7 @@ import {
 import { CheckCircle, Pill } from "lucide-react";
 import inventoryService from "~/libs/api/services/inventory";
 
-const medicationTypes = ["Vỉ", "Lọ", "ml", "Gói", "Ống"];
+const medicationTypes = ["viên", "ống", "ml", "g", "mg", "miếng", "lọ", "tuýp", "ống hít"];
 
 const MedicineCRUD = ({ setLastSavedRecord }) => {
   const [medicineRecords, setMedicationRecords] = useState([]);

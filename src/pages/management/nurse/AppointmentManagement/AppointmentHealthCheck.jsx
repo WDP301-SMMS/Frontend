@@ -95,7 +95,6 @@ const AbnormalHealthCheck = () => {
       const response = await healthCheckCampaignService.getCampaignsByStatus(
         "COMPLETED"
       );
-      console.log("Campaigns:", response);
       if (response.success) {
         setCampaigns(response.data.campaigns);
       }
@@ -111,10 +110,7 @@ const AbnormalHealthCheck = () => {
         setFilteredAbnormalStudents([]);
         return;
       }
-      console.log(
-        "Fetching abnormal students with campaign filter:",
-        campaignFilter
-      );
+
       const response = await appointmentsService.getStudentsWithAbnormalResults(
         campaignFilter || undefined
       );
@@ -615,7 +611,7 @@ const AbnormalHealthCheck = () => {
                       >
                         Thông Tin Học Sinh
                       </TableCell>
-                      <TableCell
+                      {/* <TableCell
                         sx={{
                           fontWeight: 600,
                           color: "#374151",
@@ -623,7 +619,7 @@ const AbnormalHealthCheck = () => {
                         }}
                       >
                         Mã Chiến Dịch
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell
                         sx={{
                           fontWeight: 600,
@@ -696,11 +692,11 @@ const AbnormalHealthCheck = () => {
                               </Box>
                             </Box>
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Typography variant="body2" color="#6b7280">
                               {student.campaignId}
                             </Typography>
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell>
                             <Chip
                               label={dayjs(student.studentDateOfBirth).format(
@@ -941,7 +937,7 @@ const AbnormalHealthCheck = () => {
                       >
                         Học Sinh
                       </TableCell>
-                      <TableCell
+                      {/* <TableCell
                         sx={{
                           fontWeight: 600,
                           color: "#374151",
@@ -949,7 +945,7 @@ const AbnormalHealthCheck = () => {
                         }}
                       >
                         Mã Chiến Dịch
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell
                         sx={{
                           fontWeight: 600,
@@ -1048,11 +1044,11 @@ const AbnormalHealthCheck = () => {
                               </Typography>
                             </Box>
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Typography variant="body2" color="#6b7280">
                               {appointment.campaignId}
                             </Typography>
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
                               <Schedule
@@ -1123,6 +1119,7 @@ const AbnormalHealthCheck = () => {
                                 flexWrap: "wrap",
                               }}
                             >
+                              {/* Logic cho cuộc hẹn sắp tới */}
                               {isUpcomingAppointment(
                                 appointment.meetingTime
                               ) && (
@@ -1169,10 +1166,13 @@ const AbnormalHealthCheck = () => {
                                     )}
                                   </>
                                 )}
+
+                              {/* Logic cho cuộc hẹn đã qua */}
                               {new Date(appointment.meetingTime) <=
                                 currentDate && (
                                   <>
-                                    {appointment.status === "SCHEDULED" && (
+                                    {/* Nếu đã được duyệt -> có thể hoàn thành */}
+                                    {appointment.status === "APPROVED" && (
                                       <Button
                                         variant="contained"
                                         color="success"
@@ -1194,6 +1194,21 @@ const AbnormalHealthCheck = () => {
                                         Hoàn Thành
                                       </Button>
                                     )}
+
+                                    {/* Nếu không phải APPROVED và COMPLETED -> hiển thị thông báo hủy vì quá hạn */}
+                                    {appointment.status !== "APPROVED" &&
+                                      appointment.status !== "COMPLETED" && (
+                                        <Chip
+                                          label="Đã hủy lịch vì quá hạn mà không đồng ý"
+                                          color="error"
+                                          sx={{
+                                            fontWeight: 600,
+                                            fontSize: "0.875rem",
+                                          }}
+                                        />
+                                      )}
+
+                                    {/* Nếu đã hoàn thành -> hiển thị nút xem và ghi chú */}
                                     {appointment.status === "COMPLETED" && (
                                       <>
                                         <Button
@@ -1643,14 +1658,6 @@ const AbnormalHealthCheck = () => {
                       >
                         {selectedAppointment.studentId.fullName}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        color="#6b7280"
-                        sx={{ mb: 0.5 }}
-                      >
-                        <strong>Mã HS:</strong>{" "}
-                        {selectedAppointment.studentId._id}
-                      </Typography>
                       {/* <Typography
                         variant="body2"
                         color="#6b7280"
@@ -1707,7 +1714,52 @@ const AbnormalHealthCheck = () => {
                       }}
                     />
                   </Grid>
+
                   <Grid item xs={12} md={6}>
+                    <TextField
+                      label="🏷️ Trạng thái"
+                      value={selectedAppointment.status}
+                      disabled
+                      fullWidth
+                      variant="outlined"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    sx={{ display: "flex", alignItems: "center", width: "41%" }}
+                  >
+                    <TextField
+                      label="👨‍👩‍👧‍👦 Phụ huynh"
+                      value={`${selectedAppointment.parentId.email} (${selectedAppointment.parentId.phone})`}
+                      disabled
+                      fullWidth
+                      variant="outlined"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          bgcolor: "#f1f5f9",
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
                     <TextField
                       label="📍 Địa điểm"
                       value={selectedAppointment.location}
@@ -1722,7 +1774,16 @@ const AbnormalHealthCheck = () => {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
                     <TextField
                       label="📝 Ghi chú trước hẹn"
                       value={selectedAppointment.notes || "-"}
@@ -1739,7 +1800,16 @@ const AbnormalHealthCheck = () => {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
                     <TextField
                       label="📋 Ghi chú sau hẹn"
                       value={selectedAppointment.afterMeetingNotes || "-"}
@@ -1748,36 +1818,6 @@ const AbnormalHealthCheck = () => {
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: 2,
-                          bgcolor: "#f1f5f9",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="🏷️ Trạng thái"
-                      value={selectedAppointment.status}
-                      disabled
-                      fullWidth
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: 2,
-                          bgcolor: "#f1f5f9",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="👨‍👩‍👧‍👦 Phụ huynh"
-                      value={`${selectedAppointment.parentId.email} (${selectedAppointment.parentId.phone})`}
-                      disabled
-                      fullWidth
-                      variant="outlined"
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 2,
@@ -1908,15 +1948,15 @@ const AbnormalHealthCheck = () => {
               rows={5}
               variant="outlined"
               placeholder="Nhập ghi chú sau hẹn..."
-              inputProps={{ minLength: 19, maxLength: 200 }}
+              inputProps={{ minLength: 10, maxLength: 200 }}
               error={
                 noteData.afterMeetingNotes.length > 0 &&
-                noteData.afterMeetingNotes.length < 5
+                noteData.afterMeetingNotes.length < 10
               }
               helperText={
                 noteData.afterMeetingNotes.length > 0 &&
-                  noteData.afterMeetingNotes.length < 5
-                  ? "Ghi chú phải có ít nhất 5 ký tự"
+                  noteData.afterMeetingNotes.length < 10
+                  ? "Ghi chú phải có ít nhất 10 ký tự"
                   : ""
               }
               sx={{

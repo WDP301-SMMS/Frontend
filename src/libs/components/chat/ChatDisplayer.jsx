@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -14,8 +14,6 @@ import {
 import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
-  EmojiEmotions as EmojiIcon,
-  MoreVert,
 } from "@mui/icons-material";
 import uploadService from "~/libs/api/services/uploadService";
 
@@ -37,7 +35,8 @@ const ChatDisplayer = ({
   currentUser,
   room,
   isLoading = false,
-  onMessageSent, // Add this prop to notify parent about sent messages
+  onMessageSent,
+  typingStatus,
 }) => {
   const [newMessage, setNewMessage] = useState("");
   const [receiver, setReceiver] = useState(room?.receiverId || null);
@@ -45,6 +44,26 @@ const ChatDisplayer = ({
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
+
+  const typingTimeoutRef = useRef(null);
+
+  // Tạo một hàm mới để xử lý việc nhập liệu
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setNewMessage(value);
+
+    if (!socket || !room) return;
+
+    socket.emit("typing", { roomId: room.roomId, senderId: currentUser._id });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", { roomId: room.roomId, senderId: currentUser._id });
+    }, 1000);
+  };
 
   // Update receiver and sender when room changes
   useEffect(() => {
@@ -67,9 +86,7 @@ const ChatDisplayer = ({
 
   const handleSendMessage = async (file = null) => {
     let fileData = null;
-    console.log("Sending message:", newMessage, "with file:", file);
     if (!newMessage.trim() && !file) {
-      console.log("Empty message and no file, not sending");
       return;
     }
 
@@ -77,7 +94,6 @@ const ChatDisplayer = ({
     let actualReceiver = receiver;
 
     if (currentUser._id === receiver?._id) {
-      console.log("Cannot send message to self, switching to sender");
       actualReceiver = sender;
       setReceiver(sender);
       setSender(null);
@@ -116,6 +132,12 @@ const ChatDisplayer = ({
     console.log("Sending message data:", messageData);
 
     socket.emit("sendMessage", messageData);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    socket.emit("stopTyping", { roomId: room.roomId, senderId: currentUser._id });
+
     if (onMessageSent) {
       onMessageSent(messageData);
     }
@@ -366,6 +388,14 @@ const ChatDisplayer = ({
         <div ref={messagesEndRef} />
       </Box>
 
+      <Box sx={{ height: '24px', px: 2, display: 'flex', alignItems: 'center', bgcolor: 'white' }}>
+        {typingStatus && typingStatus.isTyping && (
+          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Đang soạn...
+          </Typography>
+        )}
+      </Box>
+
       {/* Message Input */}
       <Paper
         elevation={0}
@@ -384,7 +414,7 @@ const ChatDisplayer = ({
             maxRows={3}
             placeholder="Nhập tin nhắn..."
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             variant="outlined"
             size="small"
@@ -408,15 +438,6 @@ const ChatDisplayer = ({
                         accept="image/*"
                         multiple={false}
                       />
-                    </IconButton>
-                  </Tooltip>
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Tooltip title="Emoji">
-                    <IconButton size="small">
-                      <EmojiIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </InputAdornment>

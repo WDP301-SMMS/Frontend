@@ -5,8 +5,14 @@ import {
   updateStudent,
   getAllClasses,
 } from "../../../libs/api/adminService";
+import { useDebounce } from "../../../libs/hooks/useDebounce";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusCircle, CheckCircle, AlertCircle, X, Search } from "lucide-react";
+import {
+  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper,
+  TablePagination, Chip, Tooltip, IconButton
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 
 const StudentManagement = () => {
   const [students, setStudents] = useState([]);
@@ -34,11 +40,12 @@ const StudentManagement = () => {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     fetchStudents();
     fetchClasses();
-  }, [pagination.currentPage, selectedClassFilter, searchTerm]);
+  }, [pagination.currentPage, selectedClassFilter, debouncedSearchTerm]);
 
   const fetchStudents = async () => {
     try {
@@ -54,8 +61,8 @@ const StudentManagement = () => {
       }
 
       // Add search term to query params if search is active
-      if (searchTerm.trim()) {
-        queryParams.search = searchTerm.trim();
+      if (debouncedSearchTerm.trim()) {
+        queryParams.search = debouncedSearchTerm.trim();
       }
 
       const response = await getAllStudents(queryParams);
@@ -74,7 +81,7 @@ const StudentManagement = () => {
       setLoading(false);
     }
   };
-
+  
   const fetchClasses = async () => {
     try {
       const response = await getAllClasses();
@@ -104,14 +111,12 @@ const StudentManagement = () => {
         classId: formData.classId || undefined,
       };
 
-      console.log("Submitting student data:", payload);
 
       if (isEditing) {
         await updateStudent(selectedStudentId, payload);
         setDialogMessage("Cập nhật học sinh thành công!");
       } else {
         await createStudent(payload);
-        console.log("New student created:", payload);
 
         setDialogMessage("Thêm học sinh mới thành công!");
       }
@@ -150,7 +155,6 @@ const StudentManagement = () => {
       status: student.status || "ACTIVE",
       classId: student.classId || student.class?._id || "",
     });
-    console.log("Editing student:", student);
     setIsDialogOpen(true);
   };
 
@@ -161,7 +165,6 @@ const StudentManagement = () => {
     try {
       const response = await getAllClasses();
       setClasses(response.classes || []);
-      console.log("Classes fetched for dialog:", response.classes);
     } catch (err) {
       console.error("Error fetching classes for dialog:", err);
     }
@@ -353,89 +356,96 @@ const StudentManagement = () => {
             )}
           </div>
         ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Họ và tên</th>
-                    <th className="py-2 px-4 text-left">Ngày sinh</th>
-                    <th className="py-2 px-4 text-left">Giới tính</th>
-                    <th className="py-2 px-4 text-left">Lớp</th>
-                    <th className="py-2 px-4 text-left">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((student) => (
-                    <tr key={student._id} className="border-b">
-                      <td className="py-2 px-4">{student.fullName}</td>
-                      <td className="py-2 px-4">
-                        {student.dateOfBirth
-                          ? new Date(student.dateOfBirth).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "-"}
-                      </td>
-                      <td className="py-2 px-4">
-                        {student.gender === "MALE"
-                          ? "Nam"
-                          : student.gender === "FEMALE"
-                          ? "Nữ"
-                          : student.gender === "OTHER"
-                          ? "Khác"
-                          : "-"}
-                      </td>
-                      <td className="py-2 px-4">
-                        {student.class?.name || student.class?.className || "-"}
-                      </td>
-                      <td className="py-2 px-4">
-                        <button
-                          onClick={() => handleEdit(student)}
-                          className="text-blue-600 hover:text-blue-800 mr-2"
-                        >
-                          Sửa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex justify-between items-center mt-6">
-              <div>
-                Hiển thị {students.length} / {pagination.totalStudents} học sinh
-                {(searchTerm || selectedClassFilter) && " (đã lọc)"}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1}
-                  className={`px-3 py-1 rounded ${
-                    pagination.currentPage === 1
-                      ? "bg-gray-100 text-gray-400"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  Trước
-                </button>
-                <span className="px-3 py-1">
-                  Trang {pagination.currentPage} / {pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                  className={`px-3 py-1 rounded ${
-                    pagination.currentPage === pagination.totalPages
-                      ? "bg-gray-100 text-gray-400"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  Sau
-                </button>
-              </div>
-            </div>
-          </>
+          <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, mt: 2 }}>
+            <h2 className="text-xl font-semibold mb-4">Danh sách học sinh</h2>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>STT</TableCell>
+                    <TableCell>Họ và tên</TableCell>
+                    <TableCell>Ngày sinh</TableCell>
+                    <TableCell>Giới tính</TableCell>
+                    <TableCell>Lớp</TableCell>
+                    <TableCell>Mã mời</TableCell>
+                    <TableCell align="center">Thao tác</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {students.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center">
+                        Không tìm thấy học sinh nào.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    students.map((student, idx) => (
+                      <TableRow key={student._id} hover>
+                        <TableCell>{(pagination.currentPage - 1) * 10 + idx + 1}</TableCell>
+                        <TableCell>{student.fullName}</TableCell>
+                        <TableCell>
+                          {student.dateOfBirth
+                            ? new Date(student.dateOfBirth).toLocaleDateString("vi-VN")
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={
+                              student.gender === "MALE"
+                                ? "Nam"
+                                : student.gender === "FEMALE"
+                                  ? "Nữ"
+                                  : student.gender === "OTHER"
+                                    ? "Khác"
+                                    : "-"
+                            }
+                            color={
+                              student.gender === "MALE"
+                                ? "primary"
+                                : student.gender === "FEMALE"
+                                  ? "secondary"
+                                  : "default"
+                            }
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {student.class?.name || student.class?.className || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={student.invitedCode?.code || "-"}
+                            color={student.invitedCode?.isActive ? "success" : "default"}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="Sửa">
+                            <IconButton color="primary" onClick={() => handleEdit(student)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10]}
+              component="div"
+              count={pagination.totalStudents}
+              rowsPerPage={10}
+              page={pagination.currentPage - 1}
+              onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
+              labelRowsPerPage="Số hàng mỗi trang:"
+              labelDisplayedRows={({ from, to, count }) =>
+                `Hiển thị ${from}-${to} của ${count !== -1 ? count : `hơn ${to}`}`
+              }
+              sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1 }}
+            />
+          </Paper>
         )}
       </div>
 
@@ -525,7 +535,6 @@ const StudentManagement = () => {
                         <option value="">Chọn giới tính</option>
                         <option value="MALE">Nam</option>
                         <option value="FEMALE">Nữ</option>
-                        <option value="OTHER">Khác</option>
                       </select>
                     </div>
 

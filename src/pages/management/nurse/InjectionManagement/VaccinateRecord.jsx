@@ -83,7 +83,7 @@ function VaccinateRecord() {
           100
         );
         if (response.success) {
-          console.log(response.data);
+        
           setCampaigns(response.data || []);
         } else {
           throw new Error(
@@ -163,7 +163,7 @@ function VaccinateRecord() {
           if (classCompare !== 0) return classCompare;
           return a.fullName.localeCompare(b.fullName, "vi");
         });
-      console.log(mappedRecords);
+     
       setVaccinationRecords(mappedRecords);
     } catch (error) {
       console.error("Failed to load vaccination records:", error);
@@ -319,7 +319,7 @@ function VaccinateRecord() {
       if (!staffMember) {
         throw new Error("Không tìm thấy thông tin nhân viên.");
       }
-      console.log(selectedStudent);
+     ;
       await campaignService.injectionRecord(
         selectedStudent.consentId,
         staffMember._id
@@ -604,8 +604,8 @@ function VaccinateRecord() {
                             record.chronicConditions?.length > 0 &&
                               record.chronicConditions[0]?.conditionName !==
                               "Chưa có thông tin"
-                              ? "red"
-                              : "inherit",
+                              ? "inherit"
+                              : "red",
                         }}
                       >
                         {Array.isArray(record.chronicConditions) && record.chronicConditions?.length > 0

@@ -2,12 +2,10 @@ import {
   AlertCircle,
   FileText,
   Heart,
-  Eye,
   Syringe,
   Save,
   Plus,
   ArrowLeft,
-  User,
 } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -17,12 +15,11 @@ import {
   updateStudentHealthProfile,
   getStudentHealthProfile,
 } from "../../libs/api/parentService";
-import { set } from "lodash";
 
 const ParentHealthProfileForm = () => {
   const [id, setId] = useState("");
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("basic");
+  const [activeTab, setActiveTab] = useState("allergies");
   const [studentInfo, setStudentInfo] = useState({
     studentId: "",
     studentName: "",
@@ -30,7 +27,6 @@ const ParentHealthProfileForm = () => {
     dateOfBirth: "",
     parentName: "",
     contactNumber: "",
-    relationship: "father",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -137,37 +133,37 @@ const ParentHealthProfileForm = () => {
                 apiData.chronicConditions?.length > 0
                   ? apiData.chronicConditions
                   : [
-                      {
-                        conditionName: "",
-                        diagnosedDate: "",
-                        medication: "",
-                        notes: "",
-                      },
-                    ],
+                    {
+                      conditionName: "",
+                      diagnosedDate: "",
+                      medication: "",
+                      notes: "",
+                    },
+                  ],
               medicalHistory:
                 apiData.medicalHistory?.length > 0
                   ? apiData.medicalHistory
                   : [
-                      {
-                        condition: "",
-                        facility: "",
-                        treatmentDate: "",
-                        method: "",
-                        notes: "",
-                      },
-                    ],
+                    {
+                      condition: "",
+                      facility: "",
+                      treatmentDate: "",
+                      method: "",
+                      notes: "",
+                    },
+                  ],
               vaccines:
                 apiData.vaccines?.length > 0
                   ? apiData.vaccines
                   : [
-                      {
-                        vaccineName: "",
-                        doseNumber: 1,
-                        dateInjected: "",
-                        locationInjected: "",
-                        note: "",
-                      },
-                    ],
+                    {
+                      vaccineName: "",
+                      doseNumber: 1,
+                      dateInjected: "",
+                      locationInjected: "",
+                      note: "",
+                    },
+                  ],
             });
           } else {
             console.log("API response failed:", response.message);
@@ -179,7 +175,7 @@ const ParentHealthProfileForm = () => {
           console.error("Error fetching profile:", error);
           setErrorMessage(
             error.response?.data?.message ||
-              "Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau."
+            "Đã xảy ra lỗi khi tải hồ sơ. Vui lòng thử lại sau."
           );
         }
       };
@@ -240,7 +236,7 @@ const ParentHealthProfileForm = () => {
   };
   const handleSubmit = async (e) => {
     console.log(id);
-    
+
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
@@ -279,7 +275,7 @@ const ParentHealthProfileForm = () => {
       console.error("Lỗi khi lưu hồ sơ:", error);
       setErrorMessage(
         error.response?.data?.message ||
-          "Đã xảy ra lỗi khi lưu hồ sơ. Vui lòng thử lại sau."
+        "Đã xảy ra lỗi khi lưu hồ sơ. Vui lòng thử lại sau."
       );
     }
   };
@@ -288,11 +284,10 @@ const ParentHealthProfileForm = () => {
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${
-        activeTab === id
-          ? "bg-primary text-white"
-          : "bg-white text-gray-700 hover:bg-gray-100"
-      }`}
+      className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${activeTab === id
+        ? "bg-primary text-white"
+        : "bg-white text-gray-700 hover:bg-gray-100"
+        }`}
     >
       {icon}
       <span>{label}</span>
@@ -306,13 +301,13 @@ const ParentHealthProfileForm = () => {
           <div className="flex items-center">
             <button
               onClick={() => navigate("/health-profiles")}
-              className="flex items-center text-gray-600 hover:text-primary mr-5"
+              className="cursor-pointer flex items-center text-gray-600 hover:text-primary mr-5"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
             </button>
             <div className="flex-grow">
               <h1 className="text-2xl font-bold text-gray-800">
-                {isEditing ? "Chỉnh Sửa" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
+                {isEditing ? "Cập nhật" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
               </h1>
               <p className="text-gray-600 mt-1">
                 Vui lòng cung cấp thông tin chi tiết và chính xác về sức khỏe
@@ -334,11 +329,6 @@ const ParentHealthProfileForm = () => {
         <form onSubmit={handleSubmit}>
           <div className="flex flex-wrap gap-2 mb-6">
             <TabButton
-              id="basic"
-              label="Thông tin cơ bản"
-              icon={<User size={18} />}
-            />
-            <TabButton
               id="allergies"
               label="Dị ứng"
               icon={<AlertCircle size={18} />}
@@ -353,129 +343,7 @@ const ParentHealthProfileForm = () => {
               label="Tiền sử điều trị"
               icon={<FileText size={18} />}
             />
-            <TabButton
-              id="vaccines"
-              label="Tiêm chủng"
-              icon={<Syringe size={18} />}
-            />
           </div>
-          {activeTab === "basic" && (
-            <div>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <User className="mr-2 text-primary" size={20} />
-                  Thông tin học sinh
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mã số học sinh <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="studentId"
-                      value={studentInfo.studentId}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Họ và tên học sinh <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="studentName"
-                      value={studentInfo.studentName}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Lớp <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="class"
-                      value={studentInfo.class}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ngày sinh <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      value={studentInfo.dateOfBirth}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <User className="mr-2 text-primary" size={20} />
-                  Thông tin phụ huynh
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tên phụ huynh <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="parentName"
-                      value={studentInfo.parentName}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Số điện thoại liên hệ{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="contactNumber"
-                      value={studentInfo.contactNumber}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mối quan hệ với học sinh{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="relationship"
-                      value={studentInfo.relationship}
-                      required={false}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-                      disabled
-                    >
-                      <option value="father">Bố</option>
-                      <option value="mother">Mẹ</option>
-                      <option value="guardian">Người giám hộ</option>
-                      <option value="other">Khác</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           {activeTab === "allergies" && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -486,7 +354,7 @@ const ParentHealthProfileForm = () => {
                 <button
                   type="button"
                   onClick={() => addItemToCategory("allergies")}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
+                  className="cursor-pointer px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
                 >
                   <Plus className="w-4 h-4 mr-1" /> Thêm dị ứng
                 </button>
@@ -587,7 +455,7 @@ const ParentHealthProfileForm = () => {
                 <button
                   type="button"
                   onClick={() => addItemToCategory("chronicConditions")}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
+                  className="cursor-pointer px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
                 >
                   <Plus className="w-4 h-4 mr-1" /> Thêm bệnh mãn tính
                 </button>
@@ -685,7 +553,7 @@ const ParentHealthProfileForm = () => {
                 <button
                   type="button"
                   onClick={() => addItemToCategory("medicalHistory")}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
+                  className="cursor-pointer px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
                 >
                   <Plus className="w-4 h-4 mr-1" /> Thêm tiền sử
                 </button>
@@ -794,137 +662,17 @@ const ParentHealthProfileForm = () => {
               ))}
             </div>
           )}
-          {activeTab === "vaccines" && (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold flex items-center">
-                  <Syringe className="mr-2 text-primary" size={20} />
-                  Tiêm chủng
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => addItemToCategory("vaccines")}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center text-sm"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Thêm tiêm chủng
-                </button>
-              </div>
-              {healthInfo.vaccines.map((vaccine, index) => (
-                <div key={index} className="mb-6 p-4 border rounded-md">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tên vắc-xin
-                      </label>
-                      <input
-                        type="text"
-                        value={vaccine.vaccineName}
-                        onChange={(e) =>
-                          handleHealthInfoChange(
-                            "vaccines",
-                            index,
-                            "vaccineName",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Ví dụ: MMR, COVID-19, Viêm não Nhật Bản, ..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Ngày tiêm
-                      </label>
-                      <input
-                        type="date"
-                        value={vaccine.dateInjected || ""}
-                        onChange={(e) =>
-                          handleHealthInfoChange(
-                            "vaccines",
-                            index,
-                            "dateInjected",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Địa điểm tiêm
-                      </label>
-                      <input
-                        type="text"
-                        value={vaccine.locationInjected}
-                        onChange={(e) =>
-                          handleHealthInfoChange(
-                            "vaccines",
-                            index,
-                            "locationInjected",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Ví dụ: Trung tâm y tế, Bệnh viện Nhi Đồng 1, ..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Số mũi
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={vaccine.doseNumber}
-                        onChange={(e) =>
-                          handleHealthInfoChange(
-                            "vaccines",
-                            index,
-                            "doseNumber",
-                            e.target.value
-                          )
-                        }
-                        placeholder="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ghi chú
-                    </label>
-                    <textarea
-                      value={vaccine.note}
-                      onChange={(e) =>
-                        handleHealthInfoChange(
-                          "vaccines",
-                          index,
-                          "note",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Ví dụ: Mũi 1, Mũi nhắc lại, Hoàn thành 3 mũi cơ bản, ..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      rows="2"
-                    ></textarea>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
           <div className="flex justify-end mt-8 border-t pt-4">
             <button
               type="button"
               onClick={() => navigate("/health-profiles")}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2"
+              className="cursor-pointer px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 mr-2"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center"
+              className="cursor-pointer px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center"
             >
               <Save className="w-4 h-4 mr-2" />
               {isEditing ? "Cập nhật" : "Lưu"} hồ sơ

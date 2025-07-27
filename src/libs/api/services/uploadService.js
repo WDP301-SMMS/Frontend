@@ -11,7 +11,6 @@ class UploadService {
         throw new Error("Invalid file object provided");
       }
 
-      console.log("Uploading file:", file.name, "Size:", file.size, "Type:", file.type);
       
       const formData = new FormData();
       formData.append("file", file);
@@ -26,7 +25,6 @@ class UploadService {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
 
-      console.log("Upload response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error uploading file:", error);

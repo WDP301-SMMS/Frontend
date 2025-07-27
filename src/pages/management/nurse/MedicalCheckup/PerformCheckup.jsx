@@ -78,7 +78,6 @@ const PerformCheckup = () => {
         // Fetch nurse profile
         const profileResponse = await userService.getProfile();
         if (profileResponse.success) {
-          console.log("Nurse profile response:", profileResponse.data.data._id);
           setNurseId(profileResponse.data.data._id);
         } else {
           throw new Error(
@@ -108,7 +107,6 @@ const PerformCheckup = () => {
 
   const fetchTemplate = async (templateId) => {
     try {
-      console.log("Fetching template with ID:", templateId);
       const response =
         await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
       if (response.success) {
@@ -154,7 +152,7 @@ const PerformCheckup = () => {
     }
     try {
       setLoading(true);
-      const response = await healthCheckConsentService.getConsentsByCampaignId(
+      const response = await healthCheckConsentService.getConsentsByNurseId(
         campaignId
       );
       if (response.success) {
@@ -163,12 +161,10 @@ const PerformCheckup = () => {
           await fetchTemplate(campaign.templateId._id);
         }
         const approvedStudents = response.data.filter(
-          (student) => student.status !== "PENDING" && student.status !== "DECLINED"
+          (student) => student.status !== "PENDING" && student.status !== "DECLINED" && student.status !== "NO_RESPONSE"
         );
-        console.log("Approved students:", approvedStudents);
         const mappedStudents = await Promise.all(
           approvedStudents.map(async (student) => {
-            console.log("Fetching student details for:", student.status);
             return {
               _id: student.studentId._id,
               name: student.studentId.fullName,
@@ -230,54 +226,77 @@ const PerformCheckup = () => {
   };
 
   const handleStudentSelect = async (studentId) => {
-  const student = students.find((s) => s._id === studentId);
-  setSelectedStudent(student);
-  setOpenDialog(true);
+    const student = students.find((s) => s._id === studentId);
+    setSelectedStudent(student);
+    setOpenDialog(true);
 
-  try {
-    setLoading(true);
-    if (student.healthStatus === "COMPLETED") {
-      // Fetch latest record only if status is COMPLETED
-      const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
-      if (record?.data) {
-        console.log("Fetched record:", record);
-        setLatestRecord(record.data);
-        // Update student's health status based on the record
-        // No need to update students state here since no property is changed
-        console.log("Fetched students:", students);
-        const initialData = template?.checkupItems.reduce(
-          (acc, item) => {
-            const result =
-              record.data.resultsData.find(
-                (r) => r.itemName === item.itemName
-              ) || {};
-            return {
+    try {
+      setLoading(true);
+      if (student.healthStatus === "COMPLETED") {
+        // Fetch latest record only if status is COMPLETED
+        const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
+        if (record?.data) {
+          setLatestRecord(record.data);
+          // No need to update students state here since no property is changed
+          const initialData = template?.checkupItems.reduce(
+            (acc, item) => {
+              const result =
+                record.data.resultsData.find(
+                  (r) => r.itemName === item.itemName
+                ) || {};
+              return {
+                ...acc,
+                [item.itemId]: {
+                  value:
+                    item.dataType === CheckupItemDataType.BOOLEAN
+                      ? Boolean(result.value)
+                      : String(result.value || ""),
+                  isAbnormal: Boolean(result.isAbnormal),
+                  notes: String(result.notes || ""),
+                },
+              };
+            },
+            {
+              notes: String(record.data.notes || ""),
+              recommendations: String(record.data.recommendations || ""),
+              overallConclusion: String(record.data.overallConclusion || ""),
+              isAbnormal: Boolean(record.data.isAbnormal),
+            }
+          ) || {
+            notes: "",
+            recommendations: "",
+            overallConclusion: "",
+            isAbnormal: false,
+          };
+          setCheckupData(initialData);
+        } else {
+          // If no record found even for COMPLETED, initialize empty data
+          setLatestRecord(null);
+          const initialData = template?.checkupItems.reduce(
+            (acc, item) => ({
               ...acc,
               [item.itemId]: {
-                value:
-                  item.dataType === CheckupItemDataType.BOOLEAN
-                    ? Boolean(result.value)
-                    : String(result.value || ""),
-                isAbnormal: Boolean(result.isAbnormal),
-                notes: String(result.notes || ""),
+                value: item.dataType === CheckupItemDataType.BOOLEAN ? false : "",
+                isAbnormal: false,
+                notes: "",
               },
-            };
-          },
-          {
-            notes: String(record.data.notes || ""),
-            recommendations: String(record.data.recommendations || ""),
-            overallConclusion: String(record.data.overallConclusion || ""),
-            isAbnormal: Boolean(record.data.isAbnormal),
-          }
-        ) || {
-          notes: "",
-          recommendations: "",
-          overallConclusion: "",
-          isAbnormal: false,
-        };
-        setCheckupData(initialData);
+            }),
+            {
+              notes: "",
+              recommendations: "",
+              overallConclusion: "",
+              isAbnormal: false,
+            }
+          ) || {
+            notes: "",
+            recommendations: "",
+            overallConclusion: "",
+            isAbnormal: false,
+          };
+          setCheckupData(initialData);
+        }
       } else {
-        // If no record found even for COMPLETED, initialize empty data
+        // For non-COMPLETED status, initialize empty data for new record
         setLatestRecord(null);
         const initialData = template?.checkupItems.reduce(
           (acc, item) => ({
@@ -302,8 +321,8 @@ const PerformCheckup = () => {
         };
         setCheckupData(initialData);
       }
-    } else {
-      // For non-COMPLETED status, initialize empty data for new record
+    } catch (error) {
+      console.error("Error in handleStudentSelect:", error);
       setLatestRecord(null);
       const initialData = template?.checkupItems.reduce(
         (acc, item) => ({
@@ -327,48 +346,21 @@ const PerformCheckup = () => {
         isAbnormal: false,
       };
       setCheckupData(initialData);
+      setAlert({
+        open: true,
+        message: "Không thể tải dữ liệu kiểm tra sức khỏe. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error in handleStudentSelect:", error);
-    setLatestRecord(null);
-    const initialData = template?.checkupItems.reduce(
-      (acc, item) => ({
-        ...acc,
-        [item.itemId]: {
-          value: item.dataType === CheckupItemDataType.BOOLEAN ? false : "",
-          isAbnormal: false,
-          notes: "",
-        },
-      }),
-      {
-        notes: "",
-        recommendations: "",
-        overallConclusion: "",
-        isAbnormal: false,
-      }
-    ) || {
-      notes: "",
-      recommendations: "",
-      overallConclusion: "",
-      isAbnormal: false,
-    };
-    setCheckupData(initialData);
-    setAlert({
-      open: true,
-      message: "Không thể tải dữ liệu kiểm tra sức khỏe. Vui lòng thử lại.",
-      type: "error",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleViewRecord = async (studentId) => {
     try {
       setLoading(true);
       const record =
         await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
-      console.log("Fetched record:", record);
       const student = students.find((s) => s._id === studentId);
       setSelectedStudent(student);
       if (record?.data) {
@@ -405,8 +397,8 @@ const PerformCheckup = () => {
               field === "isAbnormal"
                 ? checked
                 : dataType === CheckupItemDataType.BOOLEAN
-                ? value === "true"
-                : String(value),
+                  ? value === "true"
+                  : String(value),
           },
         };
       }
@@ -440,8 +432,6 @@ const PerformCheckup = () => {
       });
       return;
     }
-    console.log("nurseId: ", nurseId);
-    console.log("Submitting checkup data:", checkupData);
 
     if (!nurseId) {
       setAlert({
@@ -526,8 +516,7 @@ const PerformCheckup = () => {
       });
       return;
     }
-    console.log("nurseId: ", nurseId);
-    console.log("Updating checkup data:", checkupData);
+
 
     if (!nurseId) {
       setAlert({
@@ -598,7 +587,6 @@ const PerformCheckup = () => {
               await healthCheckRecordService.getLatestStudentHealthRecord(
                 student._id
               );
-            console.log(`Fetched record for student ${student._id}:`, record);
           } catch (error) {
             console.error(
               `Failed to fetch record for student ${student._id}:`,
@@ -717,41 +705,6 @@ const PerformCheckup = () => {
     });
   };
 
-  const handleCompleteCampaign = async () => {
-    try {
-      setLoading(true);
-      const response = await healthCheckCampaignService.updateCampaignStatus(
-        selectedCampaign,
-        { status: "COMPLETED" }
-      );
-      console.log("Complete campaign response:", response);
-      if (response.success) {
-        setAlert({
-          open: true,
-          message: "Chiến dịch đã hoàn thành!",
-          type: "success",
-        });
-        setSelectedCampaign("");
-        setStudents([]);
-        setTemplate(null);
-        setCheckupData({});
-      } else {
-        throw new Error(
-          response.message || "Không thể hoàn thành chiến dịch."
-        );
-      }
-    } catch (error) {
-      console.error("Failed to complete campaign:", error);
-      setAlert({
-        open: true,
-        message: "Không thể hoàn thành chiến dịch. Vui lòng thử lại.",
-        type: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filteredStudents = students
     .filter((student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -762,12 +715,11 @@ const PerformCheckup = () => {
     .filter((student) =>
       statusFilter
         ? student.healthStatus ===
-          (statusFilter === "Đã kiểm tra" ? "COMPLETED" : "PENDING")
+        (statusFilter === "Đã kiểm tra" ? "COMPLETED" : "PENDING")
         : true
     );
 
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-  console.log("filteredStudents:", students);
   const paginatedList = filteredStudents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -1032,16 +984,6 @@ const PerformCheckup = () => {
                 >
                   Xuất Excel
                 </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<CheckCircle size={20} />}
-                  onClick={handleCompleteCampaign}
-                  disabled={loading || !selectedCampaign}
-                  sx={{ textTransform: "none" }}
-                >
-                  Hoàn thành chiến dịch
-                </Button>
               </Box>
             </>
           )}
@@ -1077,9 +1019,6 @@ const PerformCheckup = () => {
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
                     {selectedStudent.name}
-                  </Typography>
-                  <Typography color="textSecondary" variant="body2">
-                    Mã HS: {selectedStudent._id}
                   </Typography>
                   <Typography color="textSecondary" variant="body2">
                     Lớp: {selectedStudent.className}
@@ -1222,10 +1161,11 @@ const PerformCheckup = () => {
                                 ? "number"
                                 : "text"
                             }
+                            inputProps={{ min: 1 }} // Prevent negative numbers
                             helperText={
                               item.dataType === CheckupItemDataType.NUMBER &&
-                              !checkupData[item.itemId]?.value &&
-                              checkupData[item.itemId]?.value !== 0
+                                !checkupData[item.itemId]?.value &&
+                                checkupData[item.itemId]?.value !== 0
                                 ? "Trường này là bắt buộc"
                                 : item.guideline
                             }
@@ -1397,9 +1337,8 @@ const PerformCheckup = () => {
             <CheckCircle size={24} className="text-green-500" />
             <Typography>
               {selectedStudent
-                ? `Đã ${
-                    latestRecord ? "cập nhật" : "ghi nhận"
-                  } kiểm tra sức khỏe cho ${selectedStudent.name}.`
+                ? `Đã ${latestRecord ? "cập nhật" : "ghi nhận"
+                } kiểm tra sức khỏe cho ${selectedStudent.name}.`
                 : "File kết quả đã được tải xuống."}
             </Typography>
           </Box>

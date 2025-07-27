@@ -38,9 +38,8 @@ import VaccinateRecord from "~/pages/management/nurse/InjectionManagement/Vaccin
 import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagement/PostVaccinationMonitoring";
 
 //ProtectedRoute
-import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
+// import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
 import { SidebarManager } from "~/pages/management/manager/SideBar";
-import CampaignsManagement from "~/pages/management/manager/CampaignsManagement";
 import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpManagement";
 import { Outlet } from "react-router";
 import NursesManagement from "~/pages/management/manager/NursesManagement";
@@ -50,12 +49,13 @@ import ClassManagement from "~/pages/management/admin/ClassManagement";
 import PartnerManagement from "~/pages/management/admin/PartnerManagement";
 import DispenseMedicationAndSupplies from "~/pages/management/nurse/MedicationAndSuppliesManagement/ManageMedications/DispenseMedicationAndSupplies";
 import HealthCheckCampaignsManagement from "~/pages/management/manager/HealthCheckCampaignsManagement";
-import PrepareCheckupList from "~/pages/management/nurse/MedicalCheckup/PrepareCheckupList";
+import PrepareCheckupList from "~/pages/management/manager/PrepareCheckupList";
 import PerformCheckup from "~/pages/management/nurse/MedicalCheckup/PerformCheckup";
 import MedicationRequests from "~/pages/management/nurse/MedicationRequestsManagement/MedicationRequests";
 import MedicationSchedules from "~/pages/management/nurse/MedicationRequestsManagement/MedicationSchedules";
 import AppointmentHealthCheck from "~/pages/management/nurse/AppointmentManagement/AppointmentHealthCheck";
 import { HandleNavigateAuthRoutes, ProtectedRoute } from "./ProtectedRoute";
+import CampaignsManager from "~/pages/management/manager/CampaignsManagement";
 
 const basicRoutes = [
   {
@@ -179,8 +179,8 @@ const nurseRoutes = [
         path: "post-vaccination-monitoring",
         element: <PostVaccinationMonitoring />,
       },
-      { path: "send-checkup-notice", element: <SendCheckupNotice /> },
-      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
+      // { path: "send-checkup-notice", element: <SendCheckupNotice /> },
+      // { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "perform-checkup", element: <PerformCheckup /> },
       { path: "send-results-consult", element: <AppointmentHealthCheck /> },
       { path: "settings", element: <Settings /> },
@@ -203,7 +203,7 @@ const managerRoutes = [
     ),
     children: [
       { path: "", element: <ManagerDashboard /> },
-      { path: "campaigns-management", element: <CampaignsManagement /> },
+      { path: "campaigns-management", element: <CampaignsManager /> },
       {
         path: "medical-check-up-management",
         element: <MedicalCheckupManagement />,
@@ -216,6 +216,7 @@ const managerRoutes = [
         path: "manage-health-check-campaigns",
         element: <HealthCheckCampaignsManagement />,
       },
+      { path: "prepare-checkup-list", element: <PrepareCheckupList /> },
       { path: "manage-blogs", element: <BlogManagement /> },
       { path: "settings", element: <Settings /> },
     ],
