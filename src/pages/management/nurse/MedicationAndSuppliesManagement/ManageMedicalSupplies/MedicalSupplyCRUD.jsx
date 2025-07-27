@@ -46,7 +46,7 @@ import {
   Close
 } from "@mui/icons-material";
 
-const supplyTypes = ["viên", "ống", "ml", "g", "mg", "miếng", "lọ", "tuýp", "ống hít"];
+const supplyTypes = ["Cái", "Miếng", "Cuộn", "Ống", "Bộ", "Túi"];
 
 const MedicalSupplyCRUD = ({
   supplyRecords,

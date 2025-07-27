@@ -87,9 +87,6 @@ const AdminDashboard = () => {
     data.healthAnalytics.healthClassification.map((item) => ({
       name: item.classification,
       value: item.count,
-      percentage: ((item.count / data.quickStats.totalStudents) * 100).toFixed(
-        1
-      ),
     }));
 
   const campaignData = [
@@ -116,6 +113,11 @@ const AdminDashboard = () => {
   ];
 
   const commonIssuesData = data.healthAnalytics.commonIssues;
+
+  const totalHealthClassified = healthClassificationData.reduce(
+    (sum, item) => sum + item.value,
+    0
+  );
 
   const StatCard = ({ icon: Icon, title, value, color, trend }) => (
     <div
@@ -208,15 +210,26 @@ const AdminDashboard = () => {
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percentage }) => `${name}: ${percentage}%`}
                   >
                     {healthClassificationData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={["#10B981", "#F59E0B", "#EF4444"][index]}
+                        fill={["#10B981", "#F59E0B", "#EF4444"][index % 3]}
                       />
                     ))}
                   </Pie>
+                  <Legend
+                    layout="vertical"
+                    verticalAlign="middle"
+                    align="right"
+                    formatter={(value, entry) => {
+                      const item = healthClassificationData.find((d) => d.name === value);
+                      const percentage = item && totalHealthClassified > 0
+                        ? ((item.value / totalHealthClassified) * 100).toFixed(1)
+                        : "0.0";
+                      return `${value}: ${percentage}%`;
+                    }}
+                  />
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>

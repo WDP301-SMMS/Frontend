@@ -34,6 +34,18 @@ export const updateUserStatus = async (userId, statusData) => {
   }
 };
 
+export const updateUserRole = async (userId, roleData) => {
+  try {
+    const response = await api.patch(
+      `${API_URL}/admin/users/${userId}/role`,
+      roleData
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Admin - Student Management
 export const getAllStudents = async (params) => {
   try {
@@ -69,7 +81,7 @@ export const updateStudent = async (studentId, studentData) => {
 export const getAllClasses = async (params) => {
   try {
     const response = await api.get(`${API_URL}/admin/classes`, { params });
-    
+
     return response.data.data;
   } catch (error) {
     throw error;
