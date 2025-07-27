@@ -280,9 +280,8 @@ const DispenseMedicationAndSupplies = () => {
       if (!item.itemId) {
         setErrors((prev) => ({
           ...prev,
-          [`${
-            index < dispenseForm.medications.length ? "medication" : "supply"
-          }-${index % dispenseForm.medications.length}`]:
+          [`${index < dispenseForm.medications.length ? "medication" : "supply"
+            }-${index % dispenseForm.medications.length}`]:
             "Vui lòng chọn một item",
         }));
         return true;
@@ -293,11 +292,9 @@ const DispenseMedicationAndSupplies = () => {
       ) {
         setErrors((prev) => ({
           ...prev,
-          [`${
-            index < dispenseForm.medications.length ? "medication" : "supply"
-          }-${
-            index % dispenseForm.medications.length
-          }`]: `Số lượng phải từ 1 đến ${item.maxQuantity || 1}`,
+          [`${index < dispenseForm.medications.length ? "medication" : "supply"
+            }-${index % dispenseForm.medications.length
+            }`]: `Số lượng phải từ 1 đến ${item.maxQuantity || 1}`,
         }));
         return true;
       }
@@ -592,9 +589,6 @@ const DispenseMedicationAndSupplies = () => {
                   color="#1e293b"
                 >
                   {selectedIncident?.studentId?.fullName}
-                </Typography>
-                <Typography variant="body2" color="#64748b">
-                  ID: {selectedIncident?.studentId?._id}
                 </Typography>
               </Box>
             </Box>
@@ -938,8 +932,8 @@ const DispenseMedicationAndSupplies = () => {
                     value={
                       med.itemId
                         ? medicineOptions.find(
-                            (item) => item.itemId === med.itemId
-                          )
+                          (item) => item.itemId === med.itemId
+                        )
                         : null
                     }
                     onChange={(event, newValue) =>
@@ -1065,8 +1059,8 @@ const DispenseMedicationAndSupplies = () => {
                     value={
                       supply.itemId
                         ? supplyOptions.find(
-                            (item) => item.itemId === supply.itemId
-                          )
+                          (item) => item.itemId === supply.itemId
+                        )
                         : null
                     }
                     onChange={(event, newValue) =>
@@ -1174,84 +1168,84 @@ const DispenseMedicationAndSupplies = () => {
               </Typography>
 
               {selectedIncident &&
-              (dispenseForm.medications.some((m) => m.itemId) ||
-                dispenseForm.supplies.some((s) => s.itemId)) ? (
+                (dispenseForm.medications.some((m) => m.itemId) ||
+                  dispenseForm.supplies.some((s) => s.itemId)) ? (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Selected Medications */}
                   {dispenseForm.medications.filter((m) => m.itemId).length >
                     0 && (
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        color="#374151"
-                        fontWeight="600"
-                        sx={{ mb: 1 }}
-                      >
-                        Thuốc đã chọn:
-                      </Typography>
-                      {dispenseForm.medications
-                        .filter((m) => m.itemId)
-                        .map((med, index) => {
-                          const selectedMed = medicineOptions.find(
-                            (item) => item.itemId === med.itemId
-                          );
-                          return (
-                            <Card
-                              key={index}
-                              sx={{
-                                mb: 1.5,
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 1.5,
-                              }}
-                            >
-                              <CardContent
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          color="#374151"
+                          fontWeight="600"
+                          sx={{ mb: 1 }}
+                        >
+                          Thuốc đã chọn:
+                        </Typography>
+                        {dispenseForm.medications
+                          .filter((m) => m.itemId)
+                          .map((med, index) => {
+                            const selectedMed = medicineOptions.find(
+                              (item) => item.itemId === med.itemId
+                            );
+                            return (
+                              <Card
+                                key={index}
                                 sx={{
-                                  p: 2,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
+                                  mb: 1.5,
+                                  border: "1px solid #e2e8f0",
+                                  borderRadius: 1.5,
                                 }}
                               >
-                                <Box
+                                <CardContent
                                   sx={{
-                                    p: 1,
-                                    bgcolor: "#dbeafe",
-                                    borderRadius: 1,
+                                    p: 2,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
                                   }}
                                 >
-                                  <Package
-                                    size={16}
-                                    sx={{ color: "#3b82f6" }}
-                                  />
-                                </Box>
-                                <Box sx={{ flex: 1 }}>
-                                  <Typography
-                                    variant="body2"
-                                    fontWeight="600"
-                                    color="#1e293b"
+                                  <Box
+                                    sx={{
+                                      p: 1,
+                                      bgcolor: "#dbeafe",
+                                      borderRadius: 1,
+                                    }}
                                   >
-                                    {selectedMed?.name || "Unknown"}
-                                  </Typography>
-                                  <Typography variant="caption" color="#64748b">
-                                    Số lượng: {med.quantityToWithdraw} / Tồn:{" "}
-                                    {selectedMed?.totalQuantity}
-                                  </Typography>
-                                  {med.usageInstructions && (
+                                    <Package
+                                      size={16}
+                                      sx={{ color: "#3b82f6" }}
+                                    />
+                                  </Box>
+                                  <Box sx={{ flex: 1 }}>
                                     <Typography
-                                      variant="caption"
-                                      color="#64748b"
-                                      sx={{ display: "block", mt: 0.5 }}
+                                      variant="body2"
+                                      fontWeight="600"
+                                      color="#1e293b"
                                     >
-                                      Hướng dẫn: {med.usageInstructions}
+                                      {selectedMed?.name || "Unknown"}
                                     </Typography>
-                                  )}
-                                </Box>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                    </Box>
-                  )}
+                                    <Typography variant="caption" color="#64748b">
+                                      Số lượng: {med.quantityToWithdraw} / Tồn:{" "}
+                                      {selectedMed?.totalQuantity}
+                                    </Typography>
+                                    {med.usageInstructions && (
+                                      <Typography
+                                        variant="caption"
+                                        color="#64748b"
+                                        sx={{ display: "block", mt: 0.5 }}
+                                      >
+                                        Hướng dẫn: {med.usageInstructions}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                      </Box>
+                    )}
 
                   {/* Selected Supplies */}
                   {dispenseForm.supplies.filter((s) => s.itemId).length > 0 && (

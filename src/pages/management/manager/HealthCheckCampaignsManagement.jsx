@@ -874,22 +874,22 @@ const CampaignDetail = ({ campaign, onClose, showSnackbar, onAnnounce, onComplet
                       campaignData.status === "DRAFT"
                         ? "Nháp"
                         : campaignData.status === "ANNOUNCED"
-                        ? "Đã thông báo"
-                        : campaignData.status === "IN_PROGRESS"
-                        ? "Đang tiến hành"
-                        : campaignData.status === "COMPLETED"
-                        ? "Hoàn thành"
-                        : "Đã hủy"
+                          ? "Đã thông báo"
+                          : campaignData.status === "IN_PROGRESS"
+                            ? "Đang tiến hành"
+                            : campaignData.status === "COMPLETED"
+                              ? "Hoàn thành"
+                              : "Đã hủy"
                     }
                     color={
                       campaignData.status === "ANNOUNCED" ||
-                      campaignData.status === "IN_PROGRESS"
+                        campaignData.status === "IN_PROGRESS"
                         ? "warning"
                         : campaignData.status === "COMPLETED"
-                        ? "success"
-                        : campaignData.status === "CANCELED"
-                        ? "error"
-                        : "default"
+                          ? "success"
+                          : campaignData.status === "CANCELED"
+                            ? "error"
+                            : "default"
                     }
                     sx={{ fontWeight: "medium" }}
                   />
@@ -982,8 +982,8 @@ const CampaignDetail = ({ campaign, onClose, showSnackbar, onAnnounce, onComplet
                 >
                   {campaignData.actualStartDate
                     ? new Date(campaignData.actualStartDate).toLocaleString(
-                        "vi-VN"
-                      )
+                      "vi-VN"
+                    )
                     : "Không có"}
                 </Typography>
               </Box>
@@ -1014,8 +1014,8 @@ const CampaignDetail = ({ campaign, onClose, showSnackbar, onAnnounce, onComplet
                 >
                   {campaignData.completedDate
                     ? new Date(campaignData.completedDate).toLocaleString(
-                        "vi-VN"
-                      )
+                      "vi-VN"
+                    )
                     : "Không có"}
                 </Typography>
               </Box>
@@ -1696,9 +1696,8 @@ const HealthCheckCampaignsManagement = () => {
     // Show SweetAlert2 modal with dropdown
     const result = await Swal.fire({
       title: "Chọn trạng thái mới",
-      text: `Trạng thái hiện tại: ${
-        statusOptions.find((opt) => opt.value === currentStatus)?.label
-      }`,
+      text: `Trạng thái hiện tại: ${statusOptions.find((opt) => opt.value === currentStatus)?.label
+        }`,
       icon: "question",
       input: "select",
       inputOptions: statusOptionsMap.reduce((acc, opt) => {
@@ -1926,7 +1925,7 @@ const HealthCheckCampaignsManagement = () => {
             <TableHead >
               <TableRow>
                 <TableCell sx={{ color: "black", fontWeight: "bold" }}>
-                  Mã Chiến dịch
+                  STT
                 </TableCell>
                 <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Tên Chiến dịch
@@ -1956,7 +1955,7 @@ const HealthCheckCampaignsManagement = () => {
             </TableHead>
             <TableBody>
               {campaigns.length > 0 ? (
-                campaigns.map((campaign) => (
+                campaigns.map((campaign, index) => (
                   <TableRow key={campaign._id}>
                     <TableCell
                       sx={{
@@ -1966,7 +1965,7 @@ const HealthCheckCampaignsManagement = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {campaign._id}
+                      {page * limit + index + 1}
                     </TableCell>
                     <TableCell sx={{ fontWeight: "medium" }}>
                       {campaign.name}
@@ -1988,13 +1987,13 @@ const HealthCheckCampaignsManagement = () => {
                         }
                         color={
                           campaign.status === "ANNOUNCED" ||
-                          campaign.status === "IN_PROGRESS"
+                            campaign.status === "IN_PROGRESS"
                             ? "warning"
                             : campaign.status === "COMPLETED"
-                            ? "success"
-                            : campaign.status === "CANCELED"
-                            ? "error"
-                            : "default"
+                              ? "success"
+                              : campaign.status === "CANCELED"
+                                ? "error"
+                                : "default"
                         }
                       />
                     </TableCell>
@@ -2169,7 +2168,7 @@ const HealthCheckCampaignsManagement = () => {
       </Dialog>
 
       <MuiDialog open={openAnnounceDialog} onClose={() => setOpenAnnounceDialog(false)} maxWidth="xs" fullWidth>
-        <MuiDialogTitle>Gửi thông báo chiến dịch</MuiDialogTitle>
+        <MuiDialogTitle>Kích hoạt chiến dịch</MuiDialogTitle>
         <MuiDialogContent>
           <TextField
             label="Ngày khám"
@@ -2197,7 +2196,7 @@ const HealthCheckCampaignsManagement = () => {
             color="primary"
             disabled={loading}
           >
-            Gửi thông báo
+            Kích hoạt chiến dịch
           </Button>
         </MuiDialogActions>
       </MuiDialog>

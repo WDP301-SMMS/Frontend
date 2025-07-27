@@ -161,7 +161,7 @@ const PerformCheckup = () => {
           await fetchTemplate(campaign.templateId._id);
         }
         const approvedStudents = response.data.filter(
-          (student) => student.status !== "PENDING" && student.status !== "DECLINED"&& student.status !== "NO_RESPONSE"
+          (student) => student.status !== "PENDING" && student.status !== "DECLINED" && student.status !== "NO_RESPONSE"
         );
         const mappedStudents = await Promise.all(
           approvedStudents.map(async (student) => {
@@ -226,51 +226,77 @@ const PerformCheckup = () => {
   };
 
   const handleStudentSelect = async (studentId) => {
-  const student = students.find((s) => s._id === studentId);
-  setSelectedStudent(student);
-  setOpenDialog(true);
+    const student = students.find((s) => s._id === studentId);
+    setSelectedStudent(student);
+    setOpenDialog(true);
 
-  try {
-    setLoading(true);
-    if (student.healthStatus === "COMPLETED") {
-      // Fetch latest record only if status is COMPLETED
-      const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
-      if (record?.data) {
-        setLatestRecord(record.data);
-        // No need to update students state here since no property is changed
-        const initialData = template?.checkupItems.reduce(
-          (acc, item) => {
-            const result =
-              record.data.resultsData.find(
-                (r) => r.itemName === item.itemName
-              ) || {};
-            return {
+    try {
+      setLoading(true);
+      if (student.healthStatus === "COMPLETED") {
+        // Fetch latest record only if status is COMPLETED
+        const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
+        if (record?.data) {
+          setLatestRecord(record.data);
+          // No need to update students state here since no property is changed
+          const initialData = template?.checkupItems.reduce(
+            (acc, item) => {
+              const result =
+                record.data.resultsData.find(
+                  (r) => r.itemName === item.itemName
+                ) || {};
+              return {
+                ...acc,
+                [item.itemId]: {
+                  value:
+                    item.dataType === CheckupItemDataType.BOOLEAN
+                      ? Boolean(result.value)
+                      : String(result.value || ""),
+                  isAbnormal: Boolean(result.isAbnormal),
+                  notes: String(result.notes || ""),
+                },
+              };
+            },
+            {
+              notes: String(record.data.notes || ""),
+              recommendations: String(record.data.recommendations || ""),
+              overallConclusion: String(record.data.overallConclusion || ""),
+              isAbnormal: Boolean(record.data.isAbnormal),
+            }
+          ) || {
+            notes: "",
+            recommendations: "",
+            overallConclusion: "",
+            isAbnormal: false,
+          };
+          setCheckupData(initialData);
+        } else {
+          // If no record found even for COMPLETED, initialize empty data
+          setLatestRecord(null);
+          const initialData = template?.checkupItems.reduce(
+            (acc, item) => ({
               ...acc,
               [item.itemId]: {
-                value:
-                  item.dataType === CheckupItemDataType.BOOLEAN
-                    ? Boolean(result.value)
-                    : String(result.value || ""),
-                isAbnormal: Boolean(result.isAbnormal),
-                notes: String(result.notes || ""),
+                value: item.dataType === CheckupItemDataType.BOOLEAN ? false : "",
+                isAbnormal: false,
+                notes: "",
               },
-            };
-          },
-          {
-            notes: String(record.data.notes || ""),
-            recommendations: String(record.data.recommendations || ""),
-            overallConclusion: String(record.data.overallConclusion || ""),
-            isAbnormal: Boolean(record.data.isAbnormal),
-          }
-        ) || {
-          notes: "",
-          recommendations: "",
-          overallConclusion: "",
-          isAbnormal: false,
-        };
-        setCheckupData(initialData);
+            }),
+            {
+              notes: "",
+              recommendations: "",
+              overallConclusion: "",
+              isAbnormal: false,
+            }
+          ) || {
+            notes: "",
+            recommendations: "",
+            overallConclusion: "",
+            isAbnormal: false,
+          };
+          setCheckupData(initialData);
+        }
       } else {
-        // If no record found even for COMPLETED, initialize empty data
+        // For non-COMPLETED status, initialize empty data for new record
         setLatestRecord(null);
         const initialData = template?.checkupItems.reduce(
           (acc, item) => ({
@@ -295,8 +321,8 @@ const PerformCheckup = () => {
         };
         setCheckupData(initialData);
       }
-    } else {
-      // For non-COMPLETED status, initialize empty data for new record
+    } catch (error) {
+      console.error("Error in handleStudentSelect:", error);
       setLatestRecord(null);
       const initialData = template?.checkupItems.reduce(
         (acc, item) => ({
@@ -320,41 +346,15 @@ const PerformCheckup = () => {
         isAbnormal: false,
       };
       setCheckupData(initialData);
+      setAlert({
+        open: true,
+        message: "Không thể tải dữ liệu kiểm tra sức khỏe. Vui lòng thử lại.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error in handleStudentSelect:", error);
-    setLatestRecord(null);
-    const initialData = template?.checkupItems.reduce(
-      (acc, item) => ({
-        ...acc,
-        [item.itemId]: {
-          value: item.dataType === CheckupItemDataType.BOOLEAN ? false : "",
-          isAbnormal: false,
-          notes: "",
-        },
-      }),
-      {
-        notes: "",
-        recommendations: "",
-        overallConclusion: "",
-        isAbnormal: false,
-      }
-    ) || {
-      notes: "",
-      recommendations: "",
-      overallConclusion: "",
-      isAbnormal: false,
-    };
-    setCheckupData(initialData);
-    setAlert({
-      open: true,
-      message: "Không thể tải dữ liệu kiểm tra sức khỏe. Vui lòng thử lại.",
-      type: "error",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleViewRecord = async (studentId) => {
     try {
@@ -397,8 +397,8 @@ const PerformCheckup = () => {
               field === "isAbnormal"
                 ? checked
                 : dataType === CheckupItemDataType.BOOLEAN
-                ? value === "true"
-                : String(value),
+                  ? value === "true"
+                  : String(value),
           },
         };
       }
@@ -516,7 +516,7 @@ const PerformCheckup = () => {
       });
       return;
     }
-   
+
 
     if (!nurseId) {
       setAlert({
@@ -715,7 +715,7 @@ const PerformCheckup = () => {
     .filter((student) =>
       statusFilter
         ? student.healthStatus ===
-          (statusFilter === "Đã kiểm tra" ? "COMPLETED" : "PENDING")
+        (statusFilter === "Đã kiểm tra" ? "COMPLETED" : "PENDING")
         : true
     );
 
@@ -1021,9 +1021,6 @@ const PerformCheckup = () => {
                     {selectedStudent.name}
                   </Typography>
                   <Typography color="textSecondary" variant="body2">
-                    Mã HS: {selectedStudent._id}
-                  </Typography>
-                  <Typography color="textSecondary" variant="body2">
                     Lớp: {selectedStudent.className}
                   </Typography>
                   <Typography color="textSecondary" variant="body2">
@@ -1167,8 +1164,8 @@ const PerformCheckup = () => {
                             inputProps={{ min: 1 }} // Prevent negative numbers
                             helperText={
                               item.dataType === CheckupItemDataType.NUMBER &&
-                              !checkupData[item.itemId]?.value &&
-                              checkupData[item.itemId]?.value !== 0
+                                !checkupData[item.itemId]?.value &&
+                                checkupData[item.itemId]?.value !== 0
                                 ? "Trường này là bắt buộc"
                                 : item.guideline
                             }
@@ -1340,9 +1337,8 @@ const PerformCheckup = () => {
             <CheckCircle size={24} className="text-green-500" />
             <Typography>
               {selectedStudent
-                ? `Đã ${
-                    latestRecord ? "cập nhật" : "ghi nhận"
-                  } kiểm tra sức khỏe cho ${selectedStudent.name}.`
+                ? `Đã ${latestRecord ? "cập nhật" : "ghi nhận"
+                } kiểm tra sức khỏe cho ${selectedStudent.name}.`
                 : "File kết quả đã được tải xuống."}
             </Typography>
           </Box>

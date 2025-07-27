@@ -1103,7 +1103,7 @@ const MedicalCheckupManagement = () => {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ color: "black", fontWeight: "bold" }}>
-                  Mã Mẫu
+                  STT
                 </TableCell>
                 <TableCell sx={{ color: "black", fontWeight: "bold" }}>
                   Tên Mẫu
@@ -1124,7 +1124,7 @@ const MedicalCheckupManagement = () => {
             </TableHead>
             <TableBody>
               {templates.length > 0 ? (
-                templates.map((template) => (
+                templates.map((template, index) => (
                   <TableRow key={template._id}>
                     <TableCell
                       sx={{
@@ -1134,7 +1134,7 @@ const MedicalCheckupManagement = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {template._id}
+                      {page * limit + index + 1}
                     </TableCell>
                     <TableCell sx={{ fontWeight: "medium" }}>
                       {template.name}
@@ -1432,28 +1432,30 @@ const MedicalCheckupManagement = () => {
             overflowY: "auto",
           }}
         >
-          {/* Mã mẫu khám nổi bật */}
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Chip 
-              icon={<TagIcon />}
-              label="Mã Mẫu Khám"
-              sx={{ 
-                backgroundColor: 'primary.light',
-                color: 'primary.contrastText',
-                mb: 1
-              }}
-            />
-            <Typography variant="h4" sx={{ 
-              color: 'primary.main',
-              fontWeight: 'bold',
-              letterSpacing: 1
-            }}>
-              {viewingTemplate?._id || 'Không xác định'}
-            </Typography>
-          </Box>
-
           {/* Thông tin cơ bản */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} md={4}>
+              <Paper
+                sx={{
+                  p: 2,
+                  backgroundColor: "grey.50",
+                  border: "1px solid",
+                  borderColor: "grey.200",
+                }}
+              >
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                >
+                  <FolderIcon sx={{ fontSize: 20, color: "grey.600" }} />
+                  <Typography variant="subtitle2" color="grey.700">
+                    Tên mẫu
+                  </Typography>
+                </Box>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {viewingTemplate?.name || "Không có tên"}
+                </Typography>
+              </Paper>
+            </Grid>
             <Grid item xs={12} md={4}>
               <Paper
                 sx={{
@@ -1475,32 +1477,6 @@ const MedicalCheckupManagement = () => {
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
                   {viewingTemplate?.description || "Không có mô tả"}
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper
-                sx={{
-                  p: 2,
-                  backgroundColor: "grey.50",
-                  border: "1px solid",
-                  borderColor: "grey.200",
-                }}
-              >
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-                >
-                  <FingerprintIcon sx={{ fontSize: 20, color: "grey.600" }} />
-                  <Typography variant="subtitle2" color="grey.700">
-                    Mã Mẫu Khám
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ 
-                  fontFamily: 'monospace',
-                  wordBreak: 'break-all',
-                  fontWeight: 600
-                }}>
-                  {viewingTemplate?._id || 'Không xác định'}
                 </Typography>
               </Paper>
             </Grid>

@@ -117,12 +117,12 @@ function RecordIncidents() {
     setSearchResults([]);
     setSearchTerm("");
     setSelectedClass("");
-    
+
     // Set default values with current date and time
     const now = new Date();
     const currentDate = now.toISOString().split('T')[0];
     const currentTime = now.toTimeString().slice(0, 5);
-    
+
     setEventForm({
       incidentType: "",
       description: "",
@@ -145,7 +145,7 @@ function RecordIncidents() {
     setEventForm((prevForm) => {
       const currentDateTime = prevForm.incidentTime || new Date().toISOString();
       const [date, time] = currentDateTime.split('T');
-      
+
       if (field === 'date') {
         return {
           ...prevForm,
@@ -254,12 +254,12 @@ function RecordIncidents() {
   const handleContinueRecording = () => {
     setShowConfirmationDialog(false);
     setSelectedStudent(null);
-    
+
     // Reset form with current date and time
     const now = new Date();
     const currentDate = now.toISOString().split('T')[0];
     const currentTime = now.toTimeString().slice(0, 5);
-    
+
     setEventForm({
       incidentType: "",
       description: "",
@@ -307,7 +307,7 @@ function RecordIncidents() {
         icon={<Warning />}
         sx={{ mb: 3, fontWeight: "medium" }}
       >
-        Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như chấn thương, 
+        Để đăng tìm kiếm học sinh và ghi lại sự kiện y tế quan trọng như chấn thương,
         sốt, đau đầu, dị ứng hoặc các sự kiện khác một cách nhanh chóng và chính xác.
       </Alert>
 
@@ -320,7 +320,7 @@ function RecordIncidents() {
         <Box display="flex" gap={2} mb={3} flexWrap="wrap">
           <TextField
             type="text"
-            label="Tìm kiếm theo tên hoặc mã HS"
+            label="Tìm kiếm theo tên"
             value={searchTerm}
             onChange={handleSearchTermChange}
             sx={{ width: { xs: "100%", sm: 300 } }}
@@ -365,7 +365,7 @@ function RecordIncidents() {
                       {student.fullName}
                     </p>
                     <p className="text-xs text-gray-500 group-hover:text-blue-600">
-                      Lớp: {student.class.className} | Mã HS: {student._id}
+                      Lớp: {student.class.className}
                     </p>
                     <p className="text-xs text-gray-400 group-hover:text-blue-500">
                       Ngày sinh: {new Date(student.dateOfBirth).toLocaleDateString("vi-VN")}
@@ -397,8 +397,7 @@ function RecordIncidents() {
                 <p className="text-xs text-blue-600">
                   Lớp:{" "}
                   <span className="font-semibold">{selectedStudent.class.className}</span>{" "}
-                  | Mã HS:{" "}
-                  <span className="font-semibold">{selectedStudent._id}</span> |
+                  |
                   Ngày sinh:{" "}
                   <span className="font-semibold">{new Date(selectedStudent.dateOfBirth).toLocaleDateString("vi-VN")}</span>
                 </p>
@@ -444,7 +443,7 @@ function RecordIncidents() {
 
           <Grid container spacing={3}>
             {/* Row 1: Incident Type, Severity, Status */}
-            <Grid item xs={12} sm={6} md={4} sx={{width: "24%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{ width: "24%" }}>
               <FormControl fullWidth>
                 <InputLabel>Loại sự kiện</InputLabel>
                 <Select
@@ -465,7 +464,7 @@ function RecordIncidents() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4} sx={{width: "24%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{ width: "24%" }}>
               <FormControl fullWidth>
                 <InputLabel>Mức độ nghiêm trọng</InputLabel>
                 <Select
@@ -502,7 +501,7 @@ function RecordIncidents() {
             </Grid> */}
 
             {/* Row 2: Date and Time */}
-            <Grid item xs={12} sm={6} md={4} sx={{width: "23.5%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{ width: "23.5%" }}>
               <TextField
                 fullWidth
                 type="date"
@@ -513,7 +512,7 @@ function RecordIncidents() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4} sx={{width: "23.4%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{ width: "23.4%" }}>
               <TextField
                 fullWidth
                 type="time"
@@ -525,7 +524,7 @@ function RecordIncidents() {
             </Grid>
 
             {/* Row 3: Description */}
-            <Grid item xs={12} sx={{width: "100%"}}>
+            <Grid item xs={12} sx={{ width: "100%" }}>
               <TextField
                 fullWidth
                 multiline
@@ -539,7 +538,7 @@ function RecordIncidents() {
             </Grid>
 
             {/* Row 4: Actions Taken */}
-            <Grid item xs={12} sx={{width: "100%"}}>
+            <Grid item xs={12} sx={{ width: "100%" }}>
               <TextField
                 fullWidth
                 multiline
