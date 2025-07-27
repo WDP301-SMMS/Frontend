@@ -199,7 +199,7 @@ const ChatDisplayer = ({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#f8f9fa",
+        bgcolor: "#f6f6f6",
       }}
     >
       {/* Chat Header */}
@@ -222,7 +222,7 @@ const ChatDisplayer = ({
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {room?.name || "Chat Room"}
+                {room?.name || "Phòng Chat"}
               </Typography>
             </Box>
           </Box>
@@ -268,8 +268,29 @@ const ChatDisplayer = ({
             </Box>
 
             {/* Messages for this date */}
-            {dayMessages.map((message) => {
+            {dayMessages.map((message, messageIndex) => {
               const isCurrentUser = message?.senderId._id === currentUser?._id;
+              console.log(
+                "Rendering message:",
+                message,
+                "isCurrentUser:",
+                isCurrentUser
+              );
+
+              // Check if previous message is from same sender
+              let prevMessage = null;
+              let isFirstMessageOfDay = messageIndex === 0;
+
+              if (messageIndex > 0) {
+                // Previous message in same day
+                prevMessage = dayMessages[messageIndex - 1];
+              }
+
+              const showUsername =
+                !isCurrentUser &&
+                (isFirstMessageOfDay || // Always show username for first message of the day
+                  !prevMessage ||
+                  prevMessage?.senderId._id !== message?.senderId._id);
 
               return (
                 <Box
@@ -289,7 +310,7 @@ const ChatDisplayer = ({
                       alignItems: isCurrentUser ? "flex-end" : "flex-start",
                     }}
                   >
-                    {!isCurrentUser && (
+                    {showUsername && (
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -347,9 +368,9 @@ const ChatDisplayer = ({
                           p: 1.5,
                           bgcolor: isCurrentUser ? "primary.main" : "white",
                           color: isCurrentUser ? "white" : "text.primary",
-                          borderRadius: 2,
-                          borderTopLeftRadius: !isCurrentUser ? 1 : 2,
-                          borderTopRightRadius: isCurrentUser ? 1 : 2,
+                          borderRadius: isCurrentUser
+                            ? "16px 4px 16px 16px" // TL TR BR BL
+                            : "4px 16px 16px 16px",
                           wordBreak: "break-word",
                         }}
                       >
