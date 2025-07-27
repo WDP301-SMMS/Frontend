@@ -8,6 +8,12 @@ import uploadService from "~/libs/api/services/uploadService";
 
 import Swal from 'sweetalert2';
 import { useDebounce } from "~/libs/hooks/useDebounce";
+import {
+  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper,
+  TablePagination, IconButton, Tooltip, Stack
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 // --- Validation Schema using Yup ---
 const PostSchema = Yup.object().shape({
@@ -250,45 +256,70 @@ const BlogManagement = () => {
                     <button type="button" onClick={handleOpenAddModal} className="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>Thêm Mới</button>
                 </div></div>
                 <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-                    <table className="w-full table-fixed text-sm text-left text-gray-600">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 w-[25%]">Mã Blog</th>
-                                <th scope="col" className="px-6 py-3 w-[40%]">Tên Bài Viết</th>
-                                <th scope="col" className="px-6 py-3 w-[20%]">Tác giả</th>
-                                <th scope="col" className="px-6 py-3 text-center w-[15%]">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (<tr><td colSpan="4" className="text-center py-10">Đang tải...</td></tr>
-                            ) : error ? (<tr><td colSpan="4" className="text-center py-10 text-red-500">{error}</td></tr>
-                            ) : paginatedPosts.length > 0 ? (
-                                paginatedPosts.map((post) => (
-                                    <tr key={post._id} className="bg-white border-b hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-mono text-xs truncate">{post._id}</td>
-                                        <th scope="row" className="px-6 py-4 font-medium text-gray-900 truncate">{post.title}</th>
-                                        <td className="px-6 py-4 truncate">{post.authorInfo.fullName}</td>
-                                        <td className="px-6 py-4 flex justify-center items-center gap-4">
-                                            <button onClick={() => handleOpenEditModal(post)} className="text-gray-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg></button>
-                                            <button onClick={() => handleDelete(post._id)} className="text-gray-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg></button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr><td colSpan="4" className="text-center py-10 text-gray-500">Không có bài viết nào phù hợp.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                    <div className="p-4 flex justify-end items-center text-sm">
-                        <div className="flex items-center gap-4">
-                            <span>Hiển thị {(currentPage - 1) * limit + (filteredPosts.length > 0 ? 1 : 0)}-{Math.min(currentPage * limit, filteredPosts.length)} của {filteredPosts.length}</span>
-                            <div className="flex gap-2">
-                                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" /></svg></button>
-                                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages || totalPages === 0} className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="center" sx={{ fontWeight: "bold", width: 80 }}>STT</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>Tên Bài Viết</TableCell>
+                        <TableCell sx={{ fontWeight: "bold", width: 180 }}>Tác giả</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", width: 140 }}>Hành động</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center">Đang tải...</TableCell>
+                        </TableRow>
+                      ) : error ? (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center" sx={{ color: 'red' }}>{error}</TableCell>
+                        </TableRow>
+                      ) : paginatedPosts.length > 0 ? (
+                        paginatedPosts.map((post, idx) => (
+                          <TableRow key={post._id} hover>
+                            <TableCell align="center">{(currentPage - 1) * limit + idx + 1}</TableCell>
+                            <TableCell>{post.title}</TableCell>
+                            <TableCell>{post.authorInfo.fullName}</TableCell>
+                            <TableCell align="center">
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                <Tooltip title="Sửa">
+                                  <IconButton color="primary" onClick={() => handleOpenEditModal(post)}>
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Xóa">
+                                  <IconButton color="error" onClick={() => handleDelete(post._id)}>
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} align="center" sx={{ color: 'gray' }}>Không có bài viết nào phù hợp.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 20]}
+                    component="div"
+                    count={filteredPosts.length}
+                    rowsPerPage={limit}
+                    page={currentPage - 1}
+                    onPageChange={(_, newPage) => setCurrentPage(newPage + 1)}
+                    onRowsPerPageChange={e => { setCurrentPage(1); /* setLimit nếu muốn thay đổi limit */ }}
+                    labelRowsPerPage="Số hàng mỗi trang:"
+                    labelDisplayedRows={({ from, to, count }) =>
+                      `Hiển thị ${from}-${to} của ${count !== -1 ? count : `hơn ${to}`}`
+                    }
+                    sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1 }}
+                  />
+                </TableContainer>
+            </div>
             </div>
         </>
     );

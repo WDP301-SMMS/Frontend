@@ -110,7 +110,7 @@ const AbnormalHealthCheck = () => {
         setFilteredAbnormalStudents([]);
         return;
       }
-     
+
       const response = await appointmentsService.getStudentsWithAbnormalResults(
         campaignFilter || undefined
       );
@@ -1123,33 +1123,13 @@ const AbnormalHealthCheck = () => {
                               {isUpcomingAppointment(
                                 appointment.meetingTime
                               ) && (
-                                <>
-                                  <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<Visibility />}
-                                    onClick={() =>
-                                      handleViewAppointment(appointment._id)
-                                    }
-                                    sx={{
-                                      textTransform: "none",
-                                      borderRadius: 2,
-                                      fontWeight: 600,
-                                      fontSize: "12px",
-                                      px: 2,
-                                      py: 0.5,
-                                    }}
-                                    size="small"
-                                  >
-                                    Xem
-                                  </Button>
-                                  {appointment.status !== "CANCELLED" && (
+                                  <>
                                     <Button
-                                      variant="outlined"
-                                      color="error"
-                                      startIcon={<Close />}
+                                      variant="contained"
+                                      color="primary"
+                                      startIcon={<Visibility />}
                                       onClick={() =>
-                                        handleCancelAppointment(appointment._id)
+                                        handleViewAppointment(appointment._id)
                                       }
                                       sx={{
                                         textTransform: "none",
@@ -1161,62 +1141,45 @@ const AbnormalHealthCheck = () => {
                                       }}
                                       size="small"
                                     >
-                                      Hủy
+                                      Xem
                                     </Button>
-                                  )}
-                                </>
-                              )}
+                                    {appointment.status !== "CANCELLED" && (
+                                      <Button
+                                        variant="outlined"
+                                        color="error"
+                                        startIcon={<Close />}
+                                        onClick={() =>
+                                          handleCancelAppointment(appointment._id)
+                                        }
+                                        sx={{
+                                          textTransform: "none",
+                                          borderRadius: 2,
+                                          fontWeight: 600,
+                                          fontSize: "12px",
+                                          px: 2,
+                                          py: 0.5,
+                                        }}
+                                        size="small"
+                                      >
+                                        Hủy
+                                      </Button>
+                                    )}
+                                  </>
+                                )}
 
                               {/* Logic cho cuộc hẹn đã qua */}
                               {new Date(appointment.meetingTime) <=
                                 currentDate && (
-                                <>
-                                  {/* Nếu đã được duyệt -> có thể hoàn thành */}
-                                  {appointment.status === "APPROVED" && (
-                                    <Button
-                                      variant="contained"
-                                      color="success"
-                                      onClick={() =>
-                                        handleCompleteAppointment(
-                                          appointment._id
-                                        )
-                                      }
-                                      sx={{
-                                        textTransform: "none",
-                                        borderRadius: 2,
-                                        fontWeight: 600,
-                                        fontSize: "12px",
-                                        px: 2,
-                                        py: 0.5,
-                                      }}
-                                      size="small"
-                                    >
-                                      Hoàn Thành
-                                    </Button>
-                                  )}
-
-                                  {/* Nếu không phải APPROVED và COMPLETED -> hiển thị thông báo hủy vì quá hạn */}
-                                  {appointment.status !== "APPROVED" &&
-                                    appointment.status !== "COMPLETED" && (
-                                      <Chip
-                                        label="Đã hủy lịch vì quá hạn mà không đồng ý"
-                                        color="error"
-                                        sx={{
-                                          fontWeight: 600,
-                                          fontSize: "0.875rem",
-                                        }}
-                                      />
-                                    )}
-
-                                  {/* Nếu đã hoàn thành -> hiển thị nút xem và ghi chú */}
-                                  {appointment.status === "COMPLETED" && (
-                                    <>
+                                  <>
+                                    {/* Nếu đã được duyệt -> có thể hoàn thành */}
+                                    {appointment.status === "APPROVED" && (
                                       <Button
                                         variant="contained"
-                                        color="primary"
-                                        startIcon={<Visibility />}
+                                        color="success"
                                         onClick={() =>
-                                          handleViewAppointment(appointment._id)
+                                          handleCompleteAppointment(
+                                            appointment._id
+                                          )
                                         }
                                         sx={{
                                           textTransform: "none",
@@ -1228,30 +1191,67 @@ const AbnormalHealthCheck = () => {
                                         }}
                                         size="small"
                                       >
-                                        Xem
+                                        Hoàn Thành
                                       </Button>
-                                      <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        onClick={() =>
-                                          handleAddNote(appointment._id)
-                                        }
-                                        sx={{
-                                          textTransform: "none",
-                                          borderRadius: 2,
-                                          fontWeight: 600,
-                                          fontSize: "12px",
-                                          px: 2,
-                                          py: 0.5,
-                                        }}
-                                        size="small"
-                                      >
-                                        Ghi Chú
-                                      </Button>
-                                    </>
-                                  )}
-                                </>
-                              )}
+                                    )}
+
+                                    {/* Nếu không phải APPROVED và COMPLETED -> hiển thị thông báo hủy vì quá hạn */}
+                                    {appointment.status !== "APPROVED" &&
+                                      appointment.status !== "COMPLETED" && (
+                                        <Chip
+                                          label="Đã hủy lịch vì quá hạn mà không đồng ý"
+                                          color="error"
+                                          sx={{
+                                            fontWeight: 600,
+                                            fontSize: "0.875rem",
+                                          }}
+                                        />
+                                      )}
+
+                                    {/* Nếu đã hoàn thành -> hiển thị nút xem và ghi chú */}
+                                    {appointment.status === "COMPLETED" && (
+                                      <>
+                                        <Button
+                                          variant="contained"
+                                          color="primary"
+                                          startIcon={<Visibility />}
+                                          onClick={() =>
+                                            handleViewAppointment(appointment._id)
+                                          }
+                                          sx={{
+                                            textTransform: "none",
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            fontSize: "12px",
+                                            px: 2,
+                                            py: 0.5,
+                                          }}
+                                          size="small"
+                                        >
+                                          Xem
+                                        </Button>
+                                        <Button
+                                          variant="outlined"
+                                          color="secondary"
+                                          onClick={() =>
+                                            handleAddNote(appointment._id)
+                                          }
+                                          sx={{
+                                            textTransform: "none",
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            fontSize: "12px",
+                                            px: 2,
+                                            py: 0.5,
+                                          }}
+                                          size="small"
+                                        >
+                                          Ghi Chú
+                                        </Button>
+                                      </>
+                                    )}
+                                  </>
+                                )}
                             </Box>
                           </TableCell>
                         </TableRow>
@@ -1430,9 +1430,8 @@ const AbnormalHealthCheck = () => {
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={6}>
                             <TextField
-                              label={`${result.itemName} (${
-                                result.unit || ""
-                              })`}
+                              label={`${result.itemName} (${result.unit || ""
+                                })`}
                               value={result.value || "-"}
                               disabled
                               fullWidth
@@ -1466,10 +1465,10 @@ const AbnormalHealthCheck = () => {
                   {selectedStudent.record.resultsData.filter(
                     (result) => result.isAbnormal
                   ).length === 0 && (
-                    <Alert severity="success" sx={{ borderRadius: 2 }}>
-                      ✅ Không có kết quả bất thường nào được ghi nhận
-                    </Alert>
-                  )}
+                      <Alert severity="success" sx={{ borderRadius: 2 }}>
+                        ✅ Không có kết quả bất thường nào được ghi nhận
+                      </Alert>
+                    )}
                 </Box>
 
                 {/* Schedule Appointment */}
@@ -1531,7 +1530,7 @@ const AbnormalHealthCheck = () => {
                         }
                         helperText={
                           appointmentData.location.length > 0 &&
-                          appointmentData.location.length < 4
+                            appointmentData.location.length < 4
                             ? "Địa điểm phải có ít nhất 4 ký tự"
                             : ""
                         }
@@ -1658,14 +1657,6 @@ const AbnormalHealthCheck = () => {
                         sx={{ mb: 1 }}
                       >
                         {selectedAppointment.studentId.fullName}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="#6b7280"
-                        sx={{ mb: 0.5 }}
-                      >
-                        <strong>Mã HS:</strong>{" "}
-                        {selectedAppointment.studentId._id}
                       </Typography>
                       {/* <Typography
                         variant="body2"
@@ -1964,7 +1955,7 @@ const AbnormalHealthCheck = () => {
               }
               helperText={
                 noteData.afterMeetingNotes.length > 0 &&
-                noteData.afterMeetingNotes.length < 10
+                  noteData.afterMeetingNotes.length < 10
                   ? "Ghi chú phải có ít nhất 10 ký tự"
                   : ""
               }

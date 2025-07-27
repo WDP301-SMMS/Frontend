@@ -6,6 +6,7 @@ import {
   removeStudentsFromClass,
   getAllStudents,
 } from "../../../libs/api/adminService";
+import { useDebounce } from "../../../libs/hooks/useDebounce";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   PlusCircle,
@@ -16,6 +17,13 @@ import {
   UserPlus,
   UserMinus,
 } from "lucide-react";
+import {
+  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper,
+  TablePagination, Tooltip, IconButton
+} from "@mui/material";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
+import PeopleIcon from "@mui/icons-material/People";
 
 const ClassManagement = () => {
   const [classes, setClasses] = useState([]);
@@ -49,9 +57,11 @@ const ClassManagement = () => {
     loading: false,
   });
 
+  const debouncedSchoolYearFilter = useDebounce(schoolYearFilter, 500);
+
   useEffect(() => {
     fetchClasses();
-  }, [pagination.currentPage, gradeFilter, schoolYearFilter]);
+  }, [pagination.currentPage, gradeFilter, debouncedSchoolYearFilter]);
 
   useEffect(() => {
     if (studentModal.isOpen && studentModal.operation === "add") {
@@ -338,45 +348,41 @@ const ClassManagement = () => {
         {classes.length === 0 ? (
           <p>Không tìm thấy lớp học nào.</p>
         ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Tên lớp</th>
-                    <th className="py-2 px-4 text-left">Khối</th>
-                    <th className="py-2 px-4 text-left">Năm học</th>
-                    <th className="py-2 px-4 text-left">Số học sinh</th>
-                    <th className="py-2 px-4 text-left">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classes.map((classObj) => (
-                    <tr key={classObj._id} className="border-b">
-                      <td className="py-2 px-4">{classObj.className}</td>
-                      <td className="py-2 px-4">{classObj.gradeLevel}</td>
-                      <td className="py-2 px-4">{classObj.schoolYear}</td>
-                      <td className="py-2 px-4">
-                        {classObj.totalStudents ||
-                          (classObj.students ? classObj.students.length : 0)}
-                      </td>
-                      <td className="py-2 px-4 flex space-x-2">
-                        <button
-                          onClick={() => openAddStudentsModal(classObj)}
-                          className="text-green-600 hover:text-green-800 flex items-center"
-                          title="Thêm học sinh"
-                        >
-                          <UserPlus size={18} />
-                        </button>
-                        <button
-                          onClick={() => openRemoveStudentsModal(classObj)}
-                          className="text-red-600 hover:text-red-800 flex items-center"
-                          title="Xóa học sinh"
-                        >
-                          <UserMinus size={18} />
-                        </button>
-                        <button
-                          onClick={() => {
+          <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, mt: 2 }}>
+            <h2 className="text-xl font-semibold mb-4">Danh sách lớp học</h2>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>STT</TableCell>
+                    <TableCell>Tên lớp</TableCell>
+                    <TableCell>Khối</TableCell>
+                    <TableCell>Năm học</TableCell>
+                    <TableCell>Số học sinh</TableCell>
+                    <TableCell align="center">Thao tác</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {classes.map((classObj, idx) => (
+                    <TableRow key={classObj._id} hover>
+                      <TableCell>{(pagination.currentPage - 1) * 10 + idx + 1}</TableCell>
+                      <TableCell>{classObj.className}</TableCell>
+                      <TableCell>{classObj.gradeLevel}</TableCell>
+                      <TableCell>{classObj.schoolYear}</TableCell>
+                      <TableCell>{classObj.totalStudents || (classObj.students ? classObj.students.length : 0)}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Thêm học sinh">
+                          <IconButton color="success" onClick={() => openAddStudentsModal(classObj)}>
+                            <GroupAddIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa học sinh">
+                          <IconButton color="error" onClick={() => openRemoveStudentsModal(classObj)}>
+                            <GroupRemoveIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xem danh sách học sinh">
+                          <IconButton color="primary" onClick={() => {
                             setStudentModal({
                               isOpen: true,
                               classId: classObj._id,
@@ -387,51 +393,30 @@ const ClassManagement = () => {
                               availableStudents: [],
                               loading: false,
                             });
-                          }}
-                          className="text-blue-600 hover:text-blue-800 flex items-center"
-                          title="Xem danh sách học sinh"
-                        >
-                          <Users size={18} />
-                        </button>
-                      </td>
-                    </tr>
+                          }}>
+                            <PeopleIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex justify-between items-center mt-6">
-              <div>
-                Hiển thị {classes.length} / {pagination.totalClasses} lớp học
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1}
-                  className={`px-3 py-1 rounded ${
-                    pagination.currentPage === 1
-                      ? "bg-gray-100 text-gray-400"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  Trước
-                </button>
-                <span className="px-3 py-1">
-                  Trang {pagination.currentPage} / {pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                  className={`px-3 py-1 rounded ${
-                    pagination.currentPage === pagination.totalPages
-                      ? "bg-gray-100 text-gray-400"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  Sau
-                </button>
-              </div>
-            </div>
-          </>
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10]}
+              component="div"
+              count={pagination.totalClasses}
+              rowsPerPage={10}
+              page={pagination.currentPage - 1}
+              onPageChange={(_, newPage) => handlePageChange(newPage + 1)}
+              labelRowsPerPage="Số hàng mỗi trang:"
+              labelDisplayedRows={({ from, to, count }) =>
+                `Hiển thị ${from}-${to} của ${count !== -1 ? count : `hơn ${to}`}`
+              }
+              sx={{ borderTop: "1px solid", borderColor: "divider", pt: 1 }}
+            />
+          </Paper>
         )}
       </div>
 
@@ -657,9 +642,6 @@ const ClassManagement = () => {
                                 className="px-3 py-2 flex justify-between items-center"
                               >
                                 <span>{student.fullName}</span>
-                                <span className="text-sm text-gray-500">
-                                  {student._id}
-                                </span>
                               </li>
                             ))}
                           </ul>

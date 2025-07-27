@@ -146,7 +146,7 @@ function SendVaccinationConsent() {
         } else {
           setNurseID(data._id);
         }
-       
+
       } else {
         setError(result.message || "Không thể tải thông tin Nurse");
       }
@@ -417,14 +417,14 @@ Trân trọng,
 
       // Convert scheduledDate to ISO format for API
       const isoScheduledDate = new Date(form.scheduledDate).toISOString();
-    
+
       // Check for updates compared to selected campaign
       if (selectedCampaign) {
         // Update actualStartDate if scheduledDate changed
         if (
           isoScheduledDate !== new Date(selectedCampaign.actualStartDate).toISOString()
         ) {
-       
+
           await campaignService.updateCampaign(form.selectedCampaignId, {
             createdBy: nurseID,
             actualStartDate: isoScheduledDate,
@@ -433,7 +433,7 @@ Trân trọng,
         }
         // Update destination if location changed
         if (form.location !== selectedCampaign.destination) {
-      
+
           await campaignService.updateCampaign(form.selectedCampaignId, {
             createdBy: nurseID,
             destination: form.location,
@@ -490,7 +490,7 @@ Trân trọng,
       onConfirm: async (reason) => {
         try {
           setLoading(true);
-        
+
           await campaignService.updateCampaignStatus(
             notification.campaignId,
             `${nurseID}`,
@@ -546,7 +546,7 @@ Trân trọng,
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-        Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
+        Kích hoạt chiến dịch
       </Typography>
       <Alert
         severity="info"
@@ -597,7 +597,7 @@ Trân trọng,
           }}
           disabled={campaignsLoading}
         >
-          Tạo thông báo mới
+          Kích hoạt chiến dịch
         </Button>
       </Box>
       <TableContainer
@@ -651,10 +651,10 @@ Trân trọng,
                             notification.status === "CANCELED"
                               ? "red"
                               : notification.status === "COMPLETED"
-                              ? "green"
-                              : notification.status === "IN_PROGRESS"
-                              ? "blue"
-                              : "orange",
+                                ? "green"
+                                : notification.status === "IN_PROGRESS"
+                                  ? "blue"
+                                  : "orange",
                         }}
                       >
                         {notification.status === "ANNOUNCED" && "Đã công bố"}
@@ -738,7 +738,7 @@ Trân trọng,
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Tạo Thông Báo Tiêm Chủng Mới</DialogTitle>
+        <DialogTitle>Kích hoạt Chiến dịch Tiêm Chủng Mới</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <FormControl fullWidth margin="normal" required>
@@ -873,7 +873,7 @@ Trân trọng,
             disabled={
               loading ||
               !form.selectedCampaignId ||
-              !form.location 
+              !form.location
             }
           >
             Xem trước
@@ -885,10 +885,10 @@ Trân trọng,
             disabled={
               loading ||
               !form.selectedCampaignId ||
-              !form.location 
+              !form.location
             }
           >
-            {loading ? <CircularProgress size={20} /> : "Gửi"}
+            {loading ? <CircularProgress size={20} /> : "Kích hoạt"}
           </Button>
         </DialogActions>
       </Dialog>

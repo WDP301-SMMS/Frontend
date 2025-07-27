@@ -75,6 +75,7 @@ function PostVaccinationMonitoring() {
   const [expandedStats, setExpandedStats] = useState(false);
   const [temperatureError, setTemperatureError] = useState("");
   const [openCompleteDialog, setOpenCompleteDialog] = useState(false);
+  const [reactionSaved, setReactionSaved] = useState(false);
   const itemsPerPage = 10;
 
   const validateTemperature = (temperature) => {
@@ -115,6 +116,7 @@ function PostVaccinationMonitoring() {
       );
       if (refreshedResponse.success) {
         setCampaigns(refreshedResponse.data || []);
+        window.location.reload()
       }
     } catch (error) {
       setSnackbarMessage("Có lỗi xảy ra khi hoàn tất chiến dịch!");
@@ -131,7 +133,7 @@ function PostVaccinationMonitoring() {
   // Calculate statistics
   const getStats = useCallback(() => {
     const monitoring = monitoringRecords.filter(
-      (r) => r.status === "Đang theo dõi" || r.status === "Phản ứng bất thường"
+      (r) => r.status === "Đang theo dõi"
     );
     const completed = monitoringRecords.filter(
       (r) => r.status === "Đã hoàn thành"
@@ -159,7 +161,7 @@ function PostVaccinationMonitoring() {
 
   // Load monitoring records
   const loadMonitoringRecords = useCallback((campaignId, classId, query) => {
-    
+
     if (!campaignId) {
       setMonitoringRecords([]);
       return;
@@ -214,8 +216,8 @@ function PostVaccinationMonitoring() {
                   : []),
                 ...(record.chronicConditions?.length > 0 && record.chronicConditions !== "Chưa có thông tin"
                   ? record.chronicConditions.map(
-                      (c) => `Bệnh mãn tính: ${c.conditionName}`
-                    )
+                    (c) => `Bệnh mãn tính: ${c.conditionName}`
+                  )
                   : []),
               ].join("; ") || "Không có",
             allergies: record.allergies || [],
@@ -227,19 +229,19 @@ function PostVaccinationMonitoring() {
               record.vaccinationStatus === "PENDING"
                 ? "Chờ xử lý"
                 : record.vaccinationStatus === "APPROVED"
-                ? "Đã phê duyệt"
-                : record.vaccinationStatus === "DECLINED"
-                ? "Từ chối"
-                : record.vaccinationStatus === "COMPLETED"
-                ? "Đã hoàn thành"
-                : record.vaccinationStatus === "REVOKED"
-                ? "Đã thu hồi"
-                : record.vaccinationStatus === "UNDER_OBSERVATION" ||
-                  record.vaccinationStatus === "UNDER_OPSERVATION"
-                ? "Đang theo dõi"
-                : record.vaccinationStatus === "ADVERSE_REACTION"
-                ? "Phản ứng bất thường"
-                : "Không xác định",
+                  ? "Đã phê duyệt"
+                  : record.vaccinationStatus === "DECLINED"
+                    ? "Từ chối"
+                    : record.vaccinationStatus === "COMPLETED"
+                      ? "Đã hoàn thành"
+                      : record.vaccinationStatus === "REVOKED"
+                        ? "Đã thu hồi"
+                        : record.vaccinationStatus === "UNDER_OBSERVATION" ||
+                          record.vaccinationStatus === "UNDER_OPSERVATION"
+                          ? "Đang theo dõi"
+                          : record.vaccinationStatus === "ADVERSE_REACTION"
+                            ? "Phản ứng bất thường"
+                            : "Không xác định",
             consentId: record.consentId || "",
           }))
           .sort((a, b) => {
@@ -265,11 +267,6 @@ function PostVaccinationMonitoring() {
             r.status === "Đang theo dõi" || r.status === "Phản ứng bất thường"
         );
         if (criticalStudents.length > 0) {
-          setSnackbarMessage(
-            `⚠️ ${criticalStudents.length} học sinh cần chú ý!`
-          );
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
         } else {
           console.log("No critical students found.");
         }
@@ -382,7 +379,7 @@ function PostVaccinationMonitoring() {
     setSelectedCampaign(campaignId);
     setSelectedClass("");
     setCurrentPage(1);
-    loadMonitoringRecords(campaignId, "", searchQuery);
+    loadMonitoringRecords(campaignId, selectedClass, searchQuery);
   };
 
   // Handle class change
@@ -412,6 +409,7 @@ function PostVaccinationMonitoring() {
       actionsTaken: "",
     });
     setTemperatureError("");
+    setReactionSaved(false);
     setOpenReactionDialog(true);
   };
 
@@ -499,6 +497,7 @@ function PostVaccinationMonitoring() {
 
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
+      setReactionSaved(true);
       setOpenReactionDialog(false);
       setTemperatureError("");
     } catch (error) {
@@ -687,7 +686,7 @@ function PostVaccinationMonitoring() {
               variant="contained"
               color="success"
               onClick={handleOpenCompleteDialog}
-              disabled={!selectedCampaign || loading}
+              disabled={!selectedCampaign || loading || stats.monitoring > 0}
               sx={{
                 textTransform: "none",
                 fontWeight: "600",
@@ -702,102 +701,102 @@ function PostVaccinationMonitoring() {
           </Box>
 
           <Grid container spacing={2}>
-  <Grid item xs={6} md={3}>
-    <Box
-      sx={{
-        textAlign: "center",
-        p: 2, // giảm padding
-        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-        borderRadius: 2,
-        color: "white",
-        boxShadow: "0 4px 12px rgba(25, 118, 210, 0.2)",
-        transition: "transform 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-2px)",
-        },
-      }}
-    >
-      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
-        {stats.total}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
-        Tổng số
-      </Typography>
-    </Box>
-  </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2, // giảm padding
+                  background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  borderRadius: 2,
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.2)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+                  {stats.total}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+                  Tổng số
+                </Typography>
+              </Box>
+            </Grid>
 
-  <Grid item xs={6} md={3}>
-    <Box
-      sx={{
-        textAlign: "center",
-        p: 2,
-        background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
-        borderRadius: 2,
-        color: "white",
-        boxShadow: "0 4px 12px rgba(245, 124, 0, 0.2)",
-        transition: "transform 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-2px)",
-        },
-      }}
-    >
-      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
-        {stats.monitoring}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
-        Đang theo dõi
-      </Typography>
-    </Box>
-  </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
+                  borderRadius: 2,
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(245, 124, 0, 0.2)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+                  {stats.monitoring}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+                  Đang theo dõi
+                </Typography>
+              </Box>
+            </Grid>
 
-  <Grid item xs={6} md={3}>
-    <Box
-      sx={{
-        textAlign: "center",
-        p: 2,
-        background: "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
-        borderRadius: 2,
-        color: "white",
-        boxShadow: "0 4px 12px rgba(56, 142, 60, 0.2)",
-        transition: "transform 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-2px)",
-        },
-      }}
-    >
-      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
-        {stats.completed}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
-        Đã hoàn thành
-      </Typography>
-    </Box>
-  </Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  background: "linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)",
+                  borderRadius: 2,
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(56, 142, 60, 0.2)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+                  {stats.completed}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+                  Đã hoàn thành
+                </Typography>
+              </Box>
+            </Grid>
 
-  <Grid item xs={6} md={3}>
-    <Box
-      sx={{
-        textAlign: "center",
-        p: 2,
-        background: "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
-        borderRadius: 2,
-        color: "white",
-        boxShadow: "0 4px 12px rgba(211, 47, 47, 0.2)",
-        transition: "transform 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-2px)",
-        },
-      }}
-    >
-      <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
-        {stats.withReactions}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
-        Có phản ứng
-      </Typography>
-    </Box>
-  </Grid>
-</Grid>
+            <Grid item xs={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  background: "linear-gradient(135deg, #d32f2f 0%, #c62828 100%)",
+                  borderRadius: 2,
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(211, 47, 47, 0.2)",
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
+                  {stats.withReactions}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, opacity: 0.9 }}>
+                  Có phản ứng
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
 
 
           {/* Progress Bar
@@ -950,8 +949,10 @@ function PostVaccinationMonitoring() {
                           record.status === "Đang theo dõi"
                             ? "warning"
                             : record.status === "Phản ứng bất thường"
-                            ? "error"
-                            : "success"
+                              ? "error"
+                              : record.status === "Đã hoàn thành"
+                                ? "success"
+                                : "default"
                         }
                         variant="outlined"
                         size="small"
@@ -965,25 +966,27 @@ function PostVaccinationMonitoring() {
                     </TableCell>
                     <TableCell sx={{ minWidth: "180px", p: 1.5 }}>
                       <Stack spacing={1} direction="row">
-                        <Tooltip title="Ghi nhận" arrow>
-                          <Button
-                            variant="outlined"
-                            color="warning"
-                            size="small"
-                            startIcon={<Warning sx={{ fontSize: 16 }} />}
-                            onClick={() => handleOpenReactionDialog(record)}
-                            sx={{
-                              minWidth: "105px",
-                              fontSize: "0.75rem",
-                              textTransform: "none",
-                              fontWeight: "medium",
-                              borderRadius: 2,
-                              borderWidth: 2,
-                            }}
-                          >
-                            Phản ứng
-                          </Button>
-                        </Tooltip>
+                        {record.status === "Đang theo dõi" && (
+                          <Tooltip title="Ghi nhận" arrow>
+                            <Button
+                              variant="outlined"
+                              color="warning"
+                              size="small"
+                              startIcon={<Warning sx={{ fontSize: 16 }} />}
+                              onClick={() => handleOpenReactionDialog(record)}
+                              sx={{
+                                minWidth: "105px",
+                                fontSize: "0.75rem",
+                                textTransform: "none",
+                                fontWeight: "medium",
+                                borderRadius: 2,
+                                borderWidth: 2,
+                              }}
+                            >
+                              Phản ứng
+                            </Button>
+                          </Tooltip>
+                        )}
                         <Tooltip title="Xem chi tiết học sinh" arrow>
                           <Button
                             variant="text"
@@ -1190,35 +1193,35 @@ function PostVaccinationMonitoring() {
               />
             </Grid>
             <Grid item xs={12}>
-  <TextField
-    label="Biện pháp xử trí"
-    value={reactionData.actionsTaken}
-    onChange={(e) => {
-      const value = e.target.value;
-      // Only update state if value meets minimum length or is empty (to allow clearing)
-      if (value.length >= 10 || value.length === 0) {
-        setReactionData({
-          ...reactionData,
-          actionsTaken: value,
-        });
-      }
-    }}
-    fullWidth
-    multiline
-    rows={2}
-    variant="outlined"
-    sx={{ bgcolor: "white", borderRadius: 2 }}
-    placeholder="Ví dụ: Đã cho uống thuốc hạ sốt và tiếp tục theo dõi..."
-    disabled={!reactionData.isAbnormal}
-    required={reactionData.isAbnormal}
-    error={reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10}
-    helperText={
-      reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10
-        ? "Hành động được thực hiện phải dài ít nhất 10 ký tự."
-        : ""
-    }
-  />
-</Grid>
+              <TextField
+                label="Biện pháp xử trí"
+                value={reactionData.actionsTaken}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Only update state if value meets minimum length or is empty (to allow clearing)
+                  if (value.length >= 10 || value.length === 0) {
+                    setReactionData({
+                      ...reactionData,
+                      actionsTaken: value,
+                    });
+                  }
+                }}
+                fullWidth
+                multiline
+                rows={2}
+                variant="outlined"
+                sx={{ bgcolor: "white", borderRadius: 2 }}
+                placeholder="Ví dụ: Đã cho uống thuốc hạ sốt và tiếp tục theo dõi..."
+                disabled={!reactionData.isAbnormal}
+                required={reactionData.isAbnormal}
+                error={reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10}
+                helperText={
+                  reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10
+                    ? "Hành động được thực hiện phải dài ít nhất 10 ký tự."
+                    : ""
+                }
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: "#fafafa" }}>
@@ -1230,16 +1233,18 @@ function PostVaccinationMonitoring() {
           >
             Hủy
           </Button>
-          <Button
-            onClick={handleSaveReaction}
-            variant="contained"
-            color="warning"
-            startIcon={loading ? <CircularProgress size={20} /> : <Save />}
-            disabled={loading || !!temperatureError}
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
-          >
-            {loading ? "Đang lưu..." : "Lưu phản ứng"}
-          </Button>
+          {!reactionSaved && selectedStudent?.status === "Đang theo dõi" && (
+            <Button
+              onClick={handleSaveReaction}
+              variant="contained"
+              color="warning"
+              startIcon={loading ? <CircularProgress size={20} /> : <Save />}
+              disabled={loading || !!temperatureError}
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 500 }}
+            >
+              {loading ? "Đang lưu..." : "Lưu phản ứng"}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -1534,7 +1539,7 @@ function PostVaccinationMonitoring() {
                           >
                             Bệnh mãn tính
                           </Typography>
-                          {selectedStudent.chronicConditions?.length > 0 &&selectedStudent.chronicConditions!=="Chưa có thông tin" ? (
+                          {selectedStudent.chronicConditions?.length > 0 && selectedStudent.chronicConditions !== "Chưa có thông tin" ? (
                             <Box sx={{ maxHeight: 150, overflowY: "auto" }}>
                               {selectedStudent.chronicConditions.map(
                                 (condition, index) => (
@@ -1563,8 +1568,8 @@ function PostVaccinationMonitoring() {
                                       Ngày chẩn đoán:{" "}
                                       {condition.diagnosedDate
                                         ? new Date(
-                                            condition.diagnosedDate
-                                          ).toLocaleDateString("vi-VN")
+                                          condition.diagnosedDate
+                                        ).toLocaleDateString("vi-VN")
                                         : "Không xác định"}
                                     </Typography>
                                     <Typography
@@ -1646,8 +1651,8 @@ function PostVaccinationMonitoring() {
                           <Typography variant="body1" fontWeight="600">
                             {immunizationHistory.administeredAt
                               ? new Date(
-                                  immunizationHistory.administeredAt
-                                ).toLocaleString("vi-VN")
+                                immunizationHistory.administeredAt
+                              ).toLocaleString("vi-VN")
                               : "Chưa có thông tin"}
                           </Typography>
                         </Box>
@@ -1667,8 +1672,8 @@ function PostVaccinationMonitoring() {
                                 ? "success"
                                 : selectedStudent.status ===
                                   "Phản ứng bất thường"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             sx={{ fontWeight: 600 }}
                           />
@@ -1818,32 +1823,32 @@ function PostVaccinationMonitoring() {
                         )}
                         {immunizationHistory.postVaccinationChecks.length ===
                           0 && (
-                          <TableRow>
-                            <TableCell
-                              colSpan={7}
-                              align="center"
-                              sx={{ py: 4 }}
-                            >
-                              <Box
-                                display="flex"
-                                flexDirection="column"
-                                alignItems="center"
-                                gap={2}
+                            <TableRow>
+                              <TableCell
+                                colSpan={7}
+                                align="center"
+                                sx={{ py: 4 }}
                               >
-                                <Typography color="text.secondary" variant="h6">
-                                  Chưa có phản ứng nào được ghi nhận
-                                </Typography>
-                                <Typography
-                                  color="text.secondary"
-                                  variant="body2"
+                                <Box
+                                  display="flex"
+                                  flexDirection="column"
+                                  alignItems="center"
+                                  gap={2}
                                 >
-                                  Học sinh chưa có phản ứng bất thường nào sau
-                                  khi tiêm vaccine
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        )}
+                                  <Typography color="text.secondary" variant="h6">
+                                    Chưa có phản ứng nào được ghi nhận
+                                  </Typography>
+                                  <Typography
+                                    color="text.secondary"
+                                    variant="body2"
+                                  >
+                                    Học sinh chưa có phản ứng bất thường nào sau
+                                    khi tiêm vaccine
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+                            </TableRow>
+                          )}
                       </TableBody>
                     </Table>
                   </TableContainer>
