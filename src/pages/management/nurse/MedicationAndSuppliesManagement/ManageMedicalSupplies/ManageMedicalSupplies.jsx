@@ -38,8 +38,9 @@ import {
   AlertTitle,
 } from "@mui/material";
 import incidentsService from "~/libs/api/services/incidentsService";
-import { Close, Visibility } from "@mui/icons-material";
+import { Close, Visibility, Warning } from "@mui/icons-material";
 import { FileText, Search } from "lucide-react";
+import dayjs from "dayjs";
 
 function InventoryMedicalSupplies() {
   const [dispenseLogs, setDispenseLogs] = useState([]);
@@ -144,18 +145,16 @@ function InventoryMedicalSupplies() {
       maxWidth="xl"
       sx={{ py: 4, bgcolor: "#f8fafc", minHeight: "100vh" }}
     >
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{ mb: 1, fontWeight: "bold", color: "#1e3a8a" }}
-        >
+      <Typography
+              variant="h4"
+              sx={{ mb: 2, fontWeight: "bold", color: "#1e3a8a" }}
+            >
           Nhật Ký Cấp Phát Vật Tư Y Tế
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#64748b" }}>
+            </Typography>
+      
+            <Alert severity="info" icon={<Warning />} sx={{ mb: 3 }}>
           Quản lý và theo dõi việc cấp phát vật tư y tế cho học sinh
-        </Typography>
-      </Box>
+            </Alert>
 
       {/* Filters */}
       <Card sx={{ mb: 3, boxShadow: 1 }}>
@@ -175,11 +174,10 @@ function InventoryMedicalSupplies() {
                   ),
                 }}
                 variant="outlined"
-                size="small"
               />
             </Grid>
             <Grid item xs={12} md={3} sx={{ minWidth: 200 }}>
-              <FormControl fullWidth size="small">
+              <FormControl fullWidth >
                 <InputLabel>Lớp học</InputLabel>
                 <Select
                   value={selectedClass}
@@ -196,7 +194,7 @@ function InventoryMedicalSupplies() {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={3} sx={{ minWidth: 200 }}>
-              <FormControl fullWidth size="small">
+              <FormControl fullWidth >
                 <InputLabel>Loại sự cố</InputLabel>
                 <Select
                   value={selectedIncidentType}
@@ -217,7 +215,6 @@ function InventoryMedicalSupplies() {
                 variant="outlined"
                 onClick={handleClearFilters}
                 fullWidth
-                size="small"
                 sx={{ height: "40px" }}
               >
                 Xóa bộ lọc
@@ -271,14 +268,14 @@ function InventoryMedicalSupplies() {
                     Loại sự cố
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                    Thời gian
+                    Thời gian ghi nhận
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                     Vật tư cấp phát
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
+                  {/* <TableCell sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                     Trạng thái
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell sx={{ fontWeight: "bold", fontSize: "0.875rem", textAlign: "center" }}>
                     Thao tác
                   </TableCell>
@@ -313,14 +310,7 @@ function InventoryMedicalSupplies() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {new Date(log.incidentTime).toLocaleString("vi-VN", {
-                          timeZone: "Asia/Ho_Chi_Minh",
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
+                        {dayjs.utc(log.incidentTime).format('HH:mm DD-MM-YYYY')}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -337,14 +327,14 @@ function InventoryMedicalSupplies() {
                         )}
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Chip 
                         label={log.dispensedAt ? "Đã cấp phát" : "Chưa cấp phát"}
                         color={log.dispensedAt ? "success" : "warning"}
                         size="small"
                         variant="outlined"
                       />
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell sx={{ textAlign: "center" }}>
                       <Tooltip title="Xem chi tiết">
                         <IconButton
@@ -411,7 +401,7 @@ function InventoryMedicalSupplies() {
           {selectedLog && (
             <Box sx={{ p: 3 }}>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6} sx={{ minWidth: "30%" }}>
+                <Grid item xs={12} md={6} sx={{ minWidth: "48.5%" }}>
                   <Card variant="outlined" sx={{ p: 2, bgcolor: "#f8fafc" }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
                       Thông tin học sinh
@@ -432,7 +422,7 @@ function InventoryMedicalSupplies() {
                     </Box>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={6} sx={{ minWidth: "30%" }}>
+                <Grid item xs={12} md={6} sx={{ minWidth: "48.5%" }}>
                   <Card variant="outlined" sx={{ p: 2, bgcolor: "#f8fafc" }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
                       Thông tin sự cố
@@ -449,15 +439,13 @@ function InventoryMedicalSupplies() {
                       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <Typography variant="body2" color="textSecondary">Thời gian:</Typography>
                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-                          {new Date(selectedLog.incidentTime).toLocaleString("vi-VN", {
-                            timeZone: "Asia/Ho_Chi_Minh",
-                          })}
+                         {dayjs.utc(selectedLog.incidentTime).format('HH:mm DD-MM-YYYY')}
                         </Typography>
                       </Box>
                     </Box>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={6} sx={{ minWidth: "30%" }}>
+                {/* <Grid item xs={12} md={6} sx={{ minWidth: "30%" }}>
                   <Card variant="outlined" sx={{ p: 2 ,height: "100%",bgcolor: "#f8fafc"}}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
                       Trạng thái cấp phát
@@ -477,7 +465,7 @@ function InventoryMedicalSupplies() {
                       )}
                     </Box>
                   </Card>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} md={12} sx={{ minWidth: "100%" }}>
                   <Card variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>

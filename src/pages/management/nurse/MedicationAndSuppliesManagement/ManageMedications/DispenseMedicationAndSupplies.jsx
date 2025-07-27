@@ -27,6 +27,7 @@ import {
   Container,
   CircularProgress,
   IconButton,
+  Chip,
 } from "@mui/material";
 import {
   Search,
@@ -49,6 +50,11 @@ import {
 } from "@mui/icons-material";
 import incidentsService from "~/libs/api/services/incidentsService";
 import inventoryService from "~/libs/api/services/inventory";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+// Extend plugin
+dayjs.extend(utc);
 
 const DispenseMedicationAndSupplies = () => {
   const [incidents, setIncidents] = useState([]);
@@ -82,6 +88,22 @@ const DispenseMedicationAndSupplies = () => {
       ].sort(),
     [incidents]
   );
+
+  // Hàm chuyển đổi severity sang tiếng Việt
+  const getSeverityLabel = (severity) => {
+    switch (severity) {
+      case "Mild":
+        return "Nhẹ";
+      case "Moderate":
+        return "Trung bình";
+      case "Severe":
+        return "Nghiêm trọng";
+      case "Critical":
+        return "Cực kỳ nghiêm trọng";
+      default:
+        return severity;
+    }
+  };
 
   // Filtered incidents
   const filteredIncidents = useMemo(() => {
@@ -128,6 +150,7 @@ const DispenseMedicationAndSupplies = () => {
             itemId: item._id,
             name: item.itemName,
             totalQuantity: item.totalQuantity,
+            unit: item.unit,
           }))
         );
         const supplyResponse = await inventoryService.getInventoryItems({
@@ -139,6 +162,7 @@ const DispenseMedicationAndSupplies = () => {
             itemId: item._id,
             name: item.itemName,
             totalQuantity: item.totalQuantity,
+            unit: item.unit,
           }))
         );
       } catch (error) {
@@ -294,7 +318,6 @@ const DispenseMedicationAndSupplies = () => {
         selectedIncident._id,
         dispensedItems
       );
-      console.log("Dispense response:", response);
       if (response.message !== "dispenseSuccess") {
         setErrors((prev) => ({
           ...prev,
@@ -391,7 +414,7 @@ const DispenseMedicationAndSupplies = () => {
             ),
           }}
         />
-        <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
+        {/* <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
           <InputLabel>Lớp</InputLabel>
           <Select
             value={selectedClass}
@@ -404,7 +427,7 @@ const DispenseMedicationAndSupplies = () => {
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
       </Box>
 
       {loading ? (
@@ -442,10 +465,9 @@ const DispenseMedicationAndSupplies = () => {
                     }}
                     onClick={() => handleIncidentSelect(incident)}
                   >
-                    <TableCell>
-                      {incident.studentId?.fullName} ({incident.studentId?._id})
-                    </TableCell>
+                    <TableCell>{incident.studentId?.fullName}</TableCell>
                     <TableCell>{incident.incidentType}</TableCell>
+
                     <TableCell>
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -458,13 +480,25 @@ const DispenseMedicationAndSupplies = () => {
                             bgcolor: getSeverityColor(incident.severity),
                           }}
                         />
-                        {incident.severity}
+                        {getSeverityLabel(incident.severity)}
                       </Box>
                     </TableCell>
                     <TableCell>
-                      {new Date(incident.incidentTime).toLocaleString("vi-VN")}
+                      {dayjs
+                        .utc(incident.incidentTime)
+                        .format("HH:mm DD-MM-YYYY")}
                     </TableCell>
-                    <TableCell>{incident.status}</TableCell>
+                    <TableCell>
+                      {incident && typeof incident.isDispensed === "boolean" ? (
+                        incident.isDispensed ? (
+                          <Chip color="success" label="ĐÃ CẤP PHÁT" />
+                        ) : (
+                          <Chip color="error" label="CHƯA CẤP PHÁT" />
+                        )
+                      ) : (
+                        <Chip color="default" label="KHÔNG XÁC ĐỊNH" />
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="outlined"
@@ -845,9 +879,12 @@ const DispenseMedicationAndSupplies = () => {
                       <AccessTime
                         sx={{ fontSize: 16, mr: 1, color: "#64748b" }}
                       />
-                      {new Date(selectedIncident?.incidentTime).toLocaleString(
+                      {dayjs
+                        .utc(selectedIncident?.incidentTime)
+                        .format("HH:mm DD-MM-YYYY")}
+                      {/* {new Date(selectedIncident?.incidentTime).toLocaleString(
                         "vi-VN"
-                      )}
+                      )} */}
                     </Typography>
                   </Box>
                   {selectedIncident?.description && (
@@ -896,7 +933,7 @@ const DispenseMedicationAndSupplies = () => {
                   <Autocomplete
                     options={medicineOptions}
                     getOptionLabel={(option) =>
-                      `${option.name} (Tồn: ${option.totalQuantity})`
+                      `${option.name} (Tồn: ${option.totalQuantity} ${option.unit})`
                     }
                     value={
                       med.itemId
@@ -1023,7 +1060,7 @@ const DispenseMedicationAndSupplies = () => {
                   <Autocomplete
                     options={supplyOptions}
                     getOptionLabel={(option) =>
-                      `${option.name} (Tồn: ${option.totalQuantity})`
+                      `${option.name} (Tồn: ${option.totalQuantity} ${option.unit})`
                     }
                     value={
                       supply.itemId

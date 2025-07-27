@@ -69,7 +69,6 @@ export const updateStudent = async (studentId, studentData) => {
 export const getAllClasses = async (params) => {
   try {
     const response = await api.get(`${API_URL}/admin/classes`, { params });
-    console.log("Response from getAllClasses:", response.data);
     
     return response.data.data;
   } catch (error) {

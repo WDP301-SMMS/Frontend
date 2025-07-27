@@ -86,9 +86,7 @@ const ChatDisplayer = ({
 
   const handleSendMessage = async (file = null) => {
     let fileData = null;
-    console.log("Sending message:", newMessage, "with file:", file);
     if (!newMessage.trim() && !file) {
-      console.log("Empty message and no file, not sending");
       return;
     }
 
@@ -96,7 +94,6 @@ const ChatDisplayer = ({
     let actualReceiver = receiver;
 
     if (currentUser._id === receiver?._id) {
-      console.log("Cannot send message to self, switching to sender");
       actualReceiver = sender;
       setReceiver(sender);
       setSender(null);

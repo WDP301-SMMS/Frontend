@@ -510,7 +510,6 @@ const AssignmentForm = ({ campaignId, onSubmit, onCancel, showSnackbar }) => {
         limit: 100,
         role: "Nurse",
       });
-      console.log("Nurse response:", nurseResponse); // For debugging
       setNurses(nurseResponse.data.users || []); // Uncommented and fixed
     } catch (err) {
       console.error("Failed to fetch assignment data:", err);
@@ -1902,7 +1901,7 @@ const HealthCheckCampaignsManagement = () => {
                               }
                               disabled={![
                                 "DRAFT",
-                                "ANNOUNCED",
+                                // "ANNOUNCED",
                               ].includes(campaign.status)}
                               sx={{
                                 "&:hover": {
