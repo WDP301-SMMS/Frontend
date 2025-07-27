@@ -604,8 +604,8 @@ function VaccinateRecord() {
                             record.chronicConditions?.length > 0 &&
                               record.chronicConditions[0]?.conditionName !==
                               "Chưa có thông tin"
-                              ? "red"
-                              : "inherit",
+                              ? "inherit"
+                              : "red",
                         }}
                       >
                         {Array.isArray(record.chronicConditions) && record.chronicConditions?.length > 0

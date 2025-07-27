@@ -846,8 +846,7 @@ const DispenseMedicationAndSupplies = () => {
                       <Person3Sharp
                         sx={{ fontSize: 16, mr: 1, color: "#64748b" }}
                       />
-                      {selectedIncident?.studentId?.fullName} (
-                      {selectedIncident?.studentId?._id})
+                      {selectedIncident?.studentId?.fullName}
                     </Typography>
                     <Typography
                       variant="body2"

@@ -307,7 +307,7 @@ const ParentHealthProfileForm = () => {
             </button>
             <div className="flex-grow">
               <h1 className="text-2xl font-bold text-gray-800">
-                {isEditing ? "Chỉnh Sửa" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
+                {isEditing ? "Cập nhật" : "Khai Báo"} Hồ Sơ Sức Khỏe Học Sinh
               </h1>
               <p className="text-gray-600 mt-1">
                 Vui lòng cung cấp thông tin chi tiết và chính xác về sức khỏe

@@ -637,11 +637,19 @@ const AssignmentForm = ({ campaignId, onSubmit, onCancel, showSnackbar }) => {
                     <MenuItem value="" disabled>
                       Chọn lớp học
                     </MenuItem>
-                    {classes.map((cls) => (
-                      <MenuItem key={cls._id} value={cls._id}>
-                        {`${cls.className} (${cls.gradeLevel} - ${cls.schoolYear})`}
-                      </MenuItem>
-                    ))}
+                    {classes
+                      .filter(
+                        (cls) =>
+                          // Chỉ hiển thị lớp chưa được chọn ở assignment khác
+                          !assignments.some(
+                            (a, i) => i !== index && a.classId === cls._id
+                          )
+                      )
+                      .map((cls) => (
+                        <MenuItem key={cls._id} value={cls._id}>
+                          {`${cls.className} (${cls.gradeLevel} - ${cls.schoolYear})`}
+                        </MenuItem>
+                      ))}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={5}>

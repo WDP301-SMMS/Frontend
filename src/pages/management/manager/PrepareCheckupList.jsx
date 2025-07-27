@@ -318,7 +318,7 @@ function PrepareHealthCheckList() {
           dateOfBirth: new Date(
             consent.studentId.dateOfBirth
           ).toLocaleDateString("vi-VN"),
-          parentName: consent.parentId.username,
+          parentName: consent.parentId?.username,
           nurseName: consent.nurseId.username,
           status: consent.status,
           reasonForDeclining: consent.reasonForDeclining || "-",
@@ -512,8 +512,12 @@ function PrepareHealthCheckList() {
   };
 
   // Handle pagination
-  const totalPages = Math.ceil(consentsList.length / itemsPerPage);
-  const paginatedList = consentsList.slice(
+  // Lọc consentsList: chỉ lấy học sinh có parentName (tức là có parentId) và status là PENDING
+  const filteredConsentsList = consentsList.filter(
+    (consent) => consent.parentName
+  );
+  const totalPages = Math.ceil(filteredConsentsList.length / itemsPerPage);
+  const paginatedList = filteredConsentsList.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );

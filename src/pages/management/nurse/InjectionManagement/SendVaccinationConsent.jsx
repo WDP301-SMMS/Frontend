@@ -546,7 +546,7 @@ Trân trọng,
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-        Gửi Phiếu Thông Báo Đồng Ý Tiêm Chủng
+        Kích hoạt chiến dịch
       </Typography>
       <Alert
         severity="info"

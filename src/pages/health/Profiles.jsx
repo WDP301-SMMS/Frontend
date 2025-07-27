@@ -85,13 +85,14 @@ const ParentHealthProfiles = () => {
       if (response.success && response.data) {
         setClaimedStudent(response.data);
         setIsDialogOpen(false);
+        window.location.reload()
 
         // Navigate to the profile form with the claimed student data
-        navigate("/health-profile/new", {
-          state: {
-            claimedStudent: response.data,
-          },
-        });
+        // navigate("/health-profile/new", {
+        //   state: {
+        //     claimedStudent: response.data,
+        //   },
+        // });
       } else {
         setDialogError(
           response.message ||
@@ -150,7 +151,7 @@ const ParentHealthProfiles = () => {
             onClick={handleOpenDialog}
             className="cursor-pointer px-4 py-2 bg-primary text-white rounded-md flex items-center hover:bg-primary-dark"
           >
-            <Plus className="w-4 h-4 mr-2" /> Tạo hồ sơ mới
+            <Plus className="w-4 h-4 mr-2" /> Thêm Hồ sơ bé
           </button>
         </div>
         {/* Tabs */}
@@ -159,8 +160,8 @@ const ParentHealthProfiles = () => {
             <button
               onClick={() => setActiveTab("myChildren")}
               className={`py-3 px-1 ${activeTab === "myChildren"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } font-medium text-sm`}
             >
               Tất cả hồ sơ ({myChildrenProfiles.length})
@@ -258,7 +259,7 @@ const ParentHealthProfiles = () => {
                       }
                       className="cursor-pointer text-indigo-600 hover:text-indigo-800 flex items-center text-sm"
                     >
-                      <Edit className="w-4 h-4 mr-1" /> Chỉnh sửa
+                      <Edit className="w-4 h-4 mr-1" /> Cập nhật Hồ sơ
                     </button>
                   </div>
                 </div>

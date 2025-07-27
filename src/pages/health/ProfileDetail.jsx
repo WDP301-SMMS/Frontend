@@ -587,7 +587,7 @@ const ParentHealthProfileDetail = () => {
               onClick={() => navigate(`/health-profile/${profileId}/edit`)}
               className="cursor-pointer px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"
             >
-              <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
+              <Edit className="w-4 h-4 mr-2" /> Cập nhật Hồ sơ
             </button>
           </div>
         </div>
