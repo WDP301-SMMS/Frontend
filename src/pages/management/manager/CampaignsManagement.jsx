@@ -62,7 +62,7 @@ import campaignService from "~/libs/api/services/campaignService";
 import partnerService from "~/libs/api/services/partnerService";
 import { userService } from "~/libs/api";
 
-const CampaignManager = () => {
+const CampaignsManager = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [partners, setPartners] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -195,24 +195,33 @@ const CampaignManager = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      const newFormData = { ...prev, [name]: value };
-      // Set actualStartDate to startDate by default when startDate changes
-      if (name === "startDate" && !newFormData.actualStartDate) {
-        newFormData.actualStartDate = value;
-      }
-      return newFormData;
-    });
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
 
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+  // Update form data
+  setFormData((prev) => {
+    const newFormData = { ...prev, [name]: value };
+    // Set actualStartDate to startDate by default when startDate changes
+    if (name === "startDate" && !newFormData.actualStartDate) {
+      newFormData.actualStartDate = value;
     }
-  };
+    return newFormData;
+  });
+
+  // Validate campaign name
+  if (name === "name") {
+    setErrors((prev) => ({
+      ...prev,
+      [name]: value.length < 5 ? "Campaign name must be at least 5 characters long." : "",
+    }));
+  } else if (errors[name]) {
+    // Clear errors for other fields
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  }
+};
 
   const handleGradeLevelChange = (level) => {
     setFormData((prev) => ({
@@ -592,7 +601,7 @@ const CampaignManager = () => {
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      {campaign.status !== "CANCELED" && (
+                      {campaign.status === "DRAF" && (
                         <>
                           <Tooltip title="Chỉnh sửa">
                             <IconButton
@@ -712,16 +721,16 @@ const CampaignManager = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Số mũi
                         </label>
-                        <select
+                        <input
                           name="doseNumber"
                           value={formData.doseNumber}
                           onChange={handleInputChange}
                           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Tên số mũi"
+                            required
                         >
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <option key={num} value={num}>Mũi {num}</option>
-                          ))}
-                        </select>
+                          
+                        </input>
                       </div>
                     </div>
                   </div>
@@ -1132,4 +1141,4 @@ const CampaignManager = () => {
   );
 };
 
-export default CampaignManager;
+export default CampaignsManager;

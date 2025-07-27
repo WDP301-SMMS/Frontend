@@ -104,14 +104,12 @@ const StudentManagement = () => {
         classId: formData.classId || undefined,
       };
 
-      console.log("Submitting student data:", payload);
 
       if (isEditing) {
         await updateStudent(selectedStudentId, payload);
         setDialogMessage("Cập nhật học sinh thành công!");
       } else {
         await createStudent(payload);
-        console.log("New student created:", payload);
 
         setDialogMessage("Thêm học sinh mới thành công!");
       }
@@ -150,7 +148,6 @@ const StudentManagement = () => {
       status: student.status || "ACTIVE",
       classId: student.classId || student.class?._id || "",
     });
-    console.log("Editing student:", student);
     setIsDialogOpen(true);
   };
 
@@ -161,7 +158,6 @@ const StudentManagement = () => {
     try {
       const response = await getAllClasses();
       setClasses(response.classes || []);
-      console.log("Classes fetched for dialog:", response.classes);
     } catch (err) {
       console.error("Error fetching classes for dialog:", err);
     }

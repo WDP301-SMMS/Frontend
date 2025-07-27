@@ -159,16 +159,8 @@ function PostVaccinationMonitoring() {
 
   // Load monitoring records
   const loadMonitoringRecords = useCallback((campaignId, classId, query) => {
-    console.log(
-      "Loading monitoring records for campaignId:",
-      campaignId,
-      "classId:",
-      classId,
-      "query:",
-      query
-    );
+    
     if (!campaignId) {
-      console.log("No campaignId provided, resetting monitoringRecords");
       setMonitoringRecords([]);
       return;
     }
@@ -176,9 +168,7 @@ function PostVaccinationMonitoring() {
     setLoading(true);
     setTimeout(async () => {
       try {
-        console.log("Fetching data for campaignId:", campaignId);
         const response = await campaignService.getListVaccination(campaignId);
-        console.log("API Response:", response);
 
         if (!response.success) {
           throw new Error(
@@ -194,7 +184,6 @@ function PostVaccinationMonitoring() {
           setMonitoringRecords([]);
           return;
         }
-        console.log("Raw records:", response.data);
 
         const filteredRecords = response.data
           .filter((record) =>
@@ -220,10 +209,10 @@ function PostVaccinationMonitoring() {
             class_name: record.className,
             health_notes:
               [
-                ...(record.allergies?.length > 0
+                ...(record.allergies?.length > 0 && record.allergies !== "Chưa có thông tin"
                   ? record.allergies.map((c) => `Dị ứng: ${c.type}`)
                   : []),
-                ...(record.chronicConditions?.length > 0
+                ...(record.chronicConditions?.length > 0 && record.chronicConditions !== "Chưa có thông tin"
                   ? record.chronicConditions.map(
                       (c) => `Bệnh mãn tính: ${c.conditionName}`
                     )
@@ -269,7 +258,6 @@ function PostVaccinationMonitoring() {
             );
           });
 
-        console.log("Filtered records:", filteredRecords);
         setMonitoringRecords([...filteredRecords]);
 
         const criticalStudents = filteredRecords.filter(
@@ -311,7 +299,6 @@ function PostVaccinationMonitoring() {
           setCampaigns(response.data || []);
           const firstCampaignId = response.data?.[0]?._id;
           if (firstCampaignId) {
-            console.log("Setting initial campaign to:", firstCampaignId);
             setSelectedCampaign(firstCampaignId);
             loadMonitoringRecords(firstCampaignId, selectedClass, searchQuery);
           } else {
@@ -587,7 +574,7 @@ function PostVaccinationMonitoring() {
         <CardContent>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth variant="outlined">
+              <FormControl fullWidth variant="outlined" sx={{ minWidth: "200px" }}>
                 <InputLabel sx={{ fontWeight: 500 }}>
                   Chọn chiến dịch tiêm chủng
                 </InputLabel>
@@ -1203,25 +1190,35 @@ function PostVaccinationMonitoring() {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                label="Biện pháp xử trí"
-                value={reactionData.actionsTaken}
-                onChange={(e) =>
-                  setReactionData({
-                    ...reactionData,
-                    actionsTaken: e.target.value,
-                  })
-                }
-                fullWidth
-                multiline
-                rows={2}
-                variant="outlined"
-                sx={{ bgcolor: "white", borderRadius: 2 }}
-                placeholder="Ví dụ: Đã cho uống thuốc hạ sốt và tiếp tục theo dõi..."
-                disabled={!reactionData.isAbnormal}
-                required={reactionData.isAbnormal}
-              />
-            </Grid>
+  <TextField
+    label="Biện pháp xử trí"
+    value={reactionData.actionsTaken}
+    onChange={(e) => {
+      const value = e.target.value;
+      // Only update state if value meets minimum length or is empty (to allow clearing)
+      if (value.length >= 10 || value.length === 0) {
+        setReactionData({
+          ...reactionData,
+          actionsTaken: value,
+        });
+      }
+    }}
+    fullWidth
+    multiline
+    rows={2}
+    variant="outlined"
+    sx={{ bgcolor: "white", borderRadius: 2 }}
+    placeholder="Ví dụ: Đã cho uống thuốc hạ sốt và tiếp tục theo dõi..."
+    disabled={!reactionData.isAbnormal}
+    required={reactionData.isAbnormal}
+    error={reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10}
+    helperText={
+      reactionData.isAbnormal && reactionData.actionsTaken.length > 0 && reactionData.actionsTaken.length < 10
+        ? "Hành động được thực hiện phải dài ít nhất 10 ký tự."
+        : ""
+    }
+  />
+</Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: "#fafafa" }}>
@@ -1473,7 +1470,7 @@ function PostVaccinationMonitoring() {
                           >
                             Dị ứng
                           </Typography>
-                          {selectedStudent.allergies?.length > 0 ? (
+                          {selectedStudent.allergies?.length > 0 && selectedStudent.allergies !== "Chưa có thông tin" ? (
                             <Box sx={{ maxHeight: 150, overflowY: "auto" }}>
                               {selectedStudent.allergies.map(
                                 (allergy, index) => (
@@ -1537,7 +1534,7 @@ function PostVaccinationMonitoring() {
                           >
                             Bệnh mãn tính
                           </Typography>
-                          {selectedStudent.chronicConditions?.length > 0 ? (
+                          {selectedStudent.chronicConditions?.length > 0 &&selectedStudent.chronicConditions!=="Chưa có thông tin" ? (
                             <Box sx={{ maxHeight: 150, overflowY: "auto" }}>
                               {selectedStudent.chronicConditions.map(
                                 (condition, index) => (

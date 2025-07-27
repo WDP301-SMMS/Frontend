@@ -143,7 +143,6 @@ const ClassManagement = () => {
         description: formData.description || "",
       };
 
-      console.log("Creating class with data:", classData);
       await createClass(classData);
 
       setDialogMessage("Tạo lớp học mới thành công!");

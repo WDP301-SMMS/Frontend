@@ -40,7 +40,6 @@ import PostVaccinationMonitoring from "~/pages/management/nurse/InjectionManagem
 //ProtectedRoute
 import SendCheckupNotice from "~/pages/management/nurse/MedicalCheckup/SendCheckupNotice";
 import { SidebarManager } from "~/pages/management/manager/SideBar";
-import CampaignsManagement from "~/pages/management/manager/CampaignsManagement";
 import MedicalCheckupManagement from "~/pages/management/manager/MedicalCheckUpManagement";
 import { Outlet } from "react-router";
 import NursesManagement from "~/pages/management/manager/NursesManagement";
@@ -56,6 +55,7 @@ import MedicationRequests from "~/pages/management/nurse/MedicationRequestsManag
 import MedicationSchedules from "~/pages/management/nurse/MedicationRequestsManagement/MedicationSchedules";
 import AppointmentHealthCheck from "~/pages/management/nurse/AppointmentManagement/AppointmentHealthCheck";
 import { HandleNavigateAuthRoutes, ProtectedRoute } from "./ProtectedRoute";
+import CampaignsManager from "~/pages/management/manager/CampaignsManagement";
 
 const basicRoutes = [
   {
@@ -203,7 +203,7 @@ const managerRoutes = [
     ),
     children: [
       { path: "", element: <ManagerDashboard /> },
-      { path: "campaigns-management", element: <CampaignsManagement /> },
+      { path: "campaigns-management", element: <CampaignsManager /> },
       {
         path: "medical-check-up-management",
         element: <MedicalCheckupManagement />,

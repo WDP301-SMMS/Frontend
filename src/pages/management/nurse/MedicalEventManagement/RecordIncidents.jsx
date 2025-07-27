@@ -65,7 +65,6 @@ function RecordIncidents() {
           classId: selectedClass,
           search: searchTerm,
         });
-        console.log("Fetched students response:", res);
         if (res.data && res.data.students) {
           setStudents(res.data.students);
         } else {
@@ -301,7 +300,7 @@ function RecordIncidents() {
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", color: "#1e3a8a" }}
       >
-        Ghi nhận Sự kiện Y tế
+        Ghi nhận sự cố y tế
       </Typography>
       <Alert
         severity="info"
@@ -445,7 +444,7 @@ function RecordIncidents() {
 
           <Grid container spacing={3}>
             {/* Row 1: Incident Type, Severity, Status */}
-            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{width: "24%"}}>
               <FormControl fullWidth>
                 <InputLabel>Loại sự kiện</InputLabel>
                 <Select
@@ -466,7 +465,7 @@ function RecordIncidents() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{width: "24%"}}>
               <FormControl fullWidth>
                 <InputLabel>Mức độ nghiêm trọng</InputLabel>
                 <Select
@@ -503,7 +502,7 @@ function RecordIncidents() {
             </Grid> */}
 
             {/* Row 2: Date and Time */}
-            <Grid item xs={12} sm={6} md={4} sx={{width: "30%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{width: "23.5%"}}>
               <TextField
                 fullWidth
                 type="date"
@@ -514,7 +513,7 @@ function RecordIncidents() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}   md={4} sx={{width: "30%"}}>
+            <Grid item xs={12} sm={6} md={4} sx={{width: "23.4%"}}>
               <TextField
                 fullWidth
                 type="time"

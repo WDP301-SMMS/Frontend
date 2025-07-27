@@ -165,7 +165,6 @@ const PartnerList = ({
                     {" "}
                     <button
                       onClick={() => {
-                        console.log("Viewing partner detail:", partner._id);
                         onViewDetail(partner._id);
                       }}
                       className="text-blue-600 hover:text-blue-800"
@@ -813,7 +812,6 @@ const PartnerManagement = () => {
         page: pagination.currentPage,
         limit: 10,
       });
-      console.log("Partners list response:", data);
       setPartners(data.partners || []);
       setPagination({
         currentPage: data.currentPage || 1,
@@ -833,7 +831,6 @@ const PartnerManagement = () => {
     try {
       setLoading(true);
       const data = await getPartnerById(partnerId);
-      console.log("Partner detail response:", data);
       setSelectedPartner(data);
       setError("");
     } catch (err) {
@@ -973,7 +970,6 @@ const PartnerManagement = () => {
           pagination={pagination}
           handlePageChange={handlePageChange}
           onViewDetail={(id) => {
-            console.log("Fetching partner detail for ID:", id);
             fetchPartnerDetail(id);
           }}
           onEdit={(partner) => {

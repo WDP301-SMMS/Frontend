@@ -39,7 +39,6 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const response = await getDashboardData();
-      console.log("Dashboard data fetched:", response.data);
 
       setDashboardData(response.data);
       setError(null);

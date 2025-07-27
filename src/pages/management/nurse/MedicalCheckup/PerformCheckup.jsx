@@ -78,7 +78,6 @@ const PerformCheckup = () => {
         // Fetch nurse profile
         const profileResponse = await userService.getProfile();
         if (profileResponse.success) {
-          console.log("Nurse profile response:", profileResponse.data.data._id);
           setNurseId(profileResponse.data.data._id);
         } else {
           throw new Error(
@@ -108,7 +107,6 @@ const PerformCheckup = () => {
 
   const fetchTemplate = async (templateId) => {
     try {
-      console.log("Fetching template with ID:", templateId);
       const response =
         await healthCheckTemplateService.getHealthCheckTemplateById(templateId);
       if (response.success) {
@@ -163,12 +161,10 @@ const PerformCheckup = () => {
           await fetchTemplate(campaign.templateId._id);
         }
         const approvedStudents = response.data.filter(
-          (student) => student.status !== "PENDING" && student.status !== "DECLINED"
+          (student) => student.status !== "PENDING" && student.status !== "DECLINED"&& student.status !== "NO_RESPONSE"
         );
-        console.log("Approved students:", approvedStudents);
         const mappedStudents = await Promise.all(
           approvedStudents.map(async (student) => {
-            console.log("Fetching student details for:", student.status);
             return {
               _id: student.studentId._id,
               name: student.studentId.fullName,
@@ -240,11 +236,8 @@ const PerformCheckup = () => {
       // Fetch latest record only if status is COMPLETED
       const record = await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
       if (record?.data) {
-        console.log("Fetched record:", record);
         setLatestRecord(record.data);
-        // Update student's health status based on the record
         // No need to update students state here since no property is changed
-        console.log("Fetched students:", students);
         const initialData = template?.checkupItems.reduce(
           (acc, item) => {
             const result =
@@ -368,7 +361,6 @@ const PerformCheckup = () => {
       setLoading(true);
       const record =
         await healthCheckRecordService.getLatestStudentHealthRecord(studentId);
-      console.log("Fetched record:", record);
       const student = students.find((s) => s._id === studentId);
       setSelectedStudent(student);
       if (record?.data) {
@@ -440,8 +432,6 @@ const PerformCheckup = () => {
       });
       return;
     }
-    console.log("nurseId: ", nurseId);
-    console.log("Submitting checkup data:", checkupData);
 
     if (!nurseId) {
       setAlert({
@@ -526,8 +516,7 @@ const PerformCheckup = () => {
       });
       return;
     }
-    console.log("nurseId: ", nurseId);
-    console.log("Updating checkup data:", checkupData);
+   
 
     if (!nurseId) {
       setAlert({
@@ -598,7 +587,6 @@ const PerformCheckup = () => {
               await healthCheckRecordService.getLatestStudentHealthRecord(
                 student._id
               );
-            console.log(`Fetched record for student ${student._id}:`, record);
           } catch (error) {
             console.error(
               `Failed to fetch record for student ${student._id}:`,
@@ -724,7 +712,6 @@ const PerformCheckup = () => {
         selectedCampaign,
         { status: "COMPLETED" }
       );
-      console.log("Complete campaign response:", response);
       if (response.success) {
         setAlert({
           open: true,
@@ -767,7 +754,6 @@ const PerformCheckup = () => {
     );
 
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-  console.log("filteredStudents:", students);
   const paginatedList = filteredStudents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
